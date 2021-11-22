@@ -1,0 +1,331 @@
+package io.err0.client.languages;
+
+import io.err0.client.core.*;
+
+import java.util.Stack;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+public class PhpSourceCodeParse extends SourceCodeParse {
+
+    private static Pattern reMethodPerhaps = Pattern.compile("\\)\\s*$");
+    private static Pattern reMethod = Pattern.compile("\\s*(([^){};]+?)\\([^)]*?\\)?(\\s*use\\s*\\([^)]+?\\))?)\\s*$");
+    //private static Pattern reLambda = Pattern.compile("\\s*(([^\\){};,]+?)\\([^\\)]*?\\)\\s+->\\s*)\\s*$");
+    private static Pattern reClass = Pattern.compile("\\s*(([^){};]+?\\s+?)?class\\s+(\\S+)[^;{(]+?)\\s*$");
+    private static Pattern reMethodIgnore = Pattern.compile("(\\s+|^\\s*)(catch|if|do|while|switch|for)\\s+", Pattern.MULTILINE);
+    //private static Pattern reErrorNumber = Pattern.compile("^(\'|\")\\[ERR-(\\d+)\\]\\s+");
+    private static Pattern reLogger = Pattern.compile("error_log\\s*\\(\\s*$");
+    private static Pattern reException = Pattern.compile("throw\\s+new\\s+([^\\s\\(]*)\\s*\\(\\s*$");
+    private static int reException_group_class = 1;
+
+    public static PhpSourceCodeParse lex(final String sourceCode) {
+        int n = 0;
+        PhpSourceCodeParse parse = new PhpSourceCodeParse();
+        Token currentToken = new Token(n++);
+        currentToken.type = TokenClassification.CONTENT;
+        int lineNumber = 1;
+        currentToken.startLineNumber = lineNumber;
+        final char chars[] = sourceCode.toCharArray();
+        for (int i = 0, l = chars.length; i < l; ++i) {
+            int depth = currentToken.depth;
+            final char ch = chars[i];
+            if (ch == '\n') {
+                ++lineNumber;
+            }
+            switch (currentToken.type) {
+                case CONTENT:
+                    if (ch == '<' && i < l - 1 && chars[i + 1] == '?') {
+                        parse.tokenList.add(currentToken.finish(lineNumber));
+                        currentToken = new Token(n++);
+                        currentToken.type = TokenClassification.SOURCE_CODE;
+                        currentToken.sourceCode.append(ch);
+                        currentToken.sourceCode.append(chars[i + 1]);
+                        ++i;
+                        currentToken.depth = depth;
+                        currentToken.startLineNumber = lineNumber;
+                    } else {
+                        currentToken.sourceCode.append(ch);
+                    }
+                    break;
+                case SOURCE_CODE:
+                    if (ch == '?' && i < l-1 && chars[i+1] == '>') {
+                        currentToken.sourceCode.append(ch);
+                        currentToken.sourceCode.append(chars[i+1]);
+                        ++i;
+                        parse.tokenList.add(currentToken.finish(lineNumber));
+                        currentToken = new Token(n++);
+                        currentToken.type = TokenClassification.CONTENT;
+                        currentToken.depth = depth;
+                        currentToken.startLineNumber = lineNumber;
+                    } else if (ch == '{') {
+                        parse.tokenList.add(currentToken.finish(lineNumber));
+                        currentToken = new Token(n++);
+                        currentToken.type = TokenClassification.SOURCE_CODE;
+                        currentToken.sourceCode.append(ch);
+                        currentToken.depth = depth + 1;
+                        currentToken.startLineNumber = lineNumber;
+                    } else if (ch == '}') {
+                        parse.tokenList.add(currentToken.finish(lineNumber));
+                        currentToken = new Token(n++);
+                        currentToken.type = TokenClassification.SOURCE_CODE;
+                        currentToken.sourceCode.append(ch);
+                        currentToken.depth = depth - 1;
+                        currentToken.startLineNumber = lineNumber;
+                    } else if (ch == '\'') {
+                        parse.tokenList.add(currentToken.finish(lineNumber));
+                        currentToken = new Token(n++);
+                        currentToken.type = TokenClassification.APOS_LITERAL;
+                        currentToken.sourceCode.append(ch);
+                        currentToken.depth = depth;
+                        currentToken.startLineNumber = lineNumber;
+                    } else if (ch == '\"') {
+                        parse.tokenList.add(currentToken.finish(lineNumber));
+                        currentToken = new Token(n++);
+                        currentToken.type = TokenClassification.QUOT_LITERAL;
+                        currentToken.sourceCode.append(ch);
+                        currentToken.depth = depth;
+                        currentToken.startLineNumber = lineNumber;
+                    } else if (i < l - 1 && ch == '/') {
+                        final char ch2 = chars[i+1];
+                        if (ch2 == '*') {
+                            parse.tokenList.add(currentToken.finish(lineNumber));
+                            currentToken = new Token(n++);
+                            currentToken.type = TokenClassification.COMMENT_BLOCK;
+                            currentToken.sourceCode.append(ch);
+                            currentToken.sourceCode.append(ch2);
+                            currentToken.depth = depth;
+                            currentToken.startLineNumber = lineNumber;
+                            ++i;
+                        } else if (ch2 == '/') {
+                            parse.tokenList.add(currentToken.finish(lineNumber));
+                            currentToken = new Token(n++);
+                            currentToken.type = TokenClassification.COMMENT_LINE;
+                            currentToken.sourceCode.append(ch);
+                            currentToken.sourceCode.append(ch2);
+                            currentToken.depth = depth;
+                            currentToken.startLineNumber = lineNumber;
+                            ++i;
+                        } else {
+                            currentToken.sourceCode.append(ch);
+                        }
+                    } else {
+                        currentToken.sourceCode.append(ch);
+                    }
+                    break;
+                case COMMENT_LINE:
+                    if (ch == '\n') {
+                        currentToken.sourceCode.append(ch);
+                        parse.tokenList.add(currentToken.finish(lineNumber));
+                        currentToken = new Token(n++);
+                        currentToken.type = TokenClassification.SOURCE_CODE;
+                        currentToken.depth = depth;
+                        currentToken.startLineNumber = lineNumber;
+                    } else {
+                        currentToken.sourceCode.append(ch);
+                    }
+                    break;
+                case COMMENT_BLOCK:
+                    if (ch == '*' && i < l-1) {
+                        final char ch2 = chars[i+1];
+                        if (ch2 == '/') {
+                            currentToken.sourceCode.append(ch);
+                            currentToken.sourceCode.append(ch2);
+                            parse.tokenList.add(currentToken.finish(lineNumber));
+                            currentToken = new Token(n++);
+                            currentToken.type = TokenClassification.SOURCE_CODE;
+                            currentToken.depth = depth;
+                            currentToken.startLineNumber = lineNumber;
+                            ++i;
+                        } else {
+                            currentToken.sourceCode.append(ch);
+                        }
+                    } else {
+                        currentToken.sourceCode.append(ch);
+                    }
+                    break;
+                case APOS_LITERAL:
+                    if (ch == '\'') {
+                        currentToken.sourceCode.append(ch);
+                        parse.tokenList.add(currentToken.finish(lineNumber));
+                        currentToken = new Token(n++);
+                        currentToken.type = TokenClassification.SOURCE_CODE;
+                        currentToken.depth = depth;
+                        currentToken.startLineNumber = lineNumber;
+                    } else if (ch == '\\') {
+                        currentToken.sourceCode.append(ch);
+                        final char ch2 = chars[++i];
+                        currentToken.sourceCode.append(ch2);
+                    } else {
+                        currentToken.sourceCode.append(ch);
+                    }
+                    break;
+                case QUOT_LITERAL:
+                    if (ch == '\"') {
+                        currentToken.sourceCode.append(ch);
+                        parse.tokenList.add(currentToken.finish(lineNumber));
+                        currentToken = new Token(n++);
+                        currentToken.type = TokenClassification.SOURCE_CODE;
+                        currentToken.depth = depth;
+                        currentToken.startLineNumber = lineNumber;
+                    } else if (ch == '\\') {
+                        currentToken.sourceCode.append(ch);
+                        final char ch2 = chars[++i];
+                        currentToken.sourceCode.append(ch2);
+                    } else {
+                        currentToken.sourceCode.append(ch);
+                    }
+                    break;
+            }
+        }
+        parse.tokenList.add(currentToken.finish(lineNumber));
+        return parse;
+    }
+
+    @Override
+    public boolean couldContainErrorNumber(Token token) {
+        return token.type == TokenClassification.APOS_LITERAL || token.type == TokenClassification.QUOT_LITERAL;
+    }
+
+    @Override
+    public void classifyForErrorCode(ApiProvider apiProvider, GlobalState globalState, ApplicationPolicy policy, StateItem stateItem, Token token) {
+        if (token.classification == Token.Classification.NOT_CLASSIFIED_YET) {
+            switch (token.type) {
+                case APOS_LITERAL:
+                case QUOT_LITERAL:
+                {
+                    // 1) Strip '[ERR-nnnnnn] ' from string literals for re-injection
+                    Matcher matcherErrorNumber = policy.getReErrorNumber_php().matcher(token.source);
+                    if (matcherErrorNumber.find()) {
+                        token.classification = Token.Classification.ERROR_NUMBER;
+                        long errorOrdinal = Long.parseLong(matcherErrorNumber.group(2));
+                        if (apiProvider.validErrorNumber(policy, errorOrdinal)) {
+                            if (globalState.store(errorOrdinal, stateItem, token)) {
+                                token.keepErrorCode = true;
+                                token.errorOrdinal = errorOrdinal;
+                                token.sourceNoErrorCode = token.source.substring(0, 1) + token.source.substring(matcherErrorNumber.end());
+                            } else {
+                                token.sourceNoErrorCode = token.source = token.source.substring(0,1) + token.source.substring(matcherErrorNumber.end());
+                            }
+                        } else {
+                            token.sourceNoErrorCode = token.source = token.source.substring(0,1) + token.source.substring(matcherErrorNumber.end());
+                        }
+                    } else {
+                        token.classification = Token.Classification.POTENTIAL_ERROR_NUMBER;
+                        token.sourceNoErrorCode = token.source;
+                    }
+                }
+                break;
+                case SOURCE_CODE:
+                {
+                    Matcher matcherLogger = reLogger.matcher(token.source);
+                    if (matcherLogger.find()) {
+                        token.classification = Token.Classification.LOG_OUTPUT;
+                        // TODO: extract canonical log level meta data
+                        // only one level in php error_log
+                    } else {
+                        Matcher matcherException = reException.matcher(token.source);
+                        if (matcherException.find()) {
+                            token.classification = Token.Classification.EXCEPTION_THROW;
+                            token.exceptionClass = matcherException.group(reException_group_class);
+                        } else {
+                            token.classification = Token.Classification.NOT_FULLY_CLASSIFIED;
+                        }
+                    }
+                }
+                break;
+                default:
+                    token.classification = Token.Classification.NO_MATCH;
+            }
+        }
+    }
+
+    private String codeWithAnnotations(int n, int startIndex, String code) {
+        // Go backwards from matcherMethod.start(1) through previous blocks
+        boolean useBackwardsCode = false;
+        boolean abort = false;
+        StringBuilder backwardsCode = new StringBuilder();
+        Stack<Character> stack = new Stack<>();
+        for (int i = n, j = startIndex; !abort && i > 0; j = tokenList.get(--i).source.length() - 1) {
+            Token currentToken = tokenList.get(i);
+            if (currentToken.type == TokenClassification.COMMENT_BLOCK || currentToken.type == TokenClassification.COMMENT_LINE || currentToken.type == TokenClassification.CONTENT)
+                continue;
+            for (; !abort && j >= 0; --j) {
+                char ch = currentToken.source.charAt(j);
+                if (currentToken.type == TokenClassification.SOURCE_CODE) {
+                    if (stack.empty()) {
+                        if (ch == ',' || ch == ';' || ch == '{' || ch == '(' || ch == '}') {
+                            abort = true;
+                            break;
+                        } else if (ch == ')') {
+                            stack.push(ch);
+                            useBackwardsCode = true;
+                        }
+                        backwardsCode.append(ch);
+                    } else {
+                        if (ch == ')' || ch == '}') {
+                            stack.push(ch);
+                        } else if (ch == '(' || ch == '{') {
+                            stack.pop();
+                        }
+                        backwardsCode.append(ch);
+                    }
+                } else {
+                    backwardsCode.append(ch);
+                }
+            }
+        }
+
+        if (useBackwardsCode) {
+            backwardsCode.reverse();
+            backwardsCode.append(code);
+            code = backwardsCode.toString();
+        }
+
+        return code;
+    }
+
+    @Override
+    public void classifyForCallStack(Token token) {
+        if (token.classification == Token.Classification.NOT_CLASSIFIED_YET || token.classification == Token.Classification.NOT_FULLY_CLASSIFIED) {
+            if (token.type == TokenClassification.SOURCE_CODE) {
+                boolean foundMethod = false;
+                Matcher matcherMethodPerhaps = reMethodPerhaps.matcher(token.source);
+                if (matcherMethodPerhaps.find()) {
+                    String codeBlock = codeWithAnnotations(token.n, matcherMethodPerhaps.end() - 1, "");
+                    Matcher matcherMethod = reMethod.matcher(codeBlock);
+                    if (matcherMethod.find()) {
+                        String code = matcherMethod.group(1);
+                        if (code.startsWith("<?php")) {
+                            code = code.substring(5).trim();
+                        } else if (code.startsWith("<?")) {
+                            code = code.substring(2).trim();
+                        }
+                        //if (reMethodIgnore.matcher(code).find())
+                        //    continue;
+                        token.classification = Token.Classification.METHOD_SIGNATURE;
+                        token.extractedCode = code;
+                        foundMethod = true;
+                    }
+                }
+
+                if (!foundMethod) {
+                    Matcher matcherClass = reClass.matcher(token.source);
+                    if (matcherClass.find()) {
+                        token.classification = Token.Classification.CLASS_SIGNATURE;
+                        token.extractedCode = matcherClass.group(1);
+                    } else {
+                        //Matcher matcherLambda = reLambda.matcher(token.source);
+                        //if (matcherLambda.find()) {
+                        //    token.classification = Token.Classification.LAMBDA_SIGNATURE;
+                        //    token.extractedCode = matcherLambda.group(1);
+                        //} else {
+                            token.classification = Token.Classification.NO_MATCH;
+                        //}
+                    }
+                }
+            } else {
+                token.classification = Token.Classification.NO_MATCH;
+            }
+        }
+    }
+}

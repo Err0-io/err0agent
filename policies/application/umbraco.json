@@ -1,0 +1,14 @@
+{
+  "name": "Umbraco",
+  "app_code": "UMB",
+  "app_uuid": "5dc1b62a-f45a-11eb-9a03-0242ac130003",
+  "policy": {
+    "error_prefix": "UMB",
+    "error_template": "%error",
+    "error_pad_to_n": 0,
+    "context_n_lines": 3
+  },
+  "sources": {
+    "include_dirs": ["."]
+  }
+}

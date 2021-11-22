@@ -1,0 +1,14 @@
+{
+  "name": "corefabric",
+  "app_code": "CF",
+  "app_uuid": "8ba84030-e47a-11eb-ba80-0242ac130004",
+  "policy": {
+    "error_template": "%error %app",
+    "error_pad_to_n": 6
+  },
+  "sources": {
+    "include_dirs": ["src"],
+    "exclude_dirs": ["src/contrib", "src/test", "src/main/java/io/corefabric/pi"],
+    "exclude_file_patterns": ["\\.js$", "\\.ts$"]
+  }
+}

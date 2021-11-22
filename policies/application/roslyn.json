@@ -1,0 +1,14 @@
+{
+  "name": "Roslyn",
+  "app_code": "ROS",
+  "app_uuid": "53293288-f45a-11eb-9a03-0242ac130003",
+  "policy": {
+    "error_prefix": "ROS",
+    "error_template": "%error",
+    "error_pad_to_n": 0,
+    "context_n_lines": 3
+  },
+  "sources": {
+    "include_dirs": ["."]
+  }
+}

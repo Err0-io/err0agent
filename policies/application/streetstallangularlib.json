@@ -1,0 +1,16 @@
+{
+  "name": "streetstall-library",
+  "app_code": "SSSLIB",
+  "app_uuid": "b9971126-e47d-11eb-ba80-0242ac130004",
+  "policy": {
+    "error_prefix": "LIB",
+    "error_template": "%error %app",
+    "error_pad_to_n": 6
+  },
+  "sources": {
+    "include_dirs": ["."],
+    "exclude_dirs": [
+      ".git"
+    ]
+  }
+}

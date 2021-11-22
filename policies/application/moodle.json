@@ -1,0 +1,14 @@
+{
+  "name": "Moodle",
+  "app_code": "MDL",
+  "app_uuid": "3b8ae158-f45a-11eb-9a03-0242ac130003",
+  "policy": {
+    "error_prefix": "MDL",
+    "error_template": "%error",
+    "error_pad_to_n": 0,
+    "context_n_lines": 3
+  },
+  "sources": {
+    "include_dirs": ["."]
+  }
+}

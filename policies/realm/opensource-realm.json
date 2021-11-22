@@ -1,0 +1,20 @@
+{
+  "name": "Open-source software",
+  "realm_code": "OSS",
+  "realm_uuid": "ea3cd958-f46a-11eb-9a03-0242ac130003",
+  "customer_uuid": "e2e7ba18-efc6-11eb-9a03-0242ac130003",
+  "policy_editable_by_app": true,
+  "context_allowed_in_app": true,
+  "error_number_unique_in_realm": false,
+  "error_number_unique_per_application": true,
+  "policy": {
+    "types": "all",
+    "language": "autodetect",
+    "mode": "non-strict",
+    "error_prefix": "E",
+    "error_template": "%error %realm %app %version",
+    "error_pad_to_n": 7,
+    "context": true,
+    "context_n_lines": 0
+  }
+}
