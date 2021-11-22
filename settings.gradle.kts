@@ -1,1 +1,1 @@
-rootProject.name = "proto"
+rootProject.name = "err0agent"
