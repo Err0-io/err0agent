@@ -15,7 +15,7 @@ build:
   script: ./gradlew build
   artifacts:
     paths:
-      - build/libs/err0agent-1.0.0-SNAPSHOT-fat.jar
+      - build/libs/err0agent-*-fat.jar
   only:
     refs:
       - develop
