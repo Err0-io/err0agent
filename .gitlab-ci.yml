@@ -32,9 +32,9 @@ package-develop:
     - docker info
     - echo -n $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
     - echo -n f3ea7578-2938-4d78-b745-22a1d13b0e06 | docker login -u err0io --password-stdin
-    - cp build/libs/err0agent-*-fat.jar docker/client
+    - cp build/libs/err0agent-*-fat.jar docker/agent
   script:
-    - docker build --no-cache docker/client --tag err0_io:err0_client --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA --tag err0io/agent:develop
+    - docker build --no-cache docker/agent --tag err0_io:err0_agent --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA --tag err0io/agent:develop
     - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
     - docker push err0io/agent:develop
   allow_failure: false
@@ -55,9 +55,9 @@ package-master:
     - docker info
     - echo -n $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
     - echo -n f3ea7578-2938-4d78-b745-22a1d13b0e06 | docker login -u err0io --password-stdin
-    - cp build/libs/err0agent-*-fat.jar docker/client
+    - cp build/libs/err0agent-*-fat.jar docker/agent
   script:
-    - docker build --no-cache docker/client --tag err0_io:err0_client --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA --tag err0io/agent:latest
+    - docker build --no-cache docker/agent --tag err0_io:err0_agent --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA --tag err0io/agent:latest
     - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
     - docker push err0io/agent:latest
   allow_failure: false
