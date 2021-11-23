@@ -106,8 +106,10 @@ public class Main {
 
                     JsonArray remotes = new JsonArray();
                     JsonObject branches = new JsonObject();
+                    JsonObject tags = new JsonObject();
                     appGitMetadata.add("remotes", remotes);
                     appGitMetadata.add("branches", branches);
+                    appGitMetadata.add("tags", tags);
 
                     Path gitpath = Path.of(checkoutDir + "/.git");
                     if (Files.isRegularFile(gitpath)) {
@@ -142,8 +144,14 @@ public class Main {
                         JsonArray gitTags = new JsonArray();
                         List<Ref> tagList = git.tagList().call();
                         for (Ref ref : tagList) {
-                            if (ObjectId.toString(ref.getObjectId()).equals(objectId)) {
-                                gitTags.add(ref.getName());
+                            final String fullTagName = ref.getName();
+                            if (fullTagName.startsWith("refs/tags/")) {
+                                final String tagName = fullTagName.substring(10);
+                                final String tagObjectId = ObjectId.toString(ref.getObjectId());
+                                if (tagObjectId.equals(objectId)) {
+                                    gitTags.add(tagName);
+                                }
+                                tags.addProperty(tagName, tagObjectId);
                             }
                         }
                         JsonArray gitBranches = new JsonArray();
@@ -241,8 +249,10 @@ public class Main {
 
                     JsonArray remotes = new JsonArray();
                     JsonObject branches = new JsonObject();
+                    JsonObject tags = new JsonObject();
                     appGitMetadata.add("remotes", remotes);
                     appGitMetadata.add("branches", branches);
+                    appGitMetadata.add("tags", tags);
 
                     Path gitpath = Path.of(reportDir + "/.git");
                     if (Files.isRegularFile(gitpath)) {
@@ -277,8 +287,14 @@ public class Main {
                         JsonArray gitTags = new JsonArray();
                         List<Ref> tagList = git.tagList().call();
                         for (Ref ref : tagList) {
-                            if (ObjectId.toString(ref.getObjectId()).equals(objectId)) {
-                                gitTags.add(ref.getName());
+                            final String fullTagName = ref.getName();
+                            if (fullTagName.startsWith("refs/tags/")) {
+                                final String tagName = fullTagName.substring(10);
+                                final String tagObjectId = ObjectId.toString(ref.getObjectId());
+                                if (tagObjectId.equals(objectId)) {
+                                    gitTags.add(tagName);
+                                }
+                                tags.addProperty(tagName, tagObjectId);
                             }
                         }
                         JsonArray gitBranches = new JsonArray();
