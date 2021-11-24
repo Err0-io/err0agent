@@ -550,7 +550,7 @@ public class Main {
                             final FileCoding fileCoding = new FileCoding(p);
                             globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, CSharpSourceCodeParse.lex(fileCoding.content), fileCoding.charset);
                             System.out.println("Parsed: " + newFile);
-                        } else if (newFileLower.endsWith(".js")) {
+                        } else if (newFileLower.endsWith(".js") && !newFileLower.endsWith(".min.js")) {
                             final FileCoding fileCoding = new FileCoding(p);
                             globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, JavascriptSourceCodeParse.lex(fileCoding.content), fileCoding.charset);
                             System.out.println("Parsed: " + newFile);
