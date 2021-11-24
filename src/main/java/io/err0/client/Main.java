@@ -11,9 +11,12 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.Status;
+import org.eclipse.jgit.errors.IncorrectObjectTypeException;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.revwalk.RevTag;
+import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.URIish;
@@ -140,6 +143,7 @@ public class Main {
                     boolean statusIsClean = true;
 
                     Git git = Git.wrap(repo);
+                    RevWalk walk = new RevWalk(repo);
                     if (null != gitHash) {
                         JsonArray gitTags = new JsonArray();
                         List<Ref> tagList = git.tagList().call();
@@ -147,7 +151,17 @@ public class Main {
                             final String fullTagName = ref.getName();
                             if (fullTagName.startsWith("refs/tags/")) {
                                 final String tagName = fullTagName.substring(10);
-                                final String tagObjectId = ObjectId.toString(ref.getObjectId());
+                                String tagObjectId = ObjectId.toString(ref.getObjectId());
+                                RevTag tag = null;
+                                try {
+                                    tag = walk.parseTag(ref.getObjectId());
+                                    tagObjectId = ObjectId.toString(tag.getObject().getId());
+                                    // ref points to an annotated tag
+                                } catch(IncorrectObjectTypeException notAnAnnotatedTag) {
+                                    // ref is a lightweight (aka unannotated) tag
+                                    tag = null;
+                                }
+
                                 if (tagObjectId.equals(objectId)) {
                                     gitTags.add(tagName);
                                 }
@@ -283,6 +297,7 @@ public class Main {
                     boolean statusIsClean = true;
 
                     Git git = Git.wrap(repo);
+                    RevWalk walk = new RevWalk(repo);
                     if (null != gitHash) {
                         JsonArray gitTags = new JsonArray();
                         List<Ref> tagList = git.tagList().call();
@@ -290,7 +305,17 @@ public class Main {
                             final String fullTagName = ref.getName();
                             if (fullTagName.startsWith("refs/tags/")) {
                                 final String tagName = fullTagName.substring(10);
-                                final String tagObjectId = ObjectId.toString(ref.getObjectId());
+                                String tagObjectId = ObjectId.toString(ref.getObjectId());
+                                RevTag tag = null;
+                                try {
+                                    tag = walk.parseTag(ref.getObjectId());
+                                    tagObjectId = ObjectId.toString(tag.getObject().getId());
+                                    // ref points to an annotated tag
+                                } catch(IncorrectObjectTypeException notAnAnnotatedTag) {
+                                    // ref is a lightweight (aka unannotated) tag
+                                    tag = null;
+                                }
+
                                 if (tagObjectId.equals(objectId)) {
                                     gitTags.add(tagName);
                                 }
