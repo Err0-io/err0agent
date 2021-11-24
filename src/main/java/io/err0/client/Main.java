@@ -13,6 +13,7 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.errors.IncorrectObjectTypeException;
 import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevTag;
@@ -110,9 +111,11 @@ public class Main {
                     JsonArray remotes = new JsonArray();
                     JsonObject branches = new JsonObject();
                     JsonObject tags = new JsonObject();
+                    JsonObject tag_annotations = new JsonObject();
                     appGitMetadata.add("remotes", remotes);
                     appGitMetadata.add("branches", branches);
                     appGitMetadata.add("tags", tags);
+                    appGitMetadata.add("tag_annotations", tag_annotations);
 
                     Path gitpath = Path.of(checkoutDir + "/.git");
                     if (Files.isRegularFile(gitpath)) {
@@ -166,6 +169,16 @@ public class Main {
                                     gitTags.add(tagName);
                                 }
                                 tags.addProperty(tagName, tagObjectId);
+                                if (null != tag) {
+                                    JsonObject annotation = new JsonObject();
+                                    annotation.addProperty("message", tag.getFullMessage());
+                                    PersonIdent tagger = tag.getTaggerIdent();
+                                    annotation.addProperty("name", tagger.getName());
+                                    annotation.addProperty("email_address", tagger.getEmailAddress());
+                                    annotation.addProperty("when", tagger.getWhen().getTime());
+                                    annotation.addProperty("tz_offset", tagger.getTimeZoneOffset());
+                                    tag_annotations.add(tagName, annotation);
+                                }
                             }
                         }
                         JsonArray gitBranches = new JsonArray();
@@ -264,9 +277,11 @@ public class Main {
                     JsonArray remotes = new JsonArray();
                     JsonObject branches = new JsonObject();
                     JsonObject tags = new JsonObject();
+                    JsonObject tag_annotations = new JsonObject();
                     appGitMetadata.add("remotes", remotes);
                     appGitMetadata.add("branches", branches);
                     appGitMetadata.add("tags", tags);
+                    appGitMetadata.add("tag_annotations", tag_annotations);
 
                     Path gitpath = Path.of(reportDir + "/.git");
                     if (Files.isRegularFile(gitpath)) {
@@ -320,6 +335,16 @@ public class Main {
                                     gitTags.add(tagName);
                                 }
                                 tags.addProperty(tagName, tagObjectId);
+                                if (null != tag) {
+                                    JsonObject annotation = new JsonObject();
+                                    annotation.addProperty("message", tag.getFullMessage());
+                                    PersonIdent tagger = tag.getTaggerIdent();
+                                    annotation.addProperty("name", tagger.getName());
+                                    annotation.addProperty("email_address", tagger.getEmailAddress());
+                                    annotation.addProperty("when", tagger.getWhen().getTime());
+                                    annotation.addProperty("tz_offset", tagger.getTimeZoneOffset());
+                                    tag_annotations.add(tagName, annotation);
+                                }
                             }
                         }
                         JsonArray gitBranches = new JsonArray();
