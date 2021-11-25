@@ -45,12 +45,14 @@ public class Main {
     private static Pattern reGitdir = Pattern.compile("^gitdir: (.*?)$", Pattern.MULTILINE);
 
     static class GitMetadata {
-        GitMetadata(final String gitHash, final boolean statusIsClean) {
+        GitMetadata(final String gitHash, final boolean statusIsClean, final boolean detachedHead) {
             this.gitHash = gitHash;
             this.statusIsClean = statusIsClean;
+            this.detachedHead = detachedHead;
         }
         final String gitHash;
         final boolean statusIsClean;
+        final boolean detachedHead;
     }
 
     private static GitMetadata populateGitMetadata(final String checkoutDir, final JsonObject appGitMetadata, final JsonObject runGitMetadata) throws IOException, GitAPIException {
@@ -85,9 +87,11 @@ public class Main {
                 .setGitDir(new File(gitpath.toAbsolutePath().toString()))
                 .build();
 
+        boolean detachedHead = true;
         final String currentFullBranch = repo.getFullBranch();
         if (null != currentFullBranch && currentFullBranch.startsWith("refs/heads/")) {
             runGitMetadata.addProperty("current_branch", currentFullBranch.substring(11));
+            detachedHead = false;
         }
 
         ObjectId obj = repo.resolve("HEAD");
@@ -205,7 +209,7 @@ public class Main {
             runGitMetadata.addProperty("git_hash", gitHash + "-dirty");
         }
 
-        return new GitMetadata(gitHash, statusIsClean);
+        return new GitMetadata(gitHash, statusIsClean, detachedHead);
     }
 
     public static void main(String args[]) {
@@ -274,6 +278,11 @@ public class Main {
                     JsonObject appGitMetadata = new JsonObject();
                     JsonObject runGitMetadata = new JsonObject();
                     final GitMetadata gitMetadata = populateGitMetadata(checkoutDir, appGitMetadata, runGitMetadata);
+                    if (gitMetadata.detachedHead) {
+                        System.err.println("Detached HEAD in the git repository.");
+                        System.exit(-1);
+                    }
+
                     final String gitHash = gitMetadata.gitHash;
 
                     final UUID run_uuid = apiProvider.createRun(applicationPolicy, appGitMetadata, runGitMetadata, "insert");
@@ -334,7 +343,10 @@ public class Main {
                     JsonObject appGitMetadata = new JsonObject();
                     JsonObject runGitMetadata = new JsonObject();
                     final GitMetadata gitMetadata = populateGitMetadata(reportDir, appGitMetadata, runGitMetadata);
-
+                    if (gitMetadata.detachedHead) {
+                        System.err.println("Detached HEAD in the git repository.");
+                        System.exit(-1);
+                    }
                     if (! dirty) {
                         if (!gitMetadata.statusIsClean) {
                             System.err.println("--analyse requires a clean git checkout.");
