@@ -85,6 +85,11 @@ public class Main {
                 .setGitDir(new File(gitpath.toAbsolutePath().toString()))
                 .build();
 
+        final String currentFullBranch = repo.getFullBranch();
+        if (null != currentFullBranch && currentFullBranch.startsWith("refs/heads/")) {
+            runGitMetadata.addProperty("current_branch", currentFullBranch.substring(11));
+        }
+
         ObjectId obj = repo.resolve("HEAD");
         String gitHash = ObjectId.toString(obj);
 
