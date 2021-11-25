@@ -10,6 +10,7 @@ import io.err0.client.test.UnitTestApiProvider;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.errors.IncorrectObjectTypeException;
@@ -57,10 +58,18 @@ public class Main {
         JsonObject branches = new JsonObject();
         JsonObject tags = new JsonObject();
         JsonObject tag_annotations = new JsonObject();
+        /*
+        JsonObject branch_tags = new JsonObject();
+        JsonObject tag_branches = new JsonObject();
+         */
         appGitMetadata.add("remotes", remotes);
         appGitMetadata.add("branches", branches);
         appGitMetadata.add("tags", tags);
         appGitMetadata.add("tag_annotations", tag_annotations);
+        /*
+        appGitMetadata.add("branch_tags", branch_tags);
+        appGitMetadata.add("tag_branches", tag_branches);
+         */
 
         Path gitpath = Path.of(checkoutDir + "/.git");
         if (Files.isRegularFile(gitpath)) {
@@ -99,11 +108,13 @@ public class Main {
                 final String fullTagName = ref.getName();
                 if (fullTagName.startsWith("refs/tags/")) {
                     final String tagName = fullTagName.substring(10);
-                    String tagObjectId = ObjectId.toString(ref.getObjectId());
+                    ObjectId commitObjectId = ref.getObjectId();
+                    String tagObjectId = ObjectId.toString(commitObjectId);
                     RevTag tag = null;
                     try {
                         tag = walk.parseTag(ref.getObjectId());
-                        tagObjectId = ObjectId.toString(tag.getObject().getId());
+                        commitObjectId = tag.getObject().getId();
+                        tagObjectId = ObjectId.toString(commitObjectId);
                         // ref points to an annotated tag
                     } catch(IncorrectObjectTypeException notAnAnnotatedTag) {
                         // ref is a lightweight (aka unannotated) tag
@@ -124,6 +135,34 @@ public class Main {
                         annotation.addProperty("tz_offset", tagger.getTimeZoneOffset());
                         tag_annotations.add(tagName, annotation);
                     }
+
+                    /*
+                    DISABLED: too much information, also slow, also gets slower each iteration of the soak test.
+
+                    List<Ref> refs = git.branchList().setContains(tagObjectId).setListMode(ListBranchCommand.ListMode.ALL).call();
+                    refs.forEach(branchRef -> {
+                        final String fullBranchName = branchRef.getName();
+                        if (fullBranchName.startsWith("refs/heads/")) {
+                            final String branchName = fullBranchName.substring(11);
+                            JsonArray a = null;
+                            if (branch_tags.has(branchName)) {
+                                a = branch_tags.getAsJsonArray(branchName);
+                            } else {
+                                a = new JsonArray();
+                                branch_tags.add(branchName, a);
+                            }
+                            a.add(tagName);
+                            a = null;
+                            if (tag_branches.has(tagName)) {
+                                a = tag_branches.getAsJsonArray(tagName);
+                            } else {
+                                a = new JsonArray();
+                                tag_branches.add(tagName, a);
+                            }
+                            a.add(branchName);
+                        }
+                    });
+                     */
                 }
             }
             JsonArray gitBranches = new JsonArray();
