@@ -11,6 +11,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.Status;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.errors.IncorrectObjectTypeException;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.PersonIdent;
@@ -41,6 +42,127 @@ import java.util.stream.Stream;
 public class Main {
 
     private static Pattern reGitdir = Pattern.compile("^gitdir: (.*?)$", Pattern.MULTILINE);
+
+    static class GitMetadata {
+        GitMetadata(final String gitHash, final boolean statusIsClean) {
+            this.gitHash = gitHash;
+            this.statusIsClean = statusIsClean;
+        }
+        final String gitHash;
+        final boolean statusIsClean;
+    }
+
+    private static GitMetadata populateGitMetadata(final String checkoutDir, final JsonObject appGitMetadata, final JsonObject runGitMetadata) throws IOException, GitAPIException {
+        JsonArray remotes = new JsonArray();
+        JsonObject branches = new JsonObject();
+        JsonObject tags = new JsonObject();
+        JsonObject tag_annotations = new JsonObject();
+        appGitMetadata.add("remotes", remotes);
+        appGitMetadata.add("branches", branches);
+        appGitMetadata.add("tags", tags);
+        appGitMetadata.add("tag_annotations", tag_annotations);
+
+        Path gitpath = Path.of(checkoutDir + "/.git");
+        if (Files.isRegularFile(gitpath)) {
+            final String contents = Files.readString(gitpath);
+            Matcher matcher = reGitdir.matcher(contents);
+            if (matcher.find()) {
+                gitpath = Path.of(checkoutDir + "/" + matcher.group(1));
+            }
+        }
+
+        // find git version etc.
+        Repository repo = new FileRepositoryBuilder()
+                .setGitDir(new File(gitpath.toAbsolutePath().toString()))
+                .build();
+
+        ObjectId obj = repo.resolve("HEAD");
+        String gitHash = ObjectId.toString(obj);
+
+        // TODO: better solution
+        if (null != gitHash && "0000000000000000000000000000000000000000".equals(gitHash)) {
+            gitHash = null;
+        }
+
+        final String objectId = gitHash;
+
+        runGitMetadata.addProperty("git_hash", gitHash);
+
+        boolean statusIsClean = true;
+
+        Git git = Git.wrap(repo);
+        RevWalk walk = new RevWalk(repo);
+        if (null != gitHash) {
+            JsonArray gitTags = new JsonArray();
+            List<Ref> tagList = git.tagList().call();
+            for (Ref ref : tagList) {
+                final String fullTagName = ref.getName();
+                if (fullTagName.startsWith("refs/tags/")) {
+                    final String tagName = fullTagName.substring(10);
+                    String tagObjectId = ObjectId.toString(ref.getObjectId());
+                    RevTag tag = null;
+                    try {
+                        tag = walk.parseTag(ref.getObjectId());
+                        tagObjectId = ObjectId.toString(tag.getObject().getId());
+                        // ref points to an annotated tag
+                    } catch(IncorrectObjectTypeException notAnAnnotatedTag) {
+                        // ref is a lightweight (aka unannotated) tag
+                        tag = null;
+                    }
+
+                    if (tagObjectId.equals(objectId)) {
+                        gitTags.add(tagName);
+                    }
+                    tags.addProperty(tagName, tagObjectId);
+                    if (null != tag) {
+                        JsonObject annotation = new JsonObject();
+                        annotation.addProperty("message", tag.getFullMessage());
+                        PersonIdent tagger = tag.getTaggerIdent();
+                        annotation.addProperty("name", tagger.getName());
+                        annotation.addProperty("email_address", tagger.getEmailAddress());
+                        annotation.addProperty("when", tagger.getWhen().getTime());
+                        annotation.addProperty("tz_offset", tagger.getTimeZoneOffset());
+                        tag_annotations.add(tagName, annotation);
+                    }
+                }
+            }
+            JsonArray gitBranches = new JsonArray();
+            List<Ref> branchList = git.branchList().call();
+            for (Ref ref : branchList) {
+                final String fullBranchName = ref.getName();
+                if (fullBranchName.startsWith("refs/heads/")) {
+                    final String branchName = fullBranchName.substring(11);
+                    final String branchObjectId = ObjectId.toString(ref.getObjectId());
+                    if (branchObjectId.equals(objectId)) {
+                        gitBranches.add(branchName);
+                    }
+                    branches.addProperty(branchName, branchObjectId);
+                }
+            }
+            runGitMetadata.add("git_tags", gitTags);
+            runGitMetadata.add("git_branches", gitBranches);
+
+            List<RemoteConfig> remoteList = git.remoteList().call();
+            for (RemoteConfig rc : remoteList) {
+                JsonObject remote = new JsonObject();
+                remote.addProperty("name", rc.getName());
+                JsonArray uris = new JsonArray();
+                for (URIish ish : rc.getURIs()) {
+                    uris.add(ish.toASCIIString());
+                }
+                remote.add("uris", uris);
+                remotes.add(remote);
+            }
+        }
+        Status status = git.status().call();
+        statusIsClean = status.isClean();
+
+        if (! statusIsClean && null != gitHash) {
+            runGitMetadata.addProperty("git_hash", gitHash + "-dirty");
+        }
+
+        return new GitMetadata(gitHash, statusIsClean);
+    }
 
     public static void main(String args[]) {
 
@@ -105,116 +227,10 @@ public class Main {
                         apiProvider.importPreviousState(applicationPolicy, globalState);
                     }
 
-                    JsonObject runGitMetadata = new JsonObject();
                     JsonObject appGitMetadata = new JsonObject();
-
-                    JsonArray remotes = new JsonArray();
-                    JsonObject branches = new JsonObject();
-                    JsonObject tags = new JsonObject();
-                    JsonObject tag_annotations = new JsonObject();
-                    appGitMetadata.add("remotes", remotes);
-                    appGitMetadata.add("branches", branches);
-                    appGitMetadata.add("tags", tags);
-                    appGitMetadata.add("tag_annotations", tag_annotations);
-
-                    Path gitpath = Path.of(checkoutDir + "/.git");
-                    if (Files.isRegularFile(gitpath)) {
-                        final String contents = Files.readString(gitpath);
-                        Matcher matcher = reGitdir.matcher(contents);
-                        if (matcher.find()) {
-                            gitpath = Path.of(checkoutDir + "/" + matcher.group(1));
-                        }
-                    }
-
-                    // find git version etc.
-                    Repository repo = new FileRepositoryBuilder()
-                            .setGitDir(new File(gitpath.toAbsolutePath().toString()))
-                            .build();
-
-                    ObjectId obj = repo.resolve("HEAD");
-                    String gitHash = ObjectId.toString(obj);
-
-                    // TODO: better solution
-                    if (null != gitHash && "0000000000000000000000000000000000000000".equals(gitHash)) {
-                        gitHash = null;
-                    }
-                    
-                    final String objectId = gitHash;
-
-                    runGitMetadata.addProperty("git_hash", gitHash);
-
-                    boolean statusIsClean = true;
-
-                    Git git = Git.wrap(repo);
-                    RevWalk walk = new RevWalk(repo);
-                    if (null != gitHash) {
-                        JsonArray gitTags = new JsonArray();
-                        List<Ref> tagList = git.tagList().call();
-                        for (Ref ref : tagList) {
-                            final String fullTagName = ref.getName();
-                            if (fullTagName.startsWith("refs/tags/")) {
-                                final String tagName = fullTagName.substring(10);
-                                String tagObjectId = ObjectId.toString(ref.getObjectId());
-                                RevTag tag = null;
-                                try {
-                                    tag = walk.parseTag(ref.getObjectId());
-                                    tagObjectId = ObjectId.toString(tag.getObject().getId());
-                                    // ref points to an annotated tag
-                                } catch(IncorrectObjectTypeException notAnAnnotatedTag) {
-                                    // ref is a lightweight (aka unannotated) tag
-                                    tag = null;
-                                }
-
-                                if (tagObjectId.equals(objectId)) {
-                                    gitTags.add(tagName);
-                                }
-                                tags.addProperty(tagName, tagObjectId);
-                                if (null != tag) {
-                                    JsonObject annotation = new JsonObject();
-                                    annotation.addProperty("message", tag.getFullMessage());
-                                    PersonIdent tagger = tag.getTaggerIdent();
-                                    annotation.addProperty("name", tagger.getName());
-                                    annotation.addProperty("email_address", tagger.getEmailAddress());
-                                    annotation.addProperty("when", tagger.getWhen().getTime());
-                                    annotation.addProperty("tz_offset", tagger.getTimeZoneOffset());
-                                    tag_annotations.add(tagName, annotation);
-                                }
-                            }
-                        }
-                        JsonArray gitBranches = new JsonArray();
-                        List<Ref> branchList = git.branchList().call();
-                        for (Ref ref : branchList) {
-                            final String fullBranchName = ref.getName();
-                            if (fullBranchName.startsWith("refs/heads/")) {
-                                final String branchName = fullBranchName.substring(11);
-                                final String branchObjectId = ObjectId.toString(ref.getObjectId());
-                                if (branchObjectId.equals(objectId)) {
-                                    gitBranches.add(branchName);
-                                }
-                                branches.addProperty(branchName, branchObjectId);
-                            }
-                        }
-                        runGitMetadata.add("git_tags", gitTags);
-                        runGitMetadata.add("git_branches", gitBranches);
-
-                        List<RemoteConfig> remoteList = git.remoteList().call();
-                        for (RemoteConfig rc : remoteList) {
-                            JsonObject remote = new JsonObject();
-                            remote.addProperty("name", rc.getName());
-                            JsonArray uris = new JsonArray();
-                            for (URIish ish : rc.getURIs()) {
-                                uris.add(ish.toASCIIString());
-                            }
-                            remote.add("uris", uris);
-                            remotes.add(remote);
-                        }
-                    }
-                    Status status = git.status().call();
-                    statusIsClean = status.isClean();
-
-                    if (! statusIsClean && null != gitHash) {
-                        runGitMetadata.addProperty("git_hash", gitHash + "-dirty");
-                    }
+                    JsonObject runGitMetadata = new JsonObject();
+                    final GitMetadata gitMetadata = populateGitMetadata(checkoutDir, appGitMetadata, runGitMetadata);
+                    final String gitHash = gitMetadata.gitHash;
 
                     final UUID run_uuid = apiProvider.createRun(applicationPolicy, appGitMetadata, runGitMetadata, "insert");
 
@@ -271,119 +287,12 @@ public class Main {
 
                     apiProvider.importPreviousState(applicationPolicy, globalState);
 
-                    JsonObject runGitMetadata = new JsonObject();
                     JsonObject appGitMetadata = new JsonObject();
-
-                    JsonArray remotes = new JsonArray();
-                    JsonObject branches = new JsonObject();
-                    JsonObject tags = new JsonObject();
-                    JsonObject tag_annotations = new JsonObject();
-                    appGitMetadata.add("remotes", remotes);
-                    appGitMetadata.add("branches", branches);
-                    appGitMetadata.add("tags", tags);
-                    appGitMetadata.add("tag_annotations", tag_annotations);
-
-                    Path gitpath = Path.of(reportDir + "/.git");
-                    if (Files.isRegularFile(gitpath)) {
-                        final String contents = Files.readString(gitpath);
-                        Matcher matcher = reGitdir.matcher(contents);
-                        if (matcher.find()) {
-                            gitpath = Path.of(reportDir + "/" + matcher.group(1));
-                        }
-                    }
-
-                    // find git version etc.
-                    Repository repo = new FileRepositoryBuilder()
-                            .setGitDir(new File(gitpath.toAbsolutePath().toString()))
-                            .build();
-
-                    ObjectId obj = repo.resolve("HEAD");
-                    String gitHash = ObjectId.toString(obj);
-
-                    // TODO: better solution
-                    if (null != gitHash && "0000000000000000000000000000000000000000".equals(gitHash)) {
-                        gitHash = null;
-                    }
-
-                    final String objectId = gitHash;
-
-                    runGitMetadata.addProperty("git_hash", gitHash);
-
-                    boolean statusIsClean = true;
-
-                    Git git = Git.wrap(repo);
-                    RevWalk walk = new RevWalk(repo);
-                    if (null != gitHash) {
-                        JsonArray gitTags = new JsonArray();
-                        List<Ref> tagList = git.tagList().call();
-                        for (Ref ref : tagList) {
-                            final String fullTagName = ref.getName();
-                            if (fullTagName.startsWith("refs/tags/")) {
-                                final String tagName = fullTagName.substring(10);
-                                String tagObjectId = ObjectId.toString(ref.getObjectId());
-                                RevTag tag = null;
-                                try {
-                                    tag = walk.parseTag(ref.getObjectId());
-                                    tagObjectId = ObjectId.toString(tag.getObject().getId());
-                                    // ref points to an annotated tag
-                                } catch(IncorrectObjectTypeException notAnAnnotatedTag) {
-                                    // ref is a lightweight (aka unannotated) tag
-                                    tag = null;
-                                }
-
-                                if (tagObjectId.equals(objectId)) {
-                                    gitTags.add(tagName);
-                                }
-                                tags.addProperty(tagName, tagObjectId);
-                                if (null != tag) {
-                                    JsonObject annotation = new JsonObject();
-                                    annotation.addProperty("message", tag.getFullMessage());
-                                    PersonIdent tagger = tag.getTaggerIdent();
-                                    annotation.addProperty("name", tagger.getName());
-                                    annotation.addProperty("email_address", tagger.getEmailAddress());
-                                    annotation.addProperty("when", tagger.getWhen().getTime());
-                                    annotation.addProperty("tz_offset", tagger.getTimeZoneOffset());
-                                    tag_annotations.add(tagName, annotation);
-                                }
-                            }
-                        }
-                        JsonArray gitBranches = new JsonArray();
-                        List<Ref> branchList = git.branchList().call();
-                        for (Ref ref : branchList) {
-                            final String fullBranchName = ref.getName();
-                            if (fullBranchName.startsWith("refs/heads/")) {
-                                final String branchName = fullBranchName.substring(11);
-                                final String branchObjectId = ObjectId.toString(ref.getObjectId());
-                                if (branchObjectId.equals(objectId)) {
-                                    gitBranches.add(branchName);
-                                }
-                                branches.addProperty(branchName, branchObjectId);
-                            }
-                        }
-                        runGitMetadata.add("git_tags", gitTags);
-                        runGitMetadata.add("git_branches", gitBranches);
-
-                        List<RemoteConfig> remoteList = git.remoteList().call();
-                        for (RemoteConfig rc : remoteList) {
-                            JsonObject remote = new JsonObject();
-                            remote.addProperty("name", rc.getName());
-                            JsonArray uris = new JsonArray();
-                            for (URIish ish : rc.getURIs()) {
-                                uris.add(ish.toASCIIString());
-                            }
-                            remote.add("uris", uris);
-                            remotes.add(remote);
-                        }
-                    }
-                    Status status = git.status().call();
-                    statusIsClean = status.isClean();
-
-                    if (! statusIsClean && null != gitHash) {
-                        runGitMetadata.addProperty("git_hash", gitHash + "-dirty");
-                    }
+                    JsonObject runGitMetadata = new JsonObject();
+                    final GitMetadata gitMetadata = populateGitMetadata(reportDir, appGitMetadata, runGitMetadata);
 
                     if (! dirty) {
-                        if (!statusIsClean) {
+                        if (!gitMetadata.statusIsClean) {
                             System.err.println("--analyse requires a clean git checkout.");
                             System.exit(-1);
                         }
