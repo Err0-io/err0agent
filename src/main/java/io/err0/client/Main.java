@@ -343,10 +343,13 @@ public class Main {
                     JsonObject appGitMetadata = new JsonObject();
                     JsonObject runGitMetadata = new JsonObject();
                     final GitMetadata gitMetadata = populateGitMetadata(reportDir, appGitMetadata, runGitMetadata);
+                    // Analyse doesn't care about detached head
+                    /*
                     if (gitMetadata.detachedHead) {
                         System.err.println("Detached HEAD in the git repository.");
                         System.exit(-1);
                     }
+                     */
                     if (! dirty) {
                         if (!gitMetadata.statusIsClean) {
                             System.err.println("--analyse requires a clean git checkout.");
