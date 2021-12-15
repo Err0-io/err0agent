@@ -174,17 +174,34 @@ public class Main {
                      */
                 }
             }
+            HashSet<String> dedupe = new HashSet<>();
             JsonArray gitBranches = new JsonArray();
             List<Ref> branchList = git.branchList().setListMode(ListBranchCommand.ListMode.ALL).call();
             for (Ref ref : branchList) {
                 final String fullBranchName = ref.getName();
                 if (fullBranchName.startsWith("refs/heads/")) {
                     final String branchName = fullBranchName.substring(11);
-                    final String branchObjectId = ObjectId.toString(ref.getObjectId());
-                    if (branchObjectId.equals(objectId)) {
-                        gitBranches.add(branchName);
+                    if (! "HEAD".equals(branchName) && dedupe.add(branchName)) {
+                        final String branchObjectId = ObjectId.toString(ref.getObjectId());
+                        if (branchObjectId.equals(objectId)) {
+                            gitBranches.add(branchName);
+                        }
+                        branches.addProperty(branchName, branchObjectId);
                     }
-                    branches.addProperty(branchName, branchObjectId);
+                }
+                else if (fullBranchName.startsWith("refs/remotes/")) {
+                    final String remoteNameBranchName = fullBranchName.substring(13);
+                    final int i = remoteNameBranchName.indexOf('/');
+                    if (i >= 0) {
+                        final String branchName = remoteNameBranchName.substring(i+1);
+                        if (! "HEAD".equals(branchName) && dedupe.add(branchName)) {
+                            final String branchObjectId = ObjectId.toString(ref.getObjectId());
+                            if (branchObjectId.equals(objectId)) {
+                                gitBranches.add(branchName);
+                            }
+                            branches.addProperty(branchName, branchObjectId);
+                        }
+                    }
                 }
             }
             runGitMetadata.add("git_tags", gitTags);
