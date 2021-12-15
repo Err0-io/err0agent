@@ -10,10 +10,16 @@ import io.err0.client.test.UnitTestApiProvider;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.api.Status;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.errors.IncorrectObjectTypeException;
 import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.revwalk.RevTag;
+import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.URIish;
@@ -37,6 +43,174 @@ import java.util.stream.Stream;
 public class Main {
 
     private static Pattern reGitdir = Pattern.compile("^gitdir: (.*?)$", Pattern.MULTILINE);
+
+    static class GitMetadata {
+        GitMetadata(final String gitHash, final boolean statusIsClean, final boolean detachedHead) {
+            this.gitHash = gitHash;
+            this.statusIsClean = statusIsClean;
+            this.detachedHead = detachedHead;
+        }
+        final String gitHash;
+        final boolean statusIsClean;
+        final boolean detachedHead;
+    }
+
+    private static GitMetadata populateGitMetadata(final String checkoutDir, final JsonObject appGitMetadata, final JsonObject runGitMetadata) throws IOException, GitAPIException {
+        JsonArray remotes = new JsonArray();
+        JsonObject branches = new JsonObject();
+        JsonObject tags = new JsonObject();
+        JsonObject tag_annotations = new JsonObject();
+        /*
+        JsonObject branch_tags = new JsonObject();
+        JsonObject tag_branches = new JsonObject();
+         */
+        appGitMetadata.add("remotes", remotes);
+        appGitMetadata.add("branches", branches);
+        appGitMetadata.add("tags", tags);
+        appGitMetadata.add("tag_annotations", tag_annotations);
+        /*
+        appGitMetadata.add("branch_tags", branch_tags);
+        appGitMetadata.add("tag_branches", tag_branches);
+         */
+
+        Path gitpath = Path.of(checkoutDir + "/.git");
+        if (Files.isRegularFile(gitpath)) {
+            final String contents = Files.readString(gitpath);
+            Matcher matcher = reGitdir.matcher(contents);
+            if (matcher.find()) {
+                gitpath = Path.of(checkoutDir + "/" + matcher.group(1));
+            }
+        }
+
+        // find git version etc.
+        Repository repo = new FileRepositoryBuilder()
+                .setGitDir(new File(gitpath.toAbsolutePath().toString()))
+                .build();
+
+        boolean detachedHead = true;
+        final String currentFullBranch = repo.getFullBranch();
+        if (null != currentFullBranch && currentFullBranch.startsWith("refs/heads/")) {
+            runGitMetadata.addProperty("current_branch", currentFullBranch.substring(11));
+            detachedHead = false;
+        }
+
+        ObjectId obj = repo.resolve("HEAD");
+        String gitHash = ObjectId.toString(obj);
+
+        // TODO: better solution
+        if (null != gitHash && "0000000000000000000000000000000000000000".equals(gitHash)) {
+            gitHash = null;
+        }
+
+        final String objectId = gitHash;
+
+        runGitMetadata.addProperty("git_hash", gitHash);
+
+        boolean statusIsClean = true;
+
+        Git git = Git.wrap(repo);
+        RevWalk walk = new RevWalk(repo);
+        if (null != gitHash) {
+            JsonArray gitTags = new JsonArray();
+            List<Ref> tagList = git.tagList().call();
+            for (Ref ref : tagList) {
+                final String fullTagName = ref.getName();
+                if (fullTagName.startsWith("refs/tags/")) {
+                    final String tagName = fullTagName.substring(10);
+                    ObjectId commitObjectId = ref.getObjectId();
+                    String tagObjectId = ObjectId.toString(commitObjectId);
+                    RevTag tag = null;
+                    try {
+                        tag = walk.parseTag(ref.getObjectId());
+                        commitObjectId = tag.getObject().getId();
+                        tagObjectId = ObjectId.toString(commitObjectId);
+                        // ref points to an annotated tag
+                    } catch(IncorrectObjectTypeException notAnAnnotatedTag) {
+                        // ref is a lightweight (aka unannotated) tag
+                        tag = null;
+                    }
+
+                    if (tagObjectId.equals(objectId)) {
+                        gitTags.add(tagName);
+                    }
+                    tags.addProperty(tagName, tagObjectId);
+                    if (null != tag) {
+                        JsonObject annotation = new JsonObject();
+                        annotation.addProperty("message", tag.getFullMessage());
+                        PersonIdent tagger = tag.getTaggerIdent();
+                        annotation.addProperty("name", tagger.getName());
+                        annotation.addProperty("email_address", tagger.getEmailAddress());
+                        annotation.addProperty("when", tagger.getWhen().getTime());
+                        annotation.addProperty("tz_offset", tagger.getTimeZoneOffset());
+                        tag_annotations.add(tagName, annotation);
+                    }
+
+                    /*
+                    DISABLED: too much information, also slow, also gets slower each iteration of the soak test.
+
+                    List<Ref> refs = git.branchList().setContains(tagObjectId).setListMode(ListBranchCommand.ListMode.ALL).call();
+                    refs.forEach(branchRef -> {
+                        final String fullBranchName = branchRef.getName();
+                        if (fullBranchName.startsWith("refs/heads/")) {
+                            final String branchName = fullBranchName.substring(11);
+                            JsonArray a = null;
+                            if (branch_tags.has(branchName)) {
+                                a = branch_tags.getAsJsonArray(branchName);
+                            } else {
+                                a = new JsonArray();
+                                branch_tags.add(branchName, a);
+                            }
+                            a.add(tagName);
+                            a = null;
+                            if (tag_branches.has(tagName)) {
+                                a = tag_branches.getAsJsonArray(tagName);
+                            } else {
+                                a = new JsonArray();
+                                tag_branches.add(tagName, a);
+                            }
+                            a.add(branchName);
+                        }
+                    });
+                     */
+                }
+            }
+            JsonArray gitBranches = new JsonArray();
+            List<Ref> branchList = git.branchList().call();
+            for (Ref ref : branchList) {
+                final String fullBranchName = ref.getName();
+                if (fullBranchName.startsWith("refs/heads/")) {
+                    final String branchName = fullBranchName.substring(11);
+                    final String branchObjectId = ObjectId.toString(ref.getObjectId());
+                    if (branchObjectId.equals(objectId)) {
+                        gitBranches.add(branchName);
+                    }
+                    branches.addProperty(branchName, branchObjectId);
+                }
+            }
+            runGitMetadata.add("git_tags", gitTags);
+            runGitMetadata.add("git_branches", gitBranches);
+
+            List<RemoteConfig> remoteList = git.remoteList().call();
+            for (RemoteConfig rc : remoteList) {
+                JsonObject remote = new JsonObject();
+                remote.addProperty("name", rc.getName());
+                JsonArray uris = new JsonArray();
+                for (URIish ish : rc.getURIs()) {
+                    uris.add(ish.toASCIIString());
+                }
+                remote.add("uris", uris);
+                remotes.add(remote);
+            }
+        }
+        Status status = git.status().call();
+        statusIsClean = status.isClean();
+
+        if (! statusIsClean && null != gitHash) {
+            runGitMetadata.addProperty("git_hash", gitHash + "-dirty");
+        }
+
+        return new GitMetadata(gitHash, statusIsClean, detachedHead);
+    }
 
     public static void main(String args[]) {
 
@@ -81,15 +255,15 @@ public class Main {
                     // We're ready!
 
                 } else if ("--checkout".equals(arg) || "--insert".equals(arg)) {
-                    if (null == realmPolicy) throw new Exception("Must specify realm policy using --realm before specifying checkout dir");
-                    if (null == applicationPolicy) throw new Exception("Must specify application policy using --app before specifying checkout dir");
+                    if (null == realmPolicy) throw new Exception("[AGENT-000001] Must specify realm policy using --realm before specifying checkout dir");
+                    if (null == applicationPolicy) throw new Exception("[AGENT-000002] Must specify application policy using --app before specifying checkout dir");
                     String checkoutDir = args[++i];
                     boolean importCodes = false;
                     if ("--import".equals(checkoutDir)) {
                         checkoutDir = args[++i];
                         importCodes = true;
                         if (! (apiProvider instanceof UnitTestApiProvider)) {
-                            throw new RuntimeException("Only compatible with the unit test api provider.");
+                            throw new RuntimeException("[AGENT-000003] Only compatible with the unit test api provider.");
                         }
                     }
 
@@ -101,85 +275,15 @@ public class Main {
                         apiProvider.importPreviousState(applicationPolicy, globalState);
                     }
 
-                    JsonObject runGitMetadata = new JsonObject();
                     JsonObject appGitMetadata = new JsonObject();
-
-                    JsonArray remotes = new JsonArray();
-                    JsonObject branches = new JsonObject();
-                    appGitMetadata.add("remotes", remotes);
-                    appGitMetadata.add("branches", branches);
-
-                    Path gitpath = Path.of(checkoutDir + "/.git");
-                    if (Files.isRegularFile(gitpath)) {
-                        final String contents = Files.readString(gitpath);
-                        Matcher matcher = reGitdir.matcher(contents);
-                        if (matcher.find()) {
-                            gitpath = Path.of(checkoutDir + "/" + matcher.group(1));
-                        }
+                    JsonObject runGitMetadata = new JsonObject();
+                    final GitMetadata gitMetadata = populateGitMetadata(checkoutDir, appGitMetadata, runGitMetadata);
+                    if (gitMetadata.detachedHead) {
+                        System.err.println("Detached HEAD in the git repository.");
+                        System.exit(-1);
                     }
 
-                    // find git version etc.
-                    Repository repo = new FileRepositoryBuilder()
-                            .setGitDir(new File(gitpath.toAbsolutePath().toString()))
-                            .build();
-
-                    ObjectId obj = repo.resolve("HEAD");
-                    String gitHash = ObjectId.toString(obj);
-
-                    // TODO: better solution
-                    if (null != gitHash && "0000000000000000000000000000000000000000".equals(gitHash)) {
-                        gitHash = null;
-                    }
-                    
-                    final String objectId = gitHash;
-
-                    runGitMetadata.addProperty("git_hash", gitHash);
-
-                    boolean statusIsClean = true;
-
-                    Git git = Git.wrap(repo);
-                    if (null != gitHash) {
-                        JsonArray gitTags = new JsonArray();
-                        List<Ref> tagList = git.tagList().call();
-                        for (Ref ref : tagList) {
-                            if (ObjectId.toString(ref.getObjectId()).equals(objectId)) {
-                                gitTags.add(ref.getName());
-                            }
-                        }
-                        JsonArray gitBranches = new JsonArray();
-                        List<Ref> branchList = git.branchList().call();
-                        for (Ref ref : branchList) {
-                            final String fullBranchName = ref.getName();
-                            if (fullBranchName.startsWith("refs/heads/")) {
-                                final String branchName = fullBranchName.substring(11);
-                                final String branchObjectId = ObjectId.toString(ref.getObjectId());
-                                if (branchObjectId.equals(objectId)) {
-                                    gitBranches.add(branchName);
-                                }
-                                branches.addProperty(branchName, branchObjectId);
-                            }
-                        }
-                        runGitMetadata.add("git_tags", gitTags);
-                        runGitMetadata.add("git_branches", gitBranches);
-
-                        List<RemoteConfig> remoteList = git.remoteList().call();
-                        for (RemoteConfig rc : remoteList) {
-                            JsonObject remote = new JsonObject();
-                            remote.addProperty("name", rc.getName());
-                            JsonArray uris = new JsonArray();
-                            for (URIish ish : rc.getURIs()) {
-                                uris.add(ish.toASCIIString());
-                            }
-                            remote.add("uris", uris);
-                            remotes.add(remote);
-                        }
-                    }
-                    Status status = git.status().call();
-                    statusIsClean = status.isClean();
-
-                    if (! statusIsClean && null != gitHash) {
-                        runGitMetadata.addProperty("git_hash", gitHash + "-dirty");
-                    }
+                    final String gitHash = gitMetadata.gitHash;
 
                     final UUID run_uuid = apiProvider.createRun(applicationPolicy, appGitMetadata, runGitMetadata, "insert");
 
@@ -213,11 +317,16 @@ public class Main {
                     }
 
                 } if ("--report".equals(arg) || "--analyse".equals(arg)) {
-                    if (null == realmPolicy) throw new Exception("Must specify realm policy using --realm before specifying report dir");
-                    if (null == applicationPolicy) throw new Exception("Must specify application policy using --app before specifying report dir");
+                    if (null == realmPolicy) throw new Exception("[AGENT-000004] Must specify realm policy using --realm before specifying report dir");
+                    if (null == applicationPolicy) throw new Exception("[AGENT-000005] Must specify application policy using --app before specifying report dir");
                     String reportDir = args[++i];
+                    String current_branch = null;
                     boolean check = false;
                     boolean dirty = false;
+                    if ("--branch".equals(reportDir)) {
+                        current_branch = args[++i];
+                        reportDir = args[++i];
+                    }
                     if ("--dirty".equals(reportDir)) {
                         reportDir = args[++i];
                         dirty = true;
@@ -226,7 +335,7 @@ public class Main {
                         reportDir = args[++i];
                         check = true;
                         if ((apiProvider instanceof UnitTestApiProvider)) {
-                            throw new RuntimeException("Not compatible with the unit test api provider.");
+                            throw new RuntimeException("[AGENT-000006] Not compatible with the unit test api provider.");
                         }
                     }
 
@@ -236,88 +345,21 @@ public class Main {
 
                     apiProvider.importPreviousState(applicationPolicy, globalState);
 
-                    JsonObject runGitMetadata = new JsonObject();
                     JsonObject appGitMetadata = new JsonObject();
+                    JsonObject runGitMetadata = new JsonObject();
+                    final GitMetadata gitMetadata = populateGitMetadata(reportDir, appGitMetadata, runGitMetadata);
 
-                    JsonArray remotes = new JsonArray();
-                    JsonObject branches = new JsonObject();
-                    appGitMetadata.add("remotes", remotes);
-                    appGitMetadata.add("branches", branches);
-
-                    Path gitpath = Path.of(reportDir + "/.git");
-                    if (Files.isRegularFile(gitpath)) {
-                        final String contents = Files.readString(gitpath);
-                        Matcher matcher = reGitdir.matcher(contents);
-                        if (matcher.find()) {
-                            gitpath = Path.of(reportDir + "/" + matcher.group(1));
-                        }
+                    if (null != current_branch && !"".equals(current_branch)) {
+                        // override current_branch setting
+                        runGitMetadata.addProperty("current_branch", current_branch);
                     }
 
-                    // find git version etc.
-                    Repository repo = new FileRepositoryBuilder()
-                            .setGitDir(new File(gitpath.toAbsolutePath().toString()))
-                            .build();
-
-                    ObjectId obj = repo.resolve("HEAD");
-                    String gitHash = ObjectId.toString(obj);
-
-                    // TODO: better solution
-                    if (null != gitHash && "0000000000000000000000000000000000000000".equals(gitHash)) {
-                        gitHash = null;
+                    if (null == current_branch && gitMetadata.detachedHead) {
+                        System.err.println("Detached HEAD in the git repository; current branch must be specified by --branch.");
+                        System.exit(-1);
                     }
-
-                    final String objectId = gitHash;
-
-                    runGitMetadata.addProperty("git_hash", gitHash);
-
-                    boolean statusIsClean = true;
-
-                    Git git = Git.wrap(repo);
-                    if (null != gitHash) {
-                        JsonArray gitTags = new JsonArray();
-                        List<Ref> tagList = git.tagList().call();
-                        for (Ref ref : tagList) {
-                            if (ObjectId.toString(ref.getObjectId()).equals(objectId)) {
-                                gitTags.add(ref.getName());
-                            }
-                        }
-                        JsonArray gitBranches = new JsonArray();
-                        List<Ref> branchList = git.branchList().call();
-                        for (Ref ref : branchList) {
-                            final String fullBranchName = ref.getName();
-                            if (fullBranchName.startsWith("refs/heads/")) {
-                                final String branchName = fullBranchName.substring(11);
-                                final String branchObjectId = ObjectId.toString(ref.getObjectId());
-                                if (branchObjectId.equals(objectId)) {
-                                    gitBranches.add(branchName);
-                                }
-                                branches.addProperty(branchName, branchObjectId);
-                            }
-                        }
-                        runGitMetadata.add("git_tags", gitTags);
-                        runGitMetadata.add("git_branches", gitBranches);
-
-                        List<RemoteConfig> remoteList = git.remoteList().call();
-                        for (RemoteConfig rc : remoteList) {
-                            JsonObject remote = new JsonObject();
-                            remote.addProperty("name", rc.getName());
-                            JsonArray uris = new JsonArray();
-                            for (URIish ish : rc.getURIs()) {
-                                uris.add(ish.toASCIIString());
-                            }
-                            remote.add("uris", uris);
-                            remotes.add(remote);
-                        }
-                    }
-                    Status status = git.status().call();
-                    statusIsClean = status.isClean();
-
-                    if (! statusIsClean && null != gitHash) {
-                        runGitMetadata.addProperty("git_hash", gitHash + "-dirty");
-                    }
-
                     if (! dirty) {
-                        if (!statusIsClean) {
+                        if (!gitMetadata.statusIsClean) {
                             System.err.println("--analyse requires a clean git checkout.");
                             System.exit(-1);
                         }
@@ -484,7 +526,7 @@ public class Main {
                             final FileCoding fileCoding = new FileCoding(p);
                             globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, CSharpSourceCodeParse.lex(fileCoding.content), fileCoding.charset);
                             System.out.println("Parsed: " + newFile);
-                        } else if (newFileLower.endsWith(".js")) {
+                        } else if (newFileLower.endsWith(".js") && !newFileLower.endsWith(".min.js")) {
                             final FileCoding fileCoding = new FileCoding(p);
                             globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, JavascriptSourceCodeParse.lex(fileCoding.content), fileCoding.charset);
                             System.out.println("Parsed: " + newFile);
@@ -863,7 +905,7 @@ public class Main {
                                                         stillAValidErrorAfterActions = false;
                                                         break;
                                                     default:
-                                                        throw new RuntimeException("No action " + action.action);
+                                                        throw new RuntimeException("[AGENT-000007] No action " + action.action);
                                                 }
                                             }
 
@@ -900,7 +942,7 @@ public class Main {
                                                             metaData.addProperty("priority", operation.operationValue);
                                                             break;
                                                         default:
-                                                            throw new RuntimeException("Unknown operation " + operation.operation);
+                                                            throw new RuntimeException("[AGENT-000008] Unknown operation " + operation.operation);
                                                     }
                                                 }
                                             }
