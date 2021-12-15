@@ -7,7 +7,7 @@ stages:
   - build
   - package
 
-err0-develop:
+err0:
   image: err0io/agent:develop
   stage: err0
   allow_failure: true
@@ -17,16 +17,6 @@ err0-develop:
   only:
     refs:
       - develop
-
-err0-master:
-  image: err0io/agent:develop
-  stage: err0
-  allow_failure: false
-  tags:
-    - docker
-  script: err0.sh --token tokens/err0-err0-io-err0agent-dc4ccb4c-5da5-11ec-a0b8-4622287bbd85.json --analyse .
-  only:
-    refs:
       - master
 
 build:
