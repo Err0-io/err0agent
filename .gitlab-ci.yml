@@ -15,6 +15,7 @@ err0:
     - docker
   before_script:
     - git fetch --tags
+    - git fetch --all
   script: err0.sh --token tokens/err0-err0-io-err0agent-dc4ccb4c-5da5-11ec-a0b8-4622287bbd85.json --analyse --branch $CI_COMMIT_BRANCH --check .
   only:
     refs:
