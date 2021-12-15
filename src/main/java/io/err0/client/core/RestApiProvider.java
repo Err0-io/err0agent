@@ -200,7 +200,7 @@ public class RestApiProvider implements ApiProvider {
 
     @Override
     public void setNextErrorNumber(ApplicationPolicy policy, long nextErrorNumber) {
-        throw new RuntimeException("Not implemented.");
+        throw new RuntimeException("[AGENT-000011] Not implemented.");
     }
 
     @Override

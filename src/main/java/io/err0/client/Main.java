@@ -255,15 +255,15 @@ public class Main {
                     // We're ready!
 
                 } else if ("--checkout".equals(arg) || "--insert".equals(arg)) {
-                    if (null == realmPolicy) throw new Exception("Must specify realm policy using --realm before specifying checkout dir");
-                    if (null == applicationPolicy) throw new Exception("Must specify application policy using --app before specifying checkout dir");
+                    if (null == realmPolicy) throw new Exception("[AGENT-000001] Must specify realm policy using --realm before specifying checkout dir");
+                    if (null == applicationPolicy) throw new Exception("[AGENT-000002] Must specify application policy using --app before specifying checkout dir");
                     String checkoutDir = args[++i];
                     boolean importCodes = false;
                     if ("--import".equals(checkoutDir)) {
                         checkoutDir = args[++i];
                         importCodes = true;
                         if (! (apiProvider instanceof UnitTestApiProvider)) {
-                            throw new RuntimeException("Only compatible with the unit test api provider.");
+                            throw new RuntimeException("[AGENT-000003] Only compatible with the unit test api provider.");
                         }
                     }
 
@@ -317,8 +317,8 @@ public class Main {
                     }
 
                 } if ("--report".equals(arg) || "--analyse".equals(arg)) {
-                    if (null == realmPolicy) throw new Exception("Must specify realm policy using --realm before specifying report dir");
-                    if (null == applicationPolicy) throw new Exception("Must specify application policy using --app before specifying report dir");
+                    if (null == realmPolicy) throw new Exception("[AGENT-000004] Must specify realm policy using --realm before specifying report dir");
+                    if (null == applicationPolicy) throw new Exception("[AGENT-000005] Must specify application policy using --app before specifying report dir");
                     String reportDir = args[++i];
                     boolean check = false;
                     boolean dirty = false;
@@ -330,7 +330,7 @@ public class Main {
                         reportDir = args[++i];
                         check = true;
                         if ((apiProvider instanceof UnitTestApiProvider)) {
-                            throw new RuntimeException("Not compatible with the unit test api provider.");
+                            throw new RuntimeException("[AGENT-000006] Not compatible with the unit test api provider.");
                         }
                     }
 
@@ -894,7 +894,7 @@ public class Main {
                                                         stillAValidErrorAfterActions = false;
                                                         break;
                                                     default:
-                                                        throw new RuntimeException("No action " + action.action);
+                                                        throw new RuntimeException("[AGENT-000007] No action " + action.action);
                                                 }
                                             }
 
@@ -931,7 +931,7 @@ public class Main {
                                                             metaData.addProperty("priority", operation.operationValue);
                                                             break;
                                                         default:
-                                                            throw new RuntimeException("Unknown operation " + operation.operation);
+                                                            throw new RuntimeException("[AGENT-000008] Unknown operation " + operation.operation);
                                                     }
                                                 }
                                             }
