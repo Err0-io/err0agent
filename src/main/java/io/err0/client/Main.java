@@ -175,7 +175,7 @@ public class Main {
                 }
             }
             JsonArray gitBranches = new JsonArray();
-            List<Ref> branchList = git.branchList().call();
+            List<Ref> branchList = git.branchList().setListMode(ListBranchCommand.ListMode.ALL).call();
             for (Ref ref : branchList) {
                 final String fullBranchName = ref.getName();
                 if (fullBranchName.startsWith("refs/heads/")) {
