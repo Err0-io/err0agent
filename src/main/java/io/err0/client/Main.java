@@ -320,8 +320,13 @@ public class Main {
                     if (null == realmPolicy) throw new Exception("[AGENT-000004] Must specify realm policy using --realm before specifying report dir");
                     if (null == applicationPolicy) throw new Exception("[AGENT-000005] Must specify application policy using --app before specifying report dir");
                     String reportDir = args[++i];
+                    String current_branch = null;
                     boolean check = false;
                     boolean dirty = false;
+                    if ("--branch".equals(reportDir)) {
+                        current_branch = args[++i];
+                        reportDir = args[++i];
+                    }
                     if ("--dirty".equals(reportDir)) {
                         reportDir = args[++i];
                         dirty = true;
@@ -343,13 +348,16 @@ public class Main {
                     JsonObject appGitMetadata = new JsonObject();
                     JsonObject runGitMetadata = new JsonObject();
                     final GitMetadata gitMetadata = populateGitMetadata(reportDir, appGitMetadata, runGitMetadata);
-                    // Analyse doesn't care about detached head
-                    /*
-                    if (gitMetadata.detachedHead) {
-                        System.err.println("Detached HEAD in the git repository.");
+
+                    if (null != current_branch && !"".equals(current_branch)) {
+                        // override current_branch setting
+                        runGitMetadata.addProperty("current_branch", current_branch);
+                    }
+
+                    if (null == current_branch && gitMetadata.detachedHead) {
+                        System.err.println("Detached HEAD in the git repository; current branch must be specified by --branch.");
                         System.exit(-1);
                     }
-                     */
                     if (! dirty) {
                         if (!gitMetadata.statusIsClean) {
                             System.err.println("--analyse requires a clean git checkout.");
