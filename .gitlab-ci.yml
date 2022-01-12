@@ -32,8 +32,8 @@ build:
   artifacts:
     paths:
       - build/libs/err0agent-*-fat.jar
-  dependencies:
-    - err0
+#  dependencies:
+#    - err0
   only:
     refs:
       - develop
