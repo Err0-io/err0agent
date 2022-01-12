@@ -4,7 +4,7 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent.*
 plugins {
   java
   application
-  id("com.github.johnrengelman.shadow") version "7.0.0"
+  id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
 group = "io.err0"
@@ -29,6 +29,9 @@ application {
 }
 
 dependencies {
+  // https://mvnrepository.com/artifact/org.apache.ant/ant-launcher
+  implementation("org.apache.ant:ant-launcher:1.10.11") //needed by shadow
+
   //implementation(platform("io.vertx:vertx-stack-depchain:$vertxVersion"))
   //implementation("io.vertx:vertx-web-client")
   //testImplementation("io.vertx:vertx-junit5")
