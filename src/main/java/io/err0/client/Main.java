@@ -32,7 +32,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -235,7 +234,7 @@ public class Main {
         ResultDriver driver = new FileResultDriver();
 
         RealmPolicy realmPolicy = null;
-        ApplicationPolicy applicationPolicy = null;
+        ProjectPolicy projectPolicy = null;
 
         try {
 
@@ -248,32 +247,32 @@ public class Main {
                         apiProvider.close();
                         apiProvider = null;
                     }
-                    applicationPolicy = null;
+                    projectPolicy = null;
                     realmPolicy = null;
 
                     apiProvider = new RestApiProvider(args[++i]);
                     RestApiProvider restApiProvider = (RestApiProvider) apiProvider;
 
                     AtomicReference<RealmPolicy> arRealmPolicy = new AtomicReference<>();
-                    AtomicReference<ApplicationPolicy> arApplicationPolicy = new AtomicReference<>();
+                    AtomicReference<ProjectPolicy> arApplicationPolicy = new AtomicReference<>();
 
                     // Download the policies...
                     restApiProvider.getPolicy(responseJson -> {
                         if (responseJson.get("success").getAsBoolean()) {
                             arRealmPolicy.set(new RealmPolicy(responseJson.get("realm").getAsJsonObject()));
-                            arApplicationPolicy.set(new ApplicationPolicy(arRealmPolicy.get(), responseJson.get("app").getAsJsonObject()));
+                            arApplicationPolicy.set(new ProjectPolicy(arRealmPolicy.get(), responseJson.get("app").getAsJsonObject()));
                         } else {
                             throw new RuntimeException(responseJson.toString());
                         }
                     });
 
                     realmPolicy = arRealmPolicy.get();
-                    applicationPolicy = arApplicationPolicy.get();
+                    projectPolicy = arApplicationPolicy.get();
                     // We're ready!
 
                 } else if ("--checkout".equals(arg) || "--insert".equals(arg)) {
                     if (null == realmPolicy) throw new Exception("[AGENT-000001] Must specify realm policy using --realm before specifying checkout dir");
-                    if (null == applicationPolicy) throw new Exception("[AGENT-000002] Must specify application policy using --app before specifying checkout dir");
+                    if (null == projectPolicy) throw new Exception("[AGENT-000002] Must specify application policy using --app before specifying checkout dir");
                     String checkoutDir = args[++i];
                     boolean importCodes = false;
                     if ("--import".equals(checkoutDir)) {
@@ -286,10 +285,10 @@ public class Main {
 
                     final GlobalState globalState = new GlobalState();
 
-                    apiProvider.ensurePolicyIsSetUp(applicationPolicy);
+                    apiProvider.ensurePolicyIsSetUp(projectPolicy);
 
                     if (! importCodes) {
-                        apiProvider.importPreviousState(applicationPolicy, globalState);
+                        apiProvider.importPreviousState(projectPolicy, globalState);
                     }
 
                     JsonObject appGitMetadata = new JsonObject();
@@ -302,21 +301,21 @@ public class Main {
 
                     final String gitHash = gitMetadata.gitHash;
 
-                    final UUID run_uuid = apiProvider.createRun(applicationPolicy, appGitMetadata, runGitMetadata, "insert");
+                    final UUID run_uuid = apiProvider.createRun(projectPolicy, appGitMetadata, runGitMetadata, "insert");
 
                     final StatisticsGatherer statisticsGatherer = new StatisticsGatherer();
                     boolean didChangeAFile = false;
 
                     try {
 
-                        scan(applicationPolicy, globalState, checkoutDir, apiProvider);
+                        scan(projectPolicy, globalState, checkoutDir, apiProvider);
 
                         if (importCodes) {
-                            _import(apiProvider, globalState, applicationPolicy);
+                            _import(apiProvider, globalState, projectPolicy);
                         }
 
 
-                        didChangeAFile = runInsert(apiProvider, globalState, applicationPolicy, driver, run_uuid, statisticsGatherer);
+                        didChangeAFile = runInsert(apiProvider, globalState, projectPolicy, driver, run_uuid, statisticsGatherer);
                     }
                     catch (Throwable t) {
                         statisticsGatherer.throwable = t;
@@ -326,7 +325,7 @@ public class Main {
                         runGitMetadata.addProperty("git_hash", gitHash + "-dirty");
                     }
 
-                    apiProvider.updateRun(applicationPolicy, run_uuid, runGitMetadata, statisticsGatherer.toRunMetadata());
+                    apiProvider.updateRun(projectPolicy, run_uuid, runGitMetadata, statisticsGatherer.toRunMetadata());
 
                     if (null != statisticsGatherer.throwable) {
                         System.err.println(statisticsGatherer.throwable.getMessage());
@@ -335,7 +334,7 @@ public class Main {
 
                 } if ("--report".equals(arg) || "--analyse".equals(arg)) {
                     if (null == realmPolicy) throw new Exception("[AGENT-000004] Must specify realm policy using --realm before specifying report dir");
-                    if (null == applicationPolicy) throw new Exception("[AGENT-000005] Must specify application policy using --app before specifying report dir");
+                    if (null == projectPolicy) throw new Exception("[AGENT-000005] Must specify application policy using --app before specifying report dir");
                     String reportDir = args[++i];
                     String current_branch = null;
                     boolean check = false;
@@ -358,9 +357,9 @@ public class Main {
 
                     final GlobalState globalState = new GlobalState();
 
-                    apiProvider.ensurePolicyIsSetUp(applicationPolicy);
+                    apiProvider.ensurePolicyIsSetUp(projectPolicy);
 
-                    apiProvider.importPreviousState(applicationPolicy, globalState);
+                    apiProvider.importPreviousState(projectPolicy, globalState);
 
                     JsonObject appGitMetadata = new JsonObject();
                     JsonObject runGitMetadata = new JsonObject();
@@ -381,23 +380,23 @@ public class Main {
                             System.exit(-1);
                         }
                     }
-                    final UUID run_uuid = apiProvider.createRun(applicationPolicy, appGitMetadata, runGitMetadata, "analyse");
+                    final UUID run_uuid = apiProvider.createRun(projectPolicy, appGitMetadata, runGitMetadata, "analyse");
 
                     final StatisticsGatherer statisticsGatherer = new StatisticsGatherer();
                     boolean wouldChangeAFile = true;
                     try {
-                        scan(applicationPolicy, globalState, reportDir, apiProvider);
+                        scan(projectPolicy, globalState, reportDir, apiProvider);
 
-                        wouldChangeAFile = runAnalyse(apiProvider, globalState, applicationPolicy, driver, run_uuid, statisticsGatherer);
+                        wouldChangeAFile = runAnalyse(apiProvider, globalState, projectPolicy, driver, run_uuid, statisticsGatherer);
                     }
                     catch (Throwable t) {
                         statisticsGatherer.throwable = t;
                     }
 
-                    apiProvider.updateRun(applicationPolicy, run_uuid, runGitMetadata, statisticsGatherer.toRunMetadata());
+                    apiProvider.updateRun(projectPolicy, run_uuid, runGitMetadata, statisticsGatherer.toRunMetadata());
 
                     if (! wouldChangeAFile) {
-                        apiProvider.finaliseRun(applicationPolicy, run_uuid);
+                        apiProvider.finaliseRun(projectPolicy, run_uuid);
                     }
 
                     if (wouldChangeAFile) {
@@ -436,7 +435,7 @@ public class Main {
         }
     }
 
-    public static void _import(final ApiProvider apiProvider, final GlobalState globalState, final ApplicationPolicy policy) {
+    public static void _import(final ApiProvider apiProvider, final GlobalState globalState, final ProjectPolicy policy) {
         final String fileNamesInOrder[] = new String[globalState.files.size()];
         globalState.files.keySet().toArray(fileNamesInOrder);
         Arrays.sort(fileNamesInOrder);
@@ -482,9 +481,9 @@ public class Main {
         }
     }
 
-    public static void scan(final ApplicationPolicy applicationPolicy, final GlobalState globalState, String path, ApiProvider apiProvider) {
+    public static void scan(final ProjectPolicy projectPolicy, final GlobalState globalState, String path, ApiProvider apiProvider) {
 
-        apiProvider.cacheAllValidErrorNumbers(applicationPolicy);
+        apiProvider.cacheAllValidErrorNumbers(projectPolicy);
 
         path = Paths.get(path).toAbsolutePath().toString();
 
@@ -497,7 +496,7 @@ public class Main {
         final int lFinalPath = finalPath.length();
 
         ArrayList<String> excludePaths = new ArrayList<>();
-        applicationPolicy.excludeDirs.forEach(dir -> {
+        projectPolicy.excludeDirs.forEach(dir -> {
             if (dir.endsWith("/")) {
                 excludePaths.add(finalPath + dir);
             } else {
@@ -505,9 +504,9 @@ public class Main {
             }
         });
         int n_exclude_paths = excludePaths.size();
-        int n_exclude_patterns = applicationPolicy.excludeFilePatterns.size();
+        int n_exclude_patterns = projectPolicy.excludeFilePatterns.size();
 
-        applicationPolicy.includeDirs.forEach(dir -> {
+        projectPolicy.includeDirs.forEach(dir -> {
             String startPoint = null;
             if (".".equals(dir)) {
                 startPoint = finalPath;
@@ -524,7 +523,7 @@ public class Main {
                         if (newFile.startsWith(excludePaths.get(i))) return;
                     }
                     for (int i = 0, l = n_exclude_patterns; i < l; ++i) {
-                        if (applicationPolicy.excludeFilePatterns.get(i).matcher(newFile).find()) return;
+                        if (projectPolicy.excludeFilePatterns.get(i).matcher(newFile).find()) return;
                     }
                     if (! Files.isDirectory(p)) {
                         if (!newFile.startsWith(finalPath)) {
@@ -600,7 +599,7 @@ public class Main {
     }
 
 
-    public static boolean runInsert(final ApiProvider apiProvider, final GlobalState globalState, final ApplicationPolicy policy, final ResultDriver driver, final UUID run_uuid, final StatisticsGatherer statisticsGatherer) {
+    public static boolean runInsert(final ApiProvider apiProvider, final GlobalState globalState, final ProjectPolicy policy, final ResultDriver driver, final UUID run_uuid, final StatisticsGatherer statisticsGatherer) {
         final AnalyseLogic logic = new AnalyseLogic() {
 
             boolean didChangeAFile = false;
@@ -644,7 +643,7 @@ public class Main {
         return analyseWholeProject(apiProvider, globalState, policy, driver, run_uuid, logic, statisticsGatherer);
     }
 
-    public static boolean runAnalyse(final ApiProvider apiProvider, final GlobalState globalState, final ApplicationPolicy policy, final ResultDriver driver, final UUID run_uuid, final StatisticsGatherer statisticsGatherer) {
+    public static boolean runAnalyse(final ApiProvider apiProvider, final GlobalState globalState, final ProjectPolicy policy, final ResultDriver driver, final UUID run_uuid, final StatisticsGatherer statisticsGatherer) {
         final AnalyseLogic logic = new AnalyseLogic() {
 
             boolean wouldChangeAFile = false;
@@ -699,7 +698,7 @@ public class Main {
 
     private static Pattern reWhitespace = Pattern.compile("^\\s*$");
 
-    private static boolean analyseWholeProject(final ApiProvider apiProvider, final GlobalState globalState, final ApplicationPolicy policy, final ResultDriver driver, final UUID run_uuid, final AnalyseLogic logic, final StatisticsGatherer statisticsGatherer) {
+    private static boolean analyseWholeProject(final ApiProvider apiProvider, final GlobalState globalState, final ProjectPolicy policy, final ResultDriver driver, final UUID run_uuid, final AnalyseLogic logic, final StatisticsGatherer statisticsGatherer) {
         final String fileNamesInOrder[] = new String[globalState.files.size()];
         globalState.files.keySet().toArray(fileNamesInOrder);
         Arrays.sort(fileNamesInOrder);

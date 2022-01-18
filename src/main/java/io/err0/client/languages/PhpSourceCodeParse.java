@@ -187,7 +187,7 @@ public class PhpSourceCodeParse extends SourceCodeParse {
     }
 
     @Override
-    public void classifyForErrorCode(ApiProvider apiProvider, GlobalState globalState, ApplicationPolicy policy, StateItem stateItem, Token token) {
+    public void classifyForErrorCode(ApiProvider apiProvider, GlobalState globalState, ProjectPolicy policy, StateItem stateItem, Token token) {
         if (token.classification == Token.Classification.NOT_CLASSIFIED_YET) {
             switch (token.type) {
                 case APOS_LITERAL:

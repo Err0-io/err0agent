@@ -7,7 +7,6 @@ import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
-import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 
 import java.io.IOException;
@@ -48,7 +47,7 @@ public class RestApiProvider implements ApiProvider {
     }
 
     @Override
-    public void ensurePolicyIsSetUp(ApplicationPolicy policy) {
+    public void ensurePolicyIsSetUp(ProjectPolicy policy) {
         try {
             HttpPost request = new HttpPost("https://" + tokenJson.get("host").getAsString() + "/~/client/ensure-policy");
             request.addHeader("Authorization", "token " + tokenJson.get("token_value").getAsString());
@@ -86,7 +85,7 @@ public class RestApiProvider implements ApiProvider {
     HashSet<Long> validErrorNumbers = new HashSet<>();
 
     @Override
-    public void cacheAllValidErrorNumbers(ApplicationPolicy policy) {
+    public void cacheAllValidErrorNumbers(ProjectPolicy policy) {
         validErrorNumbers.clear();
         try {
             HttpGet request = new HttpGet("https://" + tokenJson.get("host").getAsString() + "/~/client/get-valid-error-numbers");
@@ -109,20 +108,20 @@ public class RestApiProvider implements ApiProvider {
     }
 
     @Override
-    public boolean validErrorNumber(ApplicationPolicy policy, long errorOrdinal) {
+    public boolean validErrorNumber(ProjectPolicy policy, long errorOrdinal) {
         return validErrorNumbers.contains(errorOrdinal);
     }
 
     private LinkedList<Long> cache = new LinkedList<>();
 
-    public long nextErrorNumber(ApplicationPolicy policy) {
+    public long nextErrorNumber(ProjectPolicy policy) {
         long l = cache.getFirst();
         cache.removeFirst();
         return l;
     }
 
     @Override
-    public void cacheErrorNumberBatch(ApplicationPolicy policy, long number) {
+    public void cacheErrorNumberBatch(ProjectPolicy policy, long number) {
         cache.clear();
 
         try {
@@ -159,7 +158,7 @@ public class RestApiProvider implements ApiProvider {
     }
 
     @Override
-    public void bulkInsertMetaData(ApplicationPolicy policy, UUID run_uuid, String errorPrefix, ArrayList<ForInsert> forBulkInsert) {
+    public void bulkInsertMetaData(ProjectPolicy policy, UUID run_uuid, String errorPrefix, ArrayList<ForInsert> forBulkInsert) {
         try {
             HttpPost request = new HttpPost("https://" + tokenJson.get("host").getAsString() + "/~/client/bulk-insert-meta-data");
             request.addHeader("Authorization", "token " + tokenJson.get("token_value").getAsString());
@@ -199,12 +198,12 @@ public class RestApiProvider implements ApiProvider {
     }
 
     @Override
-    public void setNextErrorNumber(ApplicationPolicy policy, long nextErrorNumber) {
+    public void setNextErrorNumber(ProjectPolicy policy, long nextErrorNumber) {
         throw new RuntimeException("[AGENT-000011] Not implemented.");
     }
 
     @Override
-    public UUID createRun(ApplicationPolicy policy, JsonObject appGitMetadata, JsonObject runGitMetadata, String runState) {
+    public UUID createRun(ProjectPolicy policy, JsonObject appGitMetadata, JsonObject runGitMetadata, String runState) {
 
         try {
             HttpPost request = new HttpPost("https://" + tokenJson.get("host").getAsString() + "/~/client/create-run");
@@ -237,7 +236,7 @@ public class RestApiProvider implements ApiProvider {
     }
 
     @Override
-    public void updateRun(ApplicationPolicy policy, UUID run_uuid, JsonObject gitMetadata, JsonObject runMetadata) {
+    public void updateRun(ProjectPolicy policy, UUID run_uuid, JsonObject gitMetadata, JsonObject runMetadata) {
         try {
             HttpPost request = new HttpPost("https://" + tokenJson.get("host").getAsString() + "/~/client/update-run");
             request.addHeader("Authorization", "token " + tokenJson.get("token_value").getAsString());
@@ -269,7 +268,7 @@ public class RestApiProvider implements ApiProvider {
     }
 
     @Override
-    public void importPreviousState(ApplicationPolicy policy, GlobalState globalState) {
+    public void importPreviousState(ProjectPolicy policy, GlobalState globalState) {
         globalState.previousRunSignatures.clear();
 
         try {
@@ -301,7 +300,7 @@ public class RestApiProvider implements ApiProvider {
     }
 
     @Override
-    public void finaliseRun(ApplicationPolicy policy, UUID run_uuid) {
+    public void finaliseRun(ProjectPolicy policy, UUID run_uuid) {
         try {
             HttpPost request = new HttpPost("https://" + tokenJson.get("host").getAsString() + "/~/client/finalise-run");
             request.addHeader("Authorization", "token " + tokenJson.get("token_value").getAsString());

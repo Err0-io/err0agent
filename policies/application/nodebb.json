@@ -1,7 +1,7 @@
 {
   "name": "Node BB",
-  "app_code": "NBB",
-  "app_uuid": "46bc83f6-f45a-11eb-9a03-0242ac130003",
+  "prj_code": "NBB",
+  "prj_uuid": "46bc83f6-f45a-11eb-9a03-0242ac130003",
   "policy": {
     "error_prefix": "NBB",
     "error_template": "%error",

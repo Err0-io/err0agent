@@ -1,7 +1,7 @@
 {
   "name": "Magneto 2",
-  "app_code": "MAG",
-  "app_uuid": "2f43ea66-f45a-11eb-9a03-0242ac130003",
+  "prj_code": "MAG",
+  "prj_uuid": "2f43ea66-f45a-11eb-9a03-0242ac130003",
   "policy": {
     "error_prefix": "MAG",
     "error_template": "%error",

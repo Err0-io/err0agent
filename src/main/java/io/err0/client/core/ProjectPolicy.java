@@ -13,17 +13,17 @@ import java.util.ArrayList;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-public class ApplicationPolicy {
+public class ProjectPolicy {
     /**
      * Load an application policy from a local file.
      */
-    public ApplicationPolicy(final RealmPolicy realmPolicy, final String applicationJsonFile) throws IOException {
+    public ProjectPolicy(final RealmPolicy realmPolicy, final String applicationJsonFile) throws IOException {
         this.realmPolicy = realmPolicy;
 
         applicationJson = JsonParser.parseString(Files.readString(Path.of(applicationJsonFile))).getAsJsonObject();
         this.name = GsonHelper.getAsString(applicationJson, "name", null);
-        this.app_code = GsonHelper.getAsString(applicationJson, "app_code", null);
-        this.app_uuid = UUID.fromString(GsonHelper.getAsString(applicationJson, "app_uuid", null));
+        this.prj_code = GsonHelper.getAsString(applicationJson, "prj_code", null);
+        this.prj_uuid = UUID.fromString(GsonHelper.getAsString(applicationJson, "prj_uuid", null));
         final JsonObject policyJson = applicationJson.getAsJsonObject("policy");
         this.error_prefix = GsonHelper.getAsString(policyJson, "error_prefix", null);
         this.error_template = GsonHelper.getAsString(policyJson, "error_template", null);
@@ -62,15 +62,15 @@ public class ApplicationPolicy {
      * FIXME - formats.
      * @param realmJson
      */
-    public ApplicationPolicy(final RealmPolicy realmPolicy, final JsonObject applicationJson) {
+    public ProjectPolicy(final RealmPolicy realmPolicy, final JsonObject applicationJson) {
         this.realmPolicy = realmPolicy;
 
         this.applicationJson = applicationJson;
         JsonObject applicationData = applicationJson.get("data").getAsJsonObject();
 
         this.name = GsonHelper.getAsString(applicationData, "name", null);
-        this.app_code = GsonHelper.getAsString(applicationData, "app_code", null);
-        this.app_uuid = UUID.fromString(GsonHelper.getAsString(applicationJson, "pk", null));
+        this.prj_code = GsonHelper.getAsString(applicationData, "prj_code", null);
+        this.prj_uuid = UUID.fromString(GsonHelper.getAsString(applicationJson, "pk", null));
         final JsonObject policyJson = applicationData.getAsJsonObject("policy");
         this.error_prefix = GsonHelper.getAsString(policyJson, "error_prefix", null);
         this.error_template = GsonHelper.getAsString(policyJson, "error_template", null);
@@ -170,8 +170,8 @@ public class ApplicationPolicy {
     public final ArrayList<ExceptionRule> exceptionRules = new ArrayList<>();
 
     final String name;
-    final String app_code;
-    final UUID app_uuid;
+    final String prj_code;
+    final UUID prj_uuid;
     final String error_prefix;
     final String error_template;
     final int error_pad_to_n;
@@ -185,13 +185,13 @@ public class ApplicationPolicy {
     public final ArrayList<Pattern> excludeFilePatterns = new ArrayList<>();
 
     public UUID getRealmUuid() { return realmPolicy.realm_uuid; }
-    public UUID getAppUuid() { return app_uuid; }
+    public UUID getAppUuid() { return prj_uuid; }
 
     String error_sequence_generator = null;
     public String getErrorSequenceName() {
         // TODO: do error numbers belong to the realm or to the app, here they belong to the app.
         if (null == error_sequence_generator) {
-            error_sequence_generator = "s_app_errno_" + app_uuid.toString().replaceAll("-", "_");
+            error_sequence_generator = "s_app_errno_" + prj_uuid.toString().replaceAll("-", "_");
         }
         return error_sequence_generator;
     }

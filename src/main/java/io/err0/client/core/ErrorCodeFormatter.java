@@ -22,8 +22,8 @@ public class ErrorCodeFormatter {
     }
     final Pattern re = Pattern.compile("%([\\S]+)");
     ArrayList<Pair> list = new ArrayList<>();
-    private final ApplicationPolicy policy;
-    public ErrorCodeFormatter(final ApplicationPolicy policy, final String error_code_template) {
+    private final ProjectPolicy policy;
+    public ErrorCodeFormatter(final ProjectPolicy policy, final String error_code_template) {
         this.policy = policy;
         final Matcher m = re.matcher(error_code_template);
         int index = 0;
@@ -56,7 +56,7 @@ public class ErrorCodeFormatter {
             throw new RuntimeException("[AGENT-000010] Error code template must include %error");
         }
     }
-    public ErrorCodeFormatter(final ApplicationPolicy policy) {
+    public ErrorCodeFormatter(final ProjectPolicy policy) {
         this.policy = policy;
         this.list.add(new Pair(FieldType.ERROR, null));
     }
@@ -74,7 +74,7 @@ public class ErrorCodeFormatter {
                     sb.append(policy.realmPolicy.realm_code);
                     break;
                 case APPLICATION:
-                    sb.append(policy.app_code);
+                    sb.append(policy.prj_code);
                     break;
                 case VERSION:
                     sb.append("unknown"); // TODO git short hash if no tag?

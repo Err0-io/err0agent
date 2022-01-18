@@ -1,7 +1,7 @@
 {
   "name": "streetstall-library",
-  "app_code": "SSSLIB",
-  "app_uuid": "b9971126-e47d-11eb-ba80-0242ac130004",
+  "prj_code": "SSSLIB",
+  "prj_uuid": "b9971126-e47d-11eb-ba80-0242ac130004",
   "policy": {
     "error_prefix": "LIB",
     "error_template": "%error %app",

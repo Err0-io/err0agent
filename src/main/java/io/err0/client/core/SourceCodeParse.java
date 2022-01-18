@@ -16,7 +16,7 @@ public abstract class SourceCodeParse {
      * first pass classification - error code container, log or exception?
      * @param token
      */
-    public abstract void classifyForErrorCode(ApiProvider apiProvider, GlobalState globalState, ApplicationPolicy policy, StateItem stateItem, Token token);
+    public abstract void classifyForErrorCode(ApiProvider apiProvider, GlobalState globalState, ProjectPolicy policy, StateItem stateItem, Token token);
 
     /**
      * second pass classification - is this suitable for the call stack?
