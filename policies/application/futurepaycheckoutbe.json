@@ -4,7 +4,7 @@
   "prj_uuid": "ba5488f6-e8c3-11eb-9a03-0242ac130003",
   "policy": {
     "error_prefix": "FPCHBE",
-    "error_template": "%error %app",
+    "error_template": "%error %prj",
     "error_pad_to_n": 6
   },
   "sources": {

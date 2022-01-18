@@ -25,8 +25,8 @@ public class RealmPolicy {
             System.err.println("customer_uuid is null in realm json.");
             //System.exit(-1);
         }
-        this.policy_editable_by_app = GsonHelper.getAsBoolean(realmJson, "policy_editable_by_app", false);
-        this.context_allowed_in_app = GsonHelper.getAsBoolean(realmJson, "context_allowed_in_app", true);
+        this.policy_editable_by_prj = GsonHelper.getAsBoolean(realmJson, "policy_editable_by_prj", false);
+        this.context_allowed_in_prj = GsonHelper.getAsBoolean(realmJson, "context_allowed_in_prj", true);
         final JsonObject policyJson = realmJson.getAsJsonObject("policy");
         this.error_prefix = GsonHelper.getAsString(policyJson, "error_prefix", null);
         this.error_template = GsonHelper.getAsString(policyJson, "error_template", null);
@@ -48,8 +48,8 @@ public class RealmPolicy {
         this.realm_code = GsonHelper.getAsString(realmData, "realm_code", null);
         this.realm_uuid = UUID.fromString(GsonHelper.getAsString(realmJson, "pk", null));
         this.customer_uuid = null;
-        this.policy_editable_by_app = GsonHelper.getAsBoolean(realmData, "policy_editable_by_app", false);
-        this.context_allowed_in_app = GsonHelper.getAsBoolean(realmData, "context_allowed_in_app", true);
+        this.policy_editable_by_prj = GsonHelper.getAsBoolean(realmData, "policy_editable_by_prj", false);
+        this.context_allowed_in_prj = GsonHelper.getAsBoolean(realmData, "context_allowed_in_prj", true);
         final JsonObject policyJson = realmData.getAsJsonObject("policy");
         this.error_prefix = GsonHelper.getAsString(policyJson, "error_prefix", null);
         this.error_template = GsonHelper.getAsString(policyJson, "error_template", null);
@@ -63,8 +63,8 @@ public class RealmPolicy {
     final String realm_code;
     final UUID realm_uuid;
     public UUID customer_uuid = null;
-    final boolean policy_editable_by_app;
-    final boolean context_allowed_in_app;
+    final boolean policy_editable_by_prj;
+    final boolean context_allowed_in_prj;
     final String error_prefix;
     final String error_template;
     final int error_pad_to_n;

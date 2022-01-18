@@ -197,7 +197,7 @@ public class ProjectPolicy {
     }
 
     public String getErrorPrefix() {
-        if (realmPolicy.policy_editable_by_app && (null != error_prefix && !"".equals(error_prefix))) {
+        if (realmPolicy.policy_editable_by_prj && (null != error_prefix && !"".equals(error_prefix))) {
             return error_prefix;
         } else {
             if (null != realmPolicy.error_prefix && !"".equals(realmPolicy.error_prefix)) {
@@ -210,7 +210,7 @@ public class ProjectPolicy {
     private ErrorCodeFormatter errorCodeFormatter = null;
     public ErrorCodeFormatter getErrorCodeFormatter() {
         if (null == errorCodeFormatter) {
-            if (realmPolicy.policy_editable_by_app && (null != error_template && !"".equals(error_template))) {
+            if (realmPolicy.policy_editable_by_prj && (null != error_template && !"".equals(error_template))) {
                 errorCodeFormatter = new ErrorCodeFormatter(this, error_template);
             } else if (null != realmPolicy.error_template && !"".equals(realmPolicy.error_template)) {
                 errorCodeFormatter = new ErrorCodeFormatter(this, realmPolicy.error_template);
@@ -222,7 +222,7 @@ public class ProjectPolicy {
     }
 
     public int getErrorPadToN() {
-        if (realmPolicy.policy_editable_by_app && error_pad_to_n >= 0) {
+        if (realmPolicy.policy_editable_by_prj && error_pad_to_n >= 0) {
             return error_pad_to_n;
         } else if (realmPolicy.error_pad_to_n >= 0) {
             return realmPolicy.error_pad_to_n;
@@ -231,8 +231,8 @@ public class ProjectPolicy {
     }
 
     public boolean getContext() {
-        if (! realmPolicy.context_allowed_in_app) return false;
-        if (realmPolicy.policy_editable_by_app && has_context) {
+        if (! realmPolicy.context_allowed_in_prj) return false;
+        if (realmPolicy.policy_editable_by_prj && has_context) {
             return context;
         } else {
             return realmPolicy.context;
@@ -240,7 +240,7 @@ public class ProjectPolicy {
     }
 
     public int getContextNLines() {
-        if (realmPolicy.policy_editable_by_app && has_context_n_lines) {
+        if (realmPolicy.policy_editable_by_prj && has_context_n_lines) {
             return context_n_lines;
         } else {
             return realmPolicy.context_n_lines;

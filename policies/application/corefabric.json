@@ -3,7 +3,7 @@
   "prj_code": "CF",
   "prj_uuid": "8ba84030-e47a-11eb-ba80-0242ac130004",
   "policy": {
-    "error_template": "%error %app",
+    "error_template": "%error %prj",
     "error_pad_to_n": 6
   },
   "sources": {

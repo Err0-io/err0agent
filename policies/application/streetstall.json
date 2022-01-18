@@ -4,7 +4,7 @@
   "prj_uuid": "baac6a94-e47c-11eb-ba80-0242ac130004",
   "policy": {
     "error_prefix": "APP",
-    "error_template": "%error %app",
+    "error_template": "%error %prj",
     "error_pad_to_n": 6
   },
   "sources": {

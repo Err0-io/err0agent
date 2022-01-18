@@ -4,7 +4,7 @@
   "prj_uuid": "b9971126-e47d-11eb-ba80-0242ac130004",
   "policy": {
     "error_prefix": "LIB",
-    "error_template": "%error %app",
+    "error_template": "%error %prj",
     "error_pad_to_n": 6
   },
   "sources": {
