@@ -84,8 +84,12 @@ public class StatisticsGatherer {
         });
 
         runMetadata.addProperty("number_of_files", i.get());
-        runMetadata.addProperty("ratio_lines_per_error", ((double)i_lines.get())/((double)n.get()));
-        runMetadata.addProperty("average_errors_per_file", ((double)n.get())/((double)i.get()));
+        if (n.get() != 0) {
+            runMetadata.addProperty("ratio_lines_per_error", ((double) i_lines.get()) / ((double) n.get()));
+        }
+        if (i.get() != 0) {
+            runMetadata.addProperty("average_errors_per_file", ((double) n.get()) / ((double) i.get()));
+        }
         runMetadata.addProperty("run_duration_seconds", (end.getTime()-start.getTime())/1000L);
 
         runMetadata.addProperty("start_ts", start.getTime());
