@@ -8,6 +8,11 @@ import java.util.regex.Pattern;
 
 public class PhpSourceCodeParse extends SourceCodeParse {
 
+    public PhpSourceCodeParse()
+    {
+        super(Language.PHP);
+    }
+
     private static Pattern reMethodPerhaps = Pattern.compile("\\)\\s*$");
     private static Pattern reMethod = Pattern.compile("\\s*(([^){};]+?)\\([^)]*?\\)?(\\s*use\\s*\\([^)]+?\\))?)\\s*$");
     //private static Pattern reLambda = Pattern.compile("\\s*(([^\\){};,]+?)\\([^\\)]*?\\)\\s+->\\s*)\\s*$");

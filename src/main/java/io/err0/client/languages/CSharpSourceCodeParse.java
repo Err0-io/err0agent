@@ -8,6 +8,10 @@ import java.util.regex.Pattern;
 
 public class CSharpSourceCodeParse extends SourceCodeParse {
 
+    public CSharpSourceCodeParse() {
+        super(Language.C_SHARP);
+    }
+
     private static Pattern reMethodPerhaps = Pattern.compile("\\)\\s*$");
     private static Pattern reMethod = Pattern.compile("\\s*(([^{};]+?)\\([^)]*?\\)(\\s+throws\\s+[^;{(]+?)?)\\s*$");
     private static Pattern reLambda = Pattern.compile("\\s*(([^){\\[\\]};,]+?)\\([^)]*?\\)\\s+=>\\s*)\\s*$");

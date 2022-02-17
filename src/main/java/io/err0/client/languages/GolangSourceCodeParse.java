@@ -6,6 +6,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 public class GolangSourceCodeParse extends SourceCodeParse {
 
+    public GolangSourceCodeParse() {
+        super(Language.GOLANG);
+    }
+
     private static Pattern reMethod = Pattern.compile("(^|\\s+)func\\s+.*?$", Pattern.MULTILINE);
     private static Pattern reMethodIgnore = Pattern.compile("(\\s+|^\\s*)(catch|if|do|while|switch|for)\\s+", Pattern.MULTILINE);
     //private static Pattern reErrorNumber = Pattern.compile("^(`|'|\")\\[ERR-(\\d+)\\]\\s+");

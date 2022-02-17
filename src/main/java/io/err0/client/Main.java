@@ -905,7 +905,7 @@ public class Main {
                                         boolean matchAll = true;
                                         for (int k = 0, n = rule.selectors.size(); k < n; ++k) {
                                             ExceptionRuleSelection selection = rule.selectors.get(k);
-                                            boolean match = selection.isMatch(currentToken);
+                                            boolean match = selection.isMatch(stateItem.parse.language, currentToken);
                                             matchAny |= match;
                                             matchAll &= match;
                                         }

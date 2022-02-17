@@ -7,6 +7,10 @@ import java.util.regex.Pattern;
 
 public class JavascriptSourceCodeParse extends SourceCodeParse {
 
+    public JavascriptSourceCodeParse() {
+        super(Language.JAVASCRIPT);
+    }
+
     private static Pattern reMethod = Pattern.compile("\\s*(([^){};]+?)\\([^)]*?\\)(\\s+throws\\s+[^;{(]+?)?)\\s*$");
     private static Pattern reLambda = Pattern.compile("\\s*(([^){};,]+?)\\([^)]*?\\)\\s+=>\\s*)\\s*$");
     private static Pattern reClass = Pattern.compile("\\s*(([^){};]+?)\\s+class\\s+(\\S+)[^;{(]+?)\\s*$");

@@ -7,6 +7,11 @@ import java.util.regex.Pattern;
 
 public class TypescriptSourceCodeParse extends SourceCodeParse {
 
+    public TypescriptSourceCodeParse()
+    {
+        super(Language.TYPESCRIPT);
+    }
+
     private static Pattern reMethod = Pattern.compile("\\s*(([^){};]+?)\\([^)]*?\\)(:[^;{(]+?)?)\\s*$");
     private static Pattern reLambda = Pattern.compile("\\s*(([^){};,]+?)\\([^)]*?\\)\\s+=>\\s*)\\s*$");
     private static Pattern reClass = Pattern.compile("\\s*(([^){};]+?)\\s+class\\s+(\\S+)[^;{(]+?)\\s*$");

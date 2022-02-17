@@ -7,6 +7,11 @@ import java.util.regex.Pattern;
 
 public class PythonSourceCodeParse extends SourceCodeParse {
 
+    public PythonSourceCodeParse()
+    {
+        super(Language.PYTHON);
+    }
+
     private static Pattern reMethod = Pattern.compile("^(\\s*)(def|class|if|for|while|except)\\s+.*$");
     private static Pattern reLogger = Pattern.compile("(^|\\s+)\\S*logger\\.(error|warning|info)\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE);
     private static Pattern reException = Pattern.compile("(^|\\s+)raise\\s([^\\s\\(]*)\\s*\\(*.+$");

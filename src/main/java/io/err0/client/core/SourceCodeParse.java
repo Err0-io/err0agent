@@ -8,6 +8,16 @@ import java.util.regex.Pattern;
 
 public abstract class SourceCodeParse {
 
+    public SourceCodeParse(final Language language) {
+        this.language = language;
+    }
+
+    public final Language language;
+
+    public enum Language {
+        JAVA, C_SHARP, GOLANG, PYTHON, JAVASCRIPT, TYPESCRIPT, PHP
+    }
+
     public final ArrayList<Token> tokenList = new ArrayList<>();
 
     public static Pattern reLeadingWhitespace = Pattern.compile("^\\s+", Pattern.MULTILINE);
