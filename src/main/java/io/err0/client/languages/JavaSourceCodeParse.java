@@ -18,7 +18,7 @@ public class JavaSourceCodeParse extends SourceCodeParse {
     private static Pattern reClass = Pattern.compile("\\s*(([^){};]+?)\\s+class\\s+(\\S+)[^;{(]+?)\\s*$");
     private static Pattern reMethodIgnore = Pattern.compile("(\\s+|^\\s*)(catch|if|do|while|switch|for)\\s+", Pattern.MULTILINE);
     //private static Pattern reErrorNumber = Pattern.compile("^\"\\[ERR-(\\d+)\\]\\s+");
-    private static Pattern reLogger = Pattern.compile("_?log(ger)?\\.(fatal|error|warn|info)\\s*\\(\\s*$");
+    private static Pattern reLogger = Pattern.compile("_?log(ger)?\\.(fatal|error|warn|info)\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE);
     private static Pattern reFluentSlf4j = Pattern.compile("\\.log\\s*\\(\\s*$");
     private static Pattern reFluentSlf4jConfirm = Pattern.compile("^\\s*_?log(ger)?\\.(atError|atWarn|atInfo)\\(\\)\\.");
     private static Pattern reException = Pattern.compile("throw\\s+new\\s+([^\\s\\(]*)\\s*\\(\\s*$");
