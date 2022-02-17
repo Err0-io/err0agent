@@ -6,11 +6,19 @@ import java.util.function.Consumer;
 
 public class Token {
 
-    public Token(final int n) {
+    public Token(final int n, final Token prev) {
         this.n = n;
+        this.prev = prev;
+        if (null != this.prev) {
+            this.prev.setNext(this);
+        }
     }
 
     public final int n;
+    public final Token prev;
+    private Token next = null;
+    private void setNext(Token next) { this.next = next; }
+    public Token next() { return this.next; }
 
     public TokenClassification type;
     public StringBuilder sourceCode = new StringBuilder();

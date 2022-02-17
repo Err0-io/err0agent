@@ -15,7 +15,7 @@ public class PythonSourceCodeParse extends SourceCodeParse {
     public static PythonSourceCodeParse lex(final String sourceCode) {
         int n = 0;
         PythonSourceCodeParse parse = new PythonSourceCodeParse();
-        Token currentToken = new Token(n++);
+        Token currentToken = new Token(n++, null);
         currentToken.type = TokenClassification.SOURCE_CODE;
         int lineNumber = 1;
         int indentNumber = 0;
@@ -45,13 +45,13 @@ public class PythonSourceCodeParse extends SourceCodeParse {
                         currentToken.sourceCode.append(ch);
                         countIndent = true;
                         parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++);
+                        currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenClassification.SOURCE_CODE;
                         currentToken.depth = indentNumber;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == '\'') {
                         parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++);
+                        currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenClassification.APOS_LITERAL;
                         currentToken.sourceCode.append(ch);
                         currentToken.depth = indentNumber;
@@ -65,7 +65,7 @@ public class PythonSourceCodeParse extends SourceCodeParse {
                                     if (ch2 == '\"') {
                                         // comment literal """ <<comment>> """
                                         parse.tokenList.add(currentToken.finish(lineNumber));
-                                        currentToken = new Token(n++);
+                                        currentToken = new Token(n++, currentToken);
                                         currentToken.type = TokenClassification.QUOT3_LITERAL;
                                         currentToken.sourceCode.append(ch);
                                         currentToken.sourceCode.append(ch1);
@@ -83,14 +83,14 @@ public class PythonSourceCodeParse extends SourceCodeParse {
 
                         // otherwise, it is a quot literal.
                         parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++);
+                        currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenClassification.QUOT_LITERAL;
                         currentToken.sourceCode.append(ch);
                         currentToken.depth = indentNumber;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == '#') {
                         parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++);
+                        currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenClassification.COMMENT_LINE;
                         currentToken.sourceCode.append(ch);
                         currentToken.depth = indentNumber;
@@ -112,7 +112,7 @@ public class PythonSourceCodeParse extends SourceCodeParse {
                         currentToken.sourceCode.append(ch);
                         countIndent = true;
                         parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++);
+                        currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenClassification.SOURCE_CODE;
                         currentToken.depth = indentNumber;
                         currentToken.startLineNumber = lineNumber;
@@ -133,7 +133,7 @@ public class PythonSourceCodeParse extends SourceCodeParse {
                                         currentToken.sourceCode.append(ch1);
                                         currentToken.sourceCode.append(ch2);
                                         parse.tokenList.add(currentToken.finish(lineNumber));
-                                        currentToken = new Token(n++);
+                                        currentToken = new Token(n++, currentToken);
                                         currentToken.type = TokenClassification.SOURCE_CODE;
                                         currentToken.depth = indentNumber;
                                         currentToken.startLineNumber = lineNumber;
@@ -158,7 +158,7 @@ public class PythonSourceCodeParse extends SourceCodeParse {
                     if (ch == '\'') {
                         currentToken.sourceCode.append(ch);
                         parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++);
+                        currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenClassification.SOURCE_CODE;
                         currentToken.depth = indentNumber;
                         currentToken.startLineNumber = lineNumber;
@@ -174,7 +174,7 @@ public class PythonSourceCodeParse extends SourceCodeParse {
                     if (ch == '\"') {
                         currentToken.sourceCode.append(ch);
                         parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++);
+                        currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenClassification.SOURCE_CODE;
                         currentToken.depth = indentNumber;
                         currentToken.startLineNumber = lineNumber;

@@ -15,7 +15,7 @@ public class GolangSourceCodeParse extends SourceCodeParse {
     public static GolangSourceCodeParse lex(final String sourceCode) {
         int n = 0;
         GolangSourceCodeParse parse = new GolangSourceCodeParse();
-        Token currentToken = new Token(n++);
+        Token currentToken = new Token(n++, null);
         currentToken.type = TokenClassification.SOURCE_CODE;
         int lineNumber = 1;
         currentToken.startLineNumber = lineNumber;
@@ -30,35 +30,35 @@ public class GolangSourceCodeParse extends SourceCodeParse {
                 case SOURCE_CODE:
                     if (ch == '{') {
                         parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++);
+                        currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenClassification.SOURCE_CODE;
                         currentToken.sourceCode.append(ch);
                         currentToken.depth = depth + 1;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == '}') {
                         parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++);
+                        currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenClassification.SOURCE_CODE;
                         currentToken.sourceCode.append(ch);
                         currentToken.depth = depth - 1;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == '\'') {
                         parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++);
+                        currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenClassification.APOS_LITERAL;
                         currentToken.sourceCode.append(ch);
                         currentToken.depth = depth;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == '\"') {
                         parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++);
+                        currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenClassification.QUOT_LITERAL;
                         currentToken.sourceCode.append(ch);
                         currentToken.depth = depth;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == '`') {
                         parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++);
+                        currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenClassification.BACKTICK_LITERAL;
                         currentToken.sourceCode.append(ch);
                         currentToken.depth = depth;
@@ -67,7 +67,7 @@ public class GolangSourceCodeParse extends SourceCodeParse {
                         final char ch2 = chars[i+1];
                         if (ch2 == '*') {
                             parse.tokenList.add(currentToken.finish(lineNumber));
-                            currentToken = new Token(n++);
+                            currentToken = new Token(n++, currentToken);
                             currentToken.type = TokenClassification.COMMENT_BLOCK;
                             currentToken.sourceCode.append(ch);
                             currentToken.sourceCode.append(ch2);
@@ -76,7 +76,7 @@ public class GolangSourceCodeParse extends SourceCodeParse {
                             ++i;
                         } else if (ch2 == '/') {
                             parse.tokenList.add(currentToken.finish(lineNumber));
-                            currentToken = new Token(n++);
+                            currentToken = new Token(n++, currentToken);
                             currentToken.type = TokenClassification.COMMENT_LINE;
                             currentToken.sourceCode.append(ch);
                             currentToken.sourceCode.append(ch2);
@@ -94,7 +94,7 @@ public class GolangSourceCodeParse extends SourceCodeParse {
                     if (ch == '\n') {
                         currentToken.sourceCode.append(ch);
                         parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++);
+                        currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenClassification.SOURCE_CODE;
                         currentToken.depth = depth;
                         currentToken.startLineNumber = lineNumber;
@@ -109,7 +109,7 @@ public class GolangSourceCodeParse extends SourceCodeParse {
                             currentToken.sourceCode.append(ch);
                             currentToken.sourceCode.append(ch2);
                             parse.tokenList.add(currentToken.finish(lineNumber));
-                            currentToken = new Token(n++);
+                            currentToken = new Token(n++, currentToken);
                             currentToken.type = TokenClassification.SOURCE_CODE;
                             currentToken.depth = depth;
                             currentToken.startLineNumber = lineNumber;
@@ -125,7 +125,7 @@ public class GolangSourceCodeParse extends SourceCodeParse {
                     if (ch == '\'') {
                         currentToken.sourceCode.append(ch);
                         parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++);
+                        currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenClassification.SOURCE_CODE;
                         currentToken.depth = depth;
                         currentToken.startLineNumber = lineNumber;
@@ -141,7 +141,7 @@ public class GolangSourceCodeParse extends SourceCodeParse {
                     if (ch == '\"') {
                         currentToken.sourceCode.append(ch);
                         parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++);
+                        currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenClassification.SOURCE_CODE;
                         currentToken.depth = depth;
                         currentToken.startLineNumber = lineNumber;
@@ -157,7 +157,7 @@ public class GolangSourceCodeParse extends SourceCodeParse {
                     if (ch == '`') {
                         currentToken.sourceCode.append(ch);
                         parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++);
+                        currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenClassification.SOURCE_CODE;
                         currentToken.depth = depth;
                         currentToken.startLineNumber = lineNumber;
