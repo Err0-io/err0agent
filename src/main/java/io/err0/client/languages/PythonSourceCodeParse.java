@@ -10,6 +10,7 @@ public class PythonSourceCodeParse extends SourceCodeParse {
     private static Pattern reMethod = Pattern.compile("^(\\s*)(def|class|if|for|while|except)\\s+.*$");
     private static Pattern reLogger = Pattern.compile("(^|\\s+)\\S*logger\\.(error|warning|info)\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE);
     private static Pattern reException = Pattern.compile("(^|\\s+)raise\\s([^\\s\\(]*)\\s*\\(*.+$");
+    private static Pattern reFunctionOfLiteral = Pattern.compile("^\\s*\\.");
     private static int reException_group_class = 2;
 
     public static PythonSourceCodeParse lex(final String sourceCode) {
@@ -222,7 +223,22 @@ public class PythonSourceCodeParse extends SourceCodeParse {
                 {
                     // 1) Strip '[ERR-nnnnnn] ' from string literals for re-injection
                     Matcher matcherErrorNumber = policy.getReErrorNumber_py().matcher(token.source);
-                    if (matcherErrorNumber.find()) {
+                    boolean found = matcherErrorNumber.find();
+
+                    // Is this in fact a function of a literal, e.g. ", ".join(...)?
+                    Token next = token.next();
+                    if (null != next) {
+                        if (reFunctionOfLiteral.matcher(next.source).find()) {
+                            if (found) {
+                                final String quot = matcherErrorNumber.group(1);
+                                token.sourceNoErrorCode = token.source = quot + token.source.substring(matcherErrorNumber.end());
+                            }
+                            token.classification = Token.Classification.NO_MATCH;
+                            return;
+                        }
+                    }
+
+                    if (found) {
                         token.classification = Token.Classification.ERROR_NUMBER;
                         final String quot = matcherErrorNumber.group(1);
                         long errorOrdinal = Long.parseLong(matcherErrorNumber.group(2));
