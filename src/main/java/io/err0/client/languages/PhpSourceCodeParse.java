@@ -232,6 +232,9 @@ public class PhpSourceCodeParse extends SourceCodeParse {
                         if (matcherException.find()) {
                             token.classification = Token.Classification.EXCEPTION_THROW;
                             token.exceptionClass = matcherException.group(reException_group_class);
+                            if (token.exceptionClass.startsWith("\\")) {
+                                token.exceptionClass = token.exceptionClass.substring(1);
+                            }
                         } else {
                             token.classification = Token.Classification.NOT_FULLY_CLASSIFIED;
                         }
