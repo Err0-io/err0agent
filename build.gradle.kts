@@ -73,6 +73,16 @@ tasks.withType<Test> {
 
 tasks.withType<JavaExec> {
 
+  // Check-out bts projects...
+  /*
+  args = listOf(
+    "--token", "../fp/futurepay-portal/err0-futurepay-portal-1f8d9570-90b7-11ec-b6db-1613dacd7971.json", "--insert", "../fp/futurepay-portal/",
+    "--token", "../fp/futurepay-checkout-backend/err0-futurepay-checkout-backend-1ac49bae-90b7-11ec-b6db-1613dacd7971.json", "--insert", "../fp/futurepay-checkout-backend/",
+    "--token", "../fp/futurepay-credit-api/err0-futurepay-credit-service-1d26f5af-90b7-11ec-b6db-1613dacd7971.json", "--insert", "../fp/futurepay-credit-api/"
+  )
+
+  */
+
   /*
   // Check-out bts projects...
   args = listOf(
