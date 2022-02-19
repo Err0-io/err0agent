@@ -37,9 +37,13 @@ public abstract class SourceCodeParse {
 
     public abstract boolean couldContainErrorNumber(Token token);
 
-    public final JsonArray getNLinesOfContext(final int lineNumber, final int nLines) {
+    public final JsonArray getNLinesOfContext(final int lineNumber, final int nLines, final int charRadius) {
         if (nLines < 0) {
             System.err.println("Invalid number of lines of context = " + nLines);
+            System.exit(-1);
+        }
+        if (charRadius < 0) {
+            System.err.println("Invalid number of chars of context = " + charRadius);
             System.exit(-1);
         }
         int startLineNumber = lineNumber - nLines;
@@ -52,8 +56,10 @@ public abstract class SourceCodeParse {
         for (Token token : tokenList) {
             boolean abort = false;
             char chars[] = token.source.toCharArray();
+            int n = 0;
             for (char ch : chars) {
                 if (startLineNumber <= currentLine && currentLine <= endLineNumber) {
+                    if (++n >= charRadius) { abort = true; context = new JsonArray(); break; }
                     currentLineContent.append(ch);
                 }
                 if (ch == '\n') {

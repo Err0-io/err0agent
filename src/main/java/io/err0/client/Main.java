@@ -41,6 +41,7 @@ import java.util.stream.Stream;
 
 public class Main {
 
+    public final static int CHAR_RADIUS = 4*1024;
     private static Pattern reGitdir = Pattern.compile("^gitdir: (.*?)$", Pattern.MULTILINE);
 
     static class GitMetadata {
@@ -873,9 +874,14 @@ public class Main {
                             if (policy.getContext()) {
                                 int n = policy.getContextNLines();
                                 if (n < 0) n = 0;
-                                JsonArray contextArray = parse.getNLinesOfContext(currentToken.startLineNumber, n);
-                                metaData.add("context", contextArray);
-                                metaData.add("line_of_code", parse.getNLinesOfContext(currentToken.startLineNumber, 0).get(0));
+                                JsonArray contextArray = parse.getNLinesOfContext(currentToken.startLineNumber, n, Main.CHAR_RADIUS);
+                                if (null != contextArray && contextArray.size() > 0) {
+                                    metaData.add("context", contextArray);
+                                }
+                                JsonArray lineArray = parse.getNLinesOfContext(currentToken.startLineNumber, 0, Main.CHAR_RADIUS);
+                                if (null != lineArray && lineArray.size() > 0) {
+                                    metaData.add("line_of_code", lineArray.get(0));
+                                }
                             }
 
                             /*
