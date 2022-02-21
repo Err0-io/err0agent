@@ -8,9 +8,9 @@ import java.util.regex.Pattern;
 
 public class JavaSourceCodeParse extends SourceCodeParse {
 
-    public JavaSourceCodeParse()
+    public JavaSourceCodeParse(final CodePolicy policy)
     {
-        super(Language.JAVA);
+        super(Language.JAVA, policy);
     }
 
     private static Pattern reMethod = Pattern.compile("\\s*(([^){};]+?)\\([^)]*?\\)(\\s+throws\\s+[^;{(]+?)?)\\s*$");
@@ -18,15 +18,15 @@ public class JavaSourceCodeParse extends SourceCodeParse {
     private static Pattern reClass = Pattern.compile("\\s*(([^){};]+?)\\s+class\\s+(\\S+)[^;{(]+?)\\s*$");
     private static Pattern reMethodIgnore = Pattern.compile("(\\s+|^\\s*)(catch|if|do|while|switch|for)\\s+", Pattern.MULTILINE);
     //private static Pattern reErrorNumber = Pattern.compile("^\"\\[ERR-(\\d+)\\]\\s+");
-    private static Pattern reLogger = Pattern.compile("((m?)_)?log(ger)?\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE);
+    private Pattern reLogger = Pattern.compile("((m?)_)?log(ger)?\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE);
     private static Pattern reFluentSlf4j = Pattern.compile("\\.log\\s*\\(\\s*$");
-    private static Pattern reFluentSlf4jConfirm = Pattern.compile("^\\s*_?log(ger)?\\.(atError|atWarn|atInfo)\\(\\)\\.");
+    private Pattern reFluentSlf4jConfirm = Pattern.compile("^\\s*((m?)_)?log(ger)?\\.(atError|atWarn|atInfo)\\(\\)\\.");
     private static Pattern reException = Pattern.compile("throw\\s+new\\s+([^\\s\\(]*)\\s*\\(\\s*$");
     private static int reException_group_class = 1;
 
-    public static JavaSourceCodeParse lex(final String sourceCode) {
+    public static JavaSourceCodeParse lex(final CodePolicy policy, final String sourceCode) {
         int n = 0;
-        JavaSourceCodeParse parse = new JavaSourceCodeParse();
+        JavaSourceCodeParse parse = new JavaSourceCodeParse(policy);
         Token currentToken = new Token(n++, null);
         currentToken.type = TokenClassification.SOURCE_CODE;
         int lineNumber = 1;

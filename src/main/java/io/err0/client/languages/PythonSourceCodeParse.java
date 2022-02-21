@@ -7,20 +7,20 @@ import java.util.regex.Pattern;
 
 public class PythonSourceCodeParse extends SourceCodeParse {
 
-    public PythonSourceCodeParse()
+    public PythonSourceCodeParse(final CodePolicy policy)
     {
-        super(Language.PYTHON);
+        super(Language.PYTHON, policy);
     }
 
     private static Pattern reMethod = Pattern.compile("^(\\s*)(def|class|if|for|while|except)\\s+.*$");
-    private static Pattern reLogger = Pattern.compile("(^|\\s+)\\S*((m?)_)?log(ger)?\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE);
+    private Pattern reLogger = Pattern.compile("(^|\\s+)\\S*((m?)_)?log(ger)?\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE);
     private static Pattern reException = Pattern.compile("(^|\\s+)raise\\s([^\\s\\(]*)\\s*\\(*.+$");
     private static Pattern reFunctionOfLiteral = Pattern.compile("^\\s*\\.");
     private static int reException_group_class = 2;
 
-    public static PythonSourceCodeParse lex(final String sourceCode) {
+    public static PythonSourceCodeParse lex(final CodePolicy policy, final String sourceCode) {
         int n = 0;
-        PythonSourceCodeParse parse = new PythonSourceCodeParse();
+        PythonSourceCodeParse parse = new PythonSourceCodeParse(policy);
         Token currentToken = new Token(n++, null);
         currentToken.type = TokenClassification.SOURCE_CODE;
         int lineNumber = 1;

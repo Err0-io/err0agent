@@ -6,19 +6,19 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 public class GolangSourceCodeParse extends SourceCodeParse {
 
-    public GolangSourceCodeParse() {
-        super(Language.GOLANG);
+    public GolangSourceCodeParse(final CodePolicy policy) {
+        super(Language.GOLANG, policy);
     }
 
     private static Pattern reMethod = Pattern.compile("(^|\\s+)func\\s+.*?$", Pattern.MULTILINE);
     private static Pattern reMethodIgnore = Pattern.compile("(\\s+|^\\s*)(catch|if|do|while|switch|for)\\s+", Pattern.MULTILINE);
     //private static Pattern reErrorNumber = Pattern.compile("^(`|'|\")\\[ERR-(\\d+)\\]\\s+");
-    private static Pattern reLogger = Pattern.compile("(^|\\s+)\\S*((m?)_)?log(ger)?\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)f?\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+    private Pattern reLogger = Pattern.compile("(^|\\s+)\\S*((m?)_)?log(ger)?\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)f?\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
     private static Pattern reException = Pattern.compile("(fmt\\.Errorf|errors\\.New)\\s*\\(\\s*$");
 
-    public static GolangSourceCodeParse lex(final String sourceCode) {
+    public static GolangSourceCodeParse lex(final CodePolicy policy, final String sourceCode) {
         int n = 0;
-        GolangSourceCodeParse parse = new GolangSourceCodeParse();
+        GolangSourceCodeParse parse = new GolangSourceCodeParse(policy);
         Token currentToken = new Token(n++, null);
         currentToken.type = TokenClassification.SOURCE_CODE;
         int lineNumber = 1;

@@ -537,31 +537,31 @@ public class Main {
                         final String newFileLower = newFile.toLowerCase(Locale.ROOT);
                         if (newFileLower.endsWith(".java")) {
                             final FileCoding fileCoding = new FileCoding(p);
-                            globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, JavaSourceCodeParse.lex(fileCoding.content), fileCoding.charset);
+                            globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, JavaSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
                             System.out.println("Parsed: " + newFile);
                         } else if (newFileLower.endsWith(".cs") && !newFileLower.endsWith(".designer.cs") && !newFileLower.endsWith(".generated.cs")) {
                             final FileCoding fileCoding = new FileCoding(p);
-                            globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, CSharpSourceCodeParse.lex(fileCoding.content), fileCoding.charset);
+                            globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, CSharpSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
                             System.out.println("Parsed: " + newFile);
                         } else if (newFileLower.endsWith(".js") && !newFileLower.endsWith(".min.js")) {
                             final FileCoding fileCoding = new FileCoding(p);
-                            globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, JavascriptSourceCodeParse.lex(fileCoding.content), fileCoding.charset);
+                            globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, JavascriptSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
                             System.out.println("Parsed: " + newFile);
                         } else if (newFileLower.endsWith(".ts")) {
                             final FileCoding fileCoding = new FileCoding(p);
-                            globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, TypescriptSourceCodeParse.lex(fileCoding.content), fileCoding.charset);
+                            globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, TypescriptSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
                             System.out.println("Parsed: " + newFile);
                         } else if (newFileLower.endsWith(".php") || newFileLower.endsWith(".phtml")) {
                             final FileCoding fileCoding = new FileCoding(p);
-                            globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, PhpSourceCodeParse.lex(fileCoding.content), fileCoding.charset);
+                            globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, PhpSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
                             System.out.println("Parsed: " + newFile);
                         } else if (newFileLower.endsWith(".go")) {
                             final FileCoding fileCoding = new FileCoding(p);
-                            globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, GolangSourceCodeParse.lex(fileCoding.content), fileCoding.charset);
+                            globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, GolangSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
                             System.out.println("Parsed: " + newFile);
                         } else if (newFileLower.endsWith(".py")) {
                             final FileCoding fileCoding = new FileCoding(p);
-                            globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, PythonSourceCodeParse.lex(fileCoding.content), fileCoding.charset);
+                            globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, PythonSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
                             System.out.println("Parsed: " + newFile);
                         }
                     }

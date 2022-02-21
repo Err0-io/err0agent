@@ -8,8 +8,8 @@ import java.util.regex.Pattern;
 
 public class CSharpSourceCodeParse extends SourceCodeParse {
 
-    public CSharpSourceCodeParse() {
-        super(Language.C_SHARP);
+    public CSharpSourceCodeParse(final CodePolicy policy) {
+        super(Language.C_SHARP, policy);
     }
 
     private static Pattern reMethodPerhaps = Pattern.compile("\\)\\s*$");
@@ -18,14 +18,14 @@ public class CSharpSourceCodeParse extends SourceCodeParse {
     private static Pattern reClass = Pattern.compile("\\s*(([^){\\[\\]};]+?)\\s+class\\s+(\\S+)[^;{(]+?)\\s*$");
     private static Pattern reMethodIgnore = Pattern.compile("(\\s+|^\\s*)(catch|if|do|while|switch|for)\\s+", Pattern.MULTILINE);
     //private static Pattern reErrorNumber = Pattern.compile("^\"\\[ERR-(\\d+)\\]\\s+");
-    private static Pattern reLogger = Pattern.compile("((m?)_)?log(ger)?\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)(<[^>]+>)?\\s*\\([^\")]*\\s*$", Pattern.CASE_INSENSITIVE);
+    private Pattern reLogger = Pattern.compile("((m?)_)?log(ger)?\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)(<[^>]+>)?\\s*\\([^\")]*\\s*$", Pattern.CASE_INSENSITIVE);
     private static Pattern reException = Pattern.compile("throw\\s+new\\s+([^\\s(]*)\\s*\\(\\s*$");
     private static int reException_group_class = 1;
     private static Pattern rePreprocessor = Pattern.compile("^(\\s*#([^#\r\n]+))", Pattern.MULTILINE);
 
-    public static CSharpSourceCodeParse lex(final String sourceCode) {
+    public static CSharpSourceCodeParse lex(final CodePolicy policy, final String sourceCode) {
         int n = 0;
-        CSharpSourceCodeParse parse = new CSharpSourceCodeParse();
+        CSharpSourceCodeParse parse = new CSharpSourceCodeParse(policy);
         Token currentToken = new Token(n++, null);
         currentToken.type = TokenClassification.SOURCE_CODE;
         int lineNumber = 1;

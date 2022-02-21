@@ -7,8 +7,8 @@ import java.util.regex.Pattern;
 
 public class JavascriptSourceCodeParse extends SourceCodeParse {
 
-    public JavascriptSourceCodeParse() {
-        super(Language.JAVASCRIPT);
+    public JavascriptSourceCodeParse(final CodePolicy policy) {
+        super(Language.JAVASCRIPT, policy);
     }
 
     private static Pattern reMethod = Pattern.compile("\\s*(([^){};]+?)\\([^)]*?\\)(\\s+throws\\s+[^;{(]+?)?)\\s*$");
@@ -16,13 +16,13 @@ public class JavascriptSourceCodeParse extends SourceCodeParse {
     private static Pattern reClass = Pattern.compile("\\s*(([^){};]+?)\\s+class\\s+(\\S+)[^;{(]+?)\\s*$");
     private static Pattern reMethodIgnore = Pattern.compile("(\\s+|^\\s*)(catch|if|do|while|switch|for)\\s+", Pattern.MULTILINE);
     //private static Pattern reErrorNumber = Pattern.compile("^(`|'|\")\\[ERR-(\\d+)\\]\\s+");
-    private static Pattern reLogger = Pattern.compile("(((m?)_)?log(ger)?|console)\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE);
+    private Pattern reLogger = Pattern.compile("(((m?)_)?log(ger)?|console)\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE);
     private static Pattern reException = Pattern.compile("throw\\s+(new\\s+)?([^\\s(]*)\\s*\\(\\s*$");
     private static int reException_group_class = 2;
 
-    public static JavascriptSourceCodeParse lex(final String sourceCode) {
+    public static JavascriptSourceCodeParse lex(final CodePolicy policy, final String sourceCode) {
         int n = 0;
-        JavascriptSourceCodeParse parse = new JavascriptSourceCodeParse();
+        JavascriptSourceCodeParse parse = new JavascriptSourceCodeParse(policy);
         Token currentToken = new Token(n++, null);
         currentToken.type = TokenClassification.SOURCE_CODE;
         int lineNumber = 1;
