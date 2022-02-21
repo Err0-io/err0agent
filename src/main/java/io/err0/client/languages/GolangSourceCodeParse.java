@@ -13,7 +13,7 @@ public class GolangSourceCodeParse extends SourceCodeParse {
     private static Pattern reMethod = Pattern.compile("(^|\\s+)func\\s+.*?$", Pattern.MULTILINE);
     private static Pattern reMethodIgnore = Pattern.compile("(\\s+|^\\s*)(catch|if|do|while|switch|for)\\s+", Pattern.MULTILINE);
     //private static Pattern reErrorNumber = Pattern.compile("^(`|'|\")\\[ERR-(\\d+)\\]\\s+");
-    private static Pattern reLogger = Pattern.compile("(^|\\s+)\\S*_?log(ger)?\\.(fatal|error|warn|info)f?\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+    private static Pattern reLogger = Pattern.compile("(^|\\s+)\\S*((m?)_)?log(ger)?\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)f?\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
     private static Pattern reException = Pattern.compile("(fmt\\.Errorf|errors\\.New)\\s*\\(\\s*$");
 
     public static GolangSourceCodeParse lex(final String sourceCode) {

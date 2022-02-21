@@ -13,7 +13,7 @@ public class PythonSourceCodeParse extends SourceCodeParse {
     }
 
     private static Pattern reMethod = Pattern.compile("^(\\s*)(def|class|if|for|while|except)\\s+.*$");
-    private static Pattern reLogger = Pattern.compile("(^|\\s+)\\S*_?log(ger)?\\.(error|warning|info)\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE);
+    private static Pattern reLogger = Pattern.compile("(^|\\s+)\\S*((m?)_)?log(ger)?\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE);
     private static Pattern reException = Pattern.compile("(^|\\s+)raise\\s([^\\s\\(]*)\\s*\\(*.+$");
     private static Pattern reFunctionOfLiteral = Pattern.compile("^\\s*\\.");
     private static int reException_group_class = 2;
