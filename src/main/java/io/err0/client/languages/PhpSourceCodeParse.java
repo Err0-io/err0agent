@@ -11,6 +11,18 @@ public class PhpSourceCodeParse extends SourceCodeParse {
     public PhpSourceCodeParse(final CodePolicy policy)
     {
         super(Language.PHP, policy);
+        switch (policy.mode) {
+            case DEFAULTS:
+                reLogger = Pattern.compile("(^|\\s|\\\\|\\$|->)(error_log|((m?)_)?log(ger)?(\\\\|::|->)(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info))\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE);
+                break;
+
+            case EASY_CONFIGURATION:
+                reLogger = Pattern.compile("(^|\\s|\\\\|\\$|->)(error_log|" + policy.easyModeObjectPattern() + "(\\\\|::|->)" + policy.easyModeMethodPattern() + ")\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE);
+                break;
+
+            case ADVANCED_CONFIGURATION:
+                throw new RuntimeException("Not implemented.");
+        }
     }
 
     private static Pattern reMethodPerhaps = Pattern.compile("\\)\\s*$");
@@ -19,7 +31,7 @@ public class PhpSourceCodeParse extends SourceCodeParse {
     private static Pattern reClass = Pattern.compile("\\s*(([^){};]+?\\s+?)?class\\s+(\\S+)[^;{(]+?)\\s*$");
     private static Pattern reMethodIgnore = Pattern.compile("(\\s+|^\\s*)(catch|if|do|while|switch|for)\\s+", Pattern.MULTILINE);
     //private static Pattern reErrorNumber = Pattern.compile("^(\'|\")\\[ERR-(\\d+)\\]\\s+");
-    private Pattern reLogger = Pattern.compile("(^|\\s|\\\\|\\$|->)(error_log|((m?)_)?log(ger)?(\\\\|::|->)(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info))\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE);
+    private Pattern reLogger = null;
     private static Pattern reException = Pattern.compile("throw\\s+new\\s+([^\\s\\(]*)\\s*\\(\\s*$");
     private static int reException_group_class = 1;
 

@@ -8,12 +8,24 @@ public class GolangSourceCodeParse extends SourceCodeParse {
 
     public GolangSourceCodeParse(final CodePolicy policy) {
         super(Language.GOLANG, policy);
+        switch (policy.mode) {
+            case DEFAULTS:
+                reLogger = Pattern.compile("(^|\\s+)\\S*((m?)_)?log(ger)?\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)f?\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+                break;
+
+            case EASY_CONFIGURATION:
+                reLogger = Pattern.compile("(^|\\s+)\\S*" + policy.easyModeObjectPattern() + "\\." + policy.easyModeMethodPattern() + "f?\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+                break;
+
+            case ADVANCED_CONFIGURATION:
+                throw new RuntimeException("Not implemented.");
+        }
     }
 
     private static Pattern reMethod = Pattern.compile("(^|\\s+)func\\s+.*?$", Pattern.MULTILINE);
     private static Pattern reMethodIgnore = Pattern.compile("(\\s+|^\\s*)(catch|if|do|while|switch|for)\\s+", Pattern.MULTILINE);
     //private static Pattern reErrorNumber = Pattern.compile("^(`|'|\")\\[ERR-(\\d+)\\]\\s+");
-    private Pattern reLogger = Pattern.compile("(^|\\s+)\\S*((m?)_)?log(ger)?\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)f?\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+    private Pattern reLogger = null;
     private static Pattern reException = Pattern.compile("(fmt\\.Errorf|errors\\.New)\\s*\\(\\s*$");
 
     public static GolangSourceCodeParse lex(final CodePolicy policy, final String sourceCode) {

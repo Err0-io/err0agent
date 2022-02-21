@@ -15,18 +15,31 @@ public class CodePolicy {
     public CodePolicy()
     {
         codePolicyJson = new JsonObject();
-        codePolicyJson.addProperty("mode", "DEFAULTS");
+        codePolicyJson.addProperty("mode", 0);
         this.mode = CodePolicyMode.DEFAULTS;
     }
 
     public CodePolicy(final JsonObject codePolicyJson)
     {
         this.codePolicyJson = codePolicyJson;
-        this.mode = CodePolicyMode.valueOf(this.codePolicyJson.get("mode").getAsString());
+        int i = this.codePolicyJson.get("mode").getAsInt();
+        switch (i) {
+            case 0:
+                this.mode = CodePolicyMode.DEFAULTS;
+                break;
+            case 1:
+                this.mode = CodePolicyMode.EASY_CONFIGURATION;
+                break;
+            case 2:
+                this.mode = CodePolicyMode.ADVANCED_CONFIGURATION;
+                break;
+            default:
+                throw new RuntimeException("Unknown mode");
+        }
     }
 
     final JsonObject codePolicyJson;
-    final CodePolicyMode mode;
+    public final CodePolicyMode mode;
 
     public String easyModeObjectPattern() {
         if (mode != CodePolicyMode.EASY_CONFIGURATION)

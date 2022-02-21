@@ -10,10 +10,22 @@ public class PythonSourceCodeParse extends SourceCodeParse {
     public PythonSourceCodeParse(final CodePolicy policy)
     {
         super(Language.PYTHON, policy);
+        switch (policy.mode) {
+            case DEFAULTS:
+                reLogger = Pattern.compile("(^|\\s+)\\S*((m?)_)?log(ger)?\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE);
+                break;
+
+            case EASY_CONFIGURATION:
+                reLogger = Pattern.compile("(^|\\s+)\\S*" + policy.easyModeObjectPattern() + "\\." + policy.easyModeMethodPattern() + "\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE);
+                break;
+
+            case ADVANCED_CONFIGURATION:
+                throw new RuntimeException("Not implemented.");
+        }
     }
 
     private static Pattern reMethod = Pattern.compile("^(\\s*)(def|class|if|for|while|except)\\s+.*$");
-    private Pattern reLogger = Pattern.compile("(^|\\s+)\\S*((m?)_)?log(ger)?\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE);
+    private Pattern reLogger = null;
     private static Pattern reException = Pattern.compile("(^|\\s+)raise\\s([^\\s\\(]*)\\s*\\(*.+$");
     private static Pattern reFunctionOfLiteral = Pattern.compile("^\\s*\\.");
     private static int reException_group_class = 2;

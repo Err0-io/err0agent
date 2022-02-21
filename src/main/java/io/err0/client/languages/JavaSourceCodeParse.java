@@ -11,6 +11,20 @@ public class JavaSourceCodeParse extends SourceCodeParse {
     public JavaSourceCodeParse(final CodePolicy policy)
     {
         super(Language.JAVA, policy);
+        switch (policy.mode) {
+            case DEFAULTS:
+                reLogger = Pattern.compile("((m?)_)?log(ger)?\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE);
+                reFluentSlf4jConfirm = Pattern.compile("^\\s*((m?)_)?log(ger)?\\.(atError|atWarn|atInfo)\\(\\)\\."); // atDebug|atTrace
+                break;
+
+            case EASY_CONFIGURATION:
+                reLogger = Pattern.compile(policy.easyModeObjectPattern() + "\\." + policy.easyModeMethodPattern() + "\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE);
+                reFluentSlf4jConfirm = Pattern.compile("^\\s*" + policy.easyModeObjectPattern() + "\\.(atError|atWarn|atInfo)\\(\\)\\.");
+                break;
+
+            case ADVANCED_CONFIGURATION:
+                throw new RuntimeException("Not implemented.");
+        }
     }
 
     private static Pattern reMethod = Pattern.compile("\\s*(([^){};]+?)\\([^)]*?\\)(\\s+throws\\s+[^;{(]+?)?)\\s*$");
@@ -18,9 +32,9 @@ public class JavaSourceCodeParse extends SourceCodeParse {
     private static Pattern reClass = Pattern.compile("\\s*(([^){};]+?)\\s+class\\s+(\\S+)[^;{(]+?)\\s*$");
     private static Pattern reMethodIgnore = Pattern.compile("(\\s+|^\\s*)(catch|if|do|while|switch|for)\\s+", Pattern.MULTILINE);
     //private static Pattern reErrorNumber = Pattern.compile("^\"\\[ERR-(\\d+)\\]\\s+");
-    private Pattern reLogger = Pattern.compile("((m?)_)?log(ger)?\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE);
+    private Pattern reLogger = null;
     private static Pattern reFluentSlf4j = Pattern.compile("\\.log\\s*\\(\\s*$");
-    private Pattern reFluentSlf4jConfirm = Pattern.compile("^\\s*((m?)_)?log(ger)?\\.(atError|atWarn|atInfo)\\(\\)\\.");
+    private Pattern reFluentSlf4jConfirm = null;
     private static Pattern reException = Pattern.compile("throw\\s+new\\s+([^\\s\\(]*)\\s*\\(\\s*$");
     private static int reException_group_class = 1;
 
