@@ -1,5 +1,6 @@
 package io.err0.client.core;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -33,6 +34,8 @@ public class RealmPolicy {
         this.error_pad_to_n = GsonHelper.getAsInt(policyJson, "error_pad_to_n", -1);
         this.context = GsonHelper.getAsBoolean(policyJson, "context", false);
         this.context_n_lines = GsonHelper.getAsInt(policyJson, "context_n_lines", 0);
+
+        realm_code_policy = new CodePolicy(); // defaults
     }
 
     /**
@@ -56,6 +59,13 @@ public class RealmPolicy {
         this.error_pad_to_n = GsonHelper.getAsInt(policyJson, "error_pad_to_n", -1);
         this.context = GsonHelper.getAsBoolean(policyJson, "context", false);
         this.context_n_lines = GsonHelper.getAsInt(policyJson, "context_n_lines", 0);
+
+        JsonElement realm_code_policy = realmData.get("realm_code_policy");
+        if (null != realm_code_policy) {
+            this.realm_code_policy = new CodePolicy(realm_code_policy.getAsJsonObject());
+        } else {
+            this.realm_code_policy = new CodePolicy(); // defaults
+        }
     }
 
     public final JsonObject realmJson;
@@ -70,6 +80,8 @@ public class RealmPolicy {
     final int error_pad_to_n;
     final boolean context;
     final int context_n_lines;
+
+    final CodePolicy realm_code_policy;
 
     String error_sequence_generator = null;
     public String getErrorSequenceName() {

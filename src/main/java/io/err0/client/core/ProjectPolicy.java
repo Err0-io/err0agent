@@ -55,6 +55,8 @@ public class ProjectPolicy {
         }
 
         parseExceptionRules(applicationJson.getAsJsonArray("exception_rules"));
+
+        this.prj_code_policy = null; // use realm policy
     }
 
     /**
@@ -102,6 +104,13 @@ public class ProjectPolicy {
         }
 
         parseExceptionRules(applicationData.getAsJsonArray("exception_rules"));
+
+        JsonElement prj_code_policy = applicationData.get("prj_code_policy");
+        if (null == prj_code_policy) {
+            this.prj_code_policy = null;
+        } else {
+            this.prj_code_policy = new CodePolicy(prj_code_policy.getAsJsonObject());
+        }
     }
 
     String getStringOrNull(JsonObject o, String p) {
@@ -179,6 +188,8 @@ public class ProjectPolicy {
     final boolean context;
     final boolean has_context_n_lines;
     final int context_n_lines;
+
+    final CodePolicy prj_code_policy;
 
     public final ArrayList<String> includeDirs = new ArrayList<>();
     public final ArrayList<String> excludeDirs = new ArrayList<>();
@@ -307,5 +318,13 @@ public class ProjectPolicy {
             reErrorNumber_ts = Pattern.compile("^('|\"\"\"|\")\\[[^\\]]*?" + getErrorPrefix() + "-(\\d+)[^\\]]*?\\]\\s+");
         }
         return reErrorNumber_ts;
+    }
+
+    public CodePolicy getCodePolicy() {
+        if (null == this.prj_code_policy) {
+            return realmPolicy.realm_code_policy;
+        } else {
+            return this.prj_code_policy;
+        }
     }
 }
