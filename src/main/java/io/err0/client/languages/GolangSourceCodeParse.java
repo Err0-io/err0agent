@@ -10,15 +10,13 @@ public class GolangSourceCodeParse extends SourceCodeParse {
         super(Language.GOLANG, policy);
         switch (policy.mode) {
             case DEFAULTS:
-                reLogger = Pattern.compile("(^|\\s+)\\S*((m?)_)?log(ger)?\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)f?\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+                reLogger = Pattern.compile("(^|\\s+)\\S*(m?_?)*log(ger)?\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)f?\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
                 break;
 
             case EASY_CONFIGURATION:
+            case ADVANCED_CONFIGURATION:
                 reLogger = Pattern.compile("(^|\\s+)\\S*" + policy.easyModeObjectPattern() + "\\." + policy.easyModeMethodPattern() + "f?\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
                 break;
-
-            case ADVANCED_CONFIGURATION:
-                throw new RuntimeException("Not implemented.");
         }
     }
 

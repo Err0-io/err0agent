@@ -42,20 +42,20 @@ public class CodePolicy {
     public final CodePolicyMode mode;
 
     public String easyModeObjectPattern() {
-        if (mode != CodePolicyMode.EASY_CONFIGURATION)
-            throw new RuntimeException("System error, easy configuration only.");
+        if (mode != CodePolicyMode.EASY_CONFIGURATION && mode != CodePolicyMode.ADVANCED_CONFIGURATION)
+            throw new RuntimeException("System error, easy and advanced configuration only.");
         JsonElement el = codePolicyJson.get("easy_mode_logger_object_naming_pattern");
         if (null == el) {
             // defaults:
-            return "((m?)_)?log(ger)?";
+            return "(m?_?)*log(ger)?";
         } else {
             return el.getAsString();
         }
     }
 
     public String easyModeMethodPattern() {
-        if (mode != CodePolicyMode.EASY_CONFIGURATION)
-            throw new RuntimeException("System error, easy configuration only.");
+        if (mode != CodePolicyMode.EASY_CONFIGURATION && mode != CodePolicyMode.ADVANCED_CONFIGURATION)
+            throw new RuntimeException("System error, easy and advanced configuration only.");
         JsonElement el = codePolicyJson.get("easy_mode_logger_method_naming_pattern");
         if (null == el) {
             // defaults:

@@ -13,17 +13,15 @@ public class JavaSourceCodeParse extends SourceCodeParse {
         super(Language.JAVA, policy);
         switch (policy.mode) {
             case DEFAULTS:
-                reLogger = Pattern.compile("((m?)_)?log(ger)?\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE);
-                reFluentSlf4jConfirm = Pattern.compile("^\\s*((m?)_)?log(ger)?\\.(atError|atWarn|atInfo)\\(\\)\\."); // atDebug|atTrace
+                reLogger = Pattern.compile("(m?_?)*log(ger)?\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE);
+                reFluentSlf4jConfirm = Pattern.compile("^\\s*(m?_?)*log(ger)?\\.(atError|atWarn|atInfo)\\(\\)\\."); // atDebug|atTrace
                 break;
 
             case EASY_CONFIGURATION:
+            case ADVANCED_CONFIGURATION:
                 reLogger = Pattern.compile(policy.easyModeObjectPattern() + "\\." + policy.easyModeMethodPattern() + "\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE);
                 reFluentSlf4jConfirm = Pattern.compile("^\\s*" + policy.easyModeObjectPattern() + "\\.(atError|atWarn|atInfo)\\(\\)\\.");
                 break;
-
-            case ADVANCED_CONFIGURATION:
-                throw new RuntimeException("Not implemented.");
         }
     }
 
