@@ -11,7 +11,7 @@ public class TypescriptSourceCodeParse extends SourceCodeParse {
 
     public TypescriptSourceCodeParse(final CodePolicy policy)
     {
-        super(Language.TYPESCRIPT, policy, policy.adv_typescript);
+        super(Language.TYPESCRIPT, policy, policy.adv_ts);
         switch (policy.mode) {
             case DEFAULTS:
                 reLogger = Pattern.compile("((m?_?)*log(ger)?|console)\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE);

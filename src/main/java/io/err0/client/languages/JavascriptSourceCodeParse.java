@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 public class JavascriptSourceCodeParse extends SourceCodeParse {
 
     public JavascriptSourceCodeParse(final CodePolicy policy) {
-        super(Language.JAVASCRIPT, policy, policy.adv_javascript);
+        super(Language.JAVASCRIPT, policy, policy.adv_js);
         switch (policy.mode) {
             case DEFAULTS:
                 reLogger = Pattern.compile("((m?_?)*log(ger)?|console)\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE);

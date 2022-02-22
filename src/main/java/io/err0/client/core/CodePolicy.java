@@ -39,14 +39,14 @@ public class CodePolicy {
                 this.adv_golang = null == e ? new LanguageCodePolicy(new JsonObject()) : new LanguageCodePolicy(e.getAsJsonObject());
                 e = codePolicyJson.get("adv_java");
                 this.adv_java = null == e ? new LanguageCodePolicy(new JsonObject()) : new LanguageCodePolicy(e.getAsJsonObject());
-                e = codePolicyJson.get("adv_javascript");
-                this.adv_javascript = null == e ? new LanguageCodePolicy(new JsonObject()) : new LanguageCodePolicy(e.getAsJsonObject());
+                e = codePolicyJson.get("adv_js");
+                this.adv_js = null == e ? new LanguageCodePolicy(new JsonObject()) : new LanguageCodePolicy(e.getAsJsonObject());
                 e = codePolicyJson.get("adv_php");
                 this.adv_php = null == e ? new LanguageCodePolicy(new JsonObject()) : new LanguageCodePolicy(e.getAsJsonObject());
                 e = codePolicyJson.get("adv_python");
                 this.adv_python = null == e ? new LanguageCodePolicy(new JsonObject()) : new LanguageCodePolicy(e.getAsJsonObject());
-                e = codePolicyJson.get("adv_typescript");
-                this.adv_typescript = null == e ? new LanguageCodePolicy(new JsonObject()) : new LanguageCodePolicy(e.getAsJsonObject());
+                e = codePolicyJson.get("adv_ts");
+                this.adv_ts = null == e ? new LanguageCodePolicy(new JsonObject()) : new LanguageCodePolicy(e.getAsJsonObject());
                 break;
             default:
                 throw new RuntimeException("Unknown mode");
@@ -59,10 +59,10 @@ public class CodePolicy {
     public LanguageCodePolicy adv_csharp;
     public LanguageCodePolicy adv_golang;
     public LanguageCodePolicy adv_java;
-    public LanguageCodePolicy adv_javascript;
+    public LanguageCodePolicy adv_js;
     public LanguageCodePolicy adv_php;
     public LanguageCodePolicy adv_python;
-    public LanguageCodePolicy adv_typescript;
+    public LanguageCodePolicy adv_ts;
 
     public String easyModeObjectPattern() {
         if (mode != CodePolicyMode.EASY_CONFIGURATION && mode != CodePolicyMode.ADVANCED_CONFIGURATION)
