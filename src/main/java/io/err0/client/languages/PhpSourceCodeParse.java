@@ -88,6 +88,13 @@ public class PhpSourceCodeParse extends SourceCodeParse {
                         currentToken.sourceCode.append(ch);
                         currentToken.depth = depth - 1;
                         currentToken.startLineNumber = lineNumber;
+                    } else if (ch == ';') {
+                        currentToken.sourceCode.append(ch);
+                        parse.tokenList.add(currentToken.finish(lineNumber));
+                        currentToken = new Token(n++, currentToken);
+                        currentToken.type = TokenClassification.SOURCE_CODE;
+                        currentToken.depth = depth;
+                        currentToken.startLineNumber = lineNumber;
                     } else if (ch == '\'') {
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
