@@ -1,5 +1,6 @@
 package io.err0.client.core;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
@@ -32,6 +33,20 @@ public class CodePolicy {
                 break;
             case 2:
                 this.mode = CodePolicyMode.ADVANCED_CONFIGURATION;
+                JsonElement e = codePolicyJson.get("adv_csharp");
+                this.adv_csharp = null == e ? new LanguageCodePolicy(new JsonObject()) : new LanguageCodePolicy(e.getAsJsonObject());
+                e = codePolicyJson.get("adv_golang");
+                this.adv_golang = null == e ? new LanguageCodePolicy(new JsonObject()) : new LanguageCodePolicy(e.getAsJsonObject());
+                e = codePolicyJson.get("adv_java");
+                this.adv_java = null == e ? new LanguageCodePolicy(new JsonObject()) : new LanguageCodePolicy(e.getAsJsonObject());
+                e = codePolicyJson.get("adv_javascript");
+                this.adv_javascript = null == e ? new LanguageCodePolicy(new JsonObject()) : new LanguageCodePolicy(e.getAsJsonObject());
+                e = codePolicyJson.get("adv_php");
+                this.adv_php = null == e ? new LanguageCodePolicy(new JsonObject()) : new LanguageCodePolicy(e.getAsJsonObject());
+                e = codePolicyJson.get("adv_python");
+                this.adv_python = null == e ? new LanguageCodePolicy(new JsonObject()) : new LanguageCodePolicy(e.getAsJsonObject());
+                e = codePolicyJson.get("adv_typescript");
+                this.adv_typescript = null == e ? new LanguageCodePolicy(new JsonObject()) : new LanguageCodePolicy(e.getAsJsonObject());
                 break;
             default:
                 throw new RuntimeException("Unknown mode");
@@ -40,6 +55,14 @@ public class CodePolicy {
 
     final JsonObject codePolicyJson;
     public final CodePolicyMode mode;
+
+    public LanguageCodePolicy adv_csharp;
+    public LanguageCodePolicy adv_golang;
+    public LanguageCodePolicy adv_java;
+    public LanguageCodePolicy adv_javascript;
+    public LanguageCodePolicy adv_php;
+    public LanguageCodePolicy adv_python;
+    public LanguageCodePolicy adv_typescript;
 
     public String easyModeObjectPattern() {
         if (mode != CodePolicyMode.EASY_CONFIGURATION && mode != CodePolicyMode.ADVANCED_CONFIGURATION)

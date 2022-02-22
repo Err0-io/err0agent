@@ -31,6 +31,26 @@ public class Token {
 
     public Consumer<Void> errorCodeConsumer = null;
 
+    // FIXME: per-language do the escaping calculation on this please
+    public String getStringLiteral()
+    {
+        String s = null != sourceNoErrorCode ? sourceNoErrorCode : source;
+        if (null == s) return null;
+
+        switch (type) {
+            case QUOT_LITERAL:
+                return s.length() > 2 ? s.substring(1, s.length() - 2) : "";
+            case APOS_LITERAL:
+                return s.length() > 2 ? s.substring(1, s.length() - 2) : "";
+            case QUOT3_LITERAL:
+                return s.length() > 6 ? s.substring(3, s.length() - 6) : "";
+            case BACKTICK_LITERAL:
+                return s.length() > 2 ? s.substring(1, s.length() - 2) : "";
+            default:
+                throw new RuntimeException();
+        }
+    }
+
     public Token finish(int lineNumber) {
         this.initialSource = this.source = this.sourceCode.toString();
         this.sourceCode = null;

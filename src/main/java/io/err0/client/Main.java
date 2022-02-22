@@ -41,6 +41,7 @@ import java.util.stream.Stream;
 
 public class Main {
 
+    public final static boolean USE_NEAREST_CODE_FOR_LINE_OF_CODE = true;
     public final static int CHAR_RADIUS = 4*1024;
     private static Pattern reGitdir = Pattern.compile("^gitdir: (.*?)$", Pattern.MULTILINE);
 
@@ -515,6 +516,15 @@ public class Main {
                 startPoint = finalPath + dir;
             }
 
+            final CodePolicy codePolicy = projectPolicy.getCodePolicy();
+            final boolean javaAllowed = codePolicy.mode != CodePolicy.CodePolicyMode.ADVANCED_CONFIGURATION || (null == codePolicy.adv_java || !codePolicy.adv_java.disable_language);
+            final boolean cSharpAllowed = codePolicy.mode != CodePolicy.CodePolicyMode.ADVANCED_CONFIGURATION || (null == codePolicy.adv_csharp || !codePolicy.adv_csharp.disable_language);
+            final boolean javascriptAllowed = codePolicy.mode != CodePolicy.CodePolicyMode.ADVANCED_CONFIGURATION || (null == codePolicy.adv_javascript || !codePolicy.adv_javascript.disable_language);
+            final boolean typescriptAllowed = codePolicy.mode != CodePolicy.CodePolicyMode.ADVANCED_CONFIGURATION || (null == codePolicy.adv_typescript || !codePolicy.adv_typescript.disable_language);
+            final boolean phpAllowed = codePolicy.mode != CodePolicy.CodePolicyMode.ADVANCED_CONFIGURATION || (null == codePolicy.adv_php || !codePolicy.adv_php.disable_language);
+            final boolean goAllowed = codePolicy.mode != CodePolicy.CodePolicyMode.ADVANCED_CONFIGURATION || (null == codePolicy.adv_golang || !codePolicy.adv_golang.disable_language);
+            final boolean pythonAllowed = codePolicy.mode != CodePolicy.CodePolicyMode.ADVANCED_CONFIGURATION || (null == codePolicy.adv_python || !codePolicy.adv_python.disable_language);
+
             try (Stream<Path> paths = Files.walk(Paths.get(startPoint)))
             {
                 paths.forEach(p -> {
@@ -535,31 +545,31 @@ public class Main {
                         final String localToCheckoutLower = localToCheckoutUnchanged.toLowerCase(Locale.ROOT);
 
                         final String newFileLower = newFile.toLowerCase(Locale.ROOT);
-                        if (newFileLower.endsWith(".java")) {
+                        if (javaAllowed && newFileLower.endsWith(".java")) {
                             final FileCoding fileCoding = new FileCoding(p);
                             globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, JavaSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
                             System.out.println("Parsed: " + newFile);
-                        } else if (newFileLower.endsWith(".cs") && !newFileLower.endsWith(".designer.cs") && !newFileLower.endsWith(".generated.cs")) {
+                        } else if (cSharpAllowed && newFileLower.endsWith(".cs") && !newFileLower.endsWith(".designer.cs") && !newFileLower.endsWith(".generated.cs")) {
                             final FileCoding fileCoding = new FileCoding(p);
                             globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, CSharpSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
                             System.out.println("Parsed: " + newFile);
-                        } else if (newFileLower.endsWith(".js") && !newFileLower.endsWith(".min.js")) {
+                        } else if (javascriptAllowed && newFileLower.endsWith(".js") && !newFileLower.endsWith(".min.js")) {
                             final FileCoding fileCoding = new FileCoding(p);
                             globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, JavascriptSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
                             System.out.println("Parsed: " + newFile);
-                        } else if (newFileLower.endsWith(".ts")) {
+                        } else if (typescriptAllowed && newFileLower.endsWith(".ts")) {
                             final FileCoding fileCoding = new FileCoding(p);
                             globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, TypescriptSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
                             System.out.println("Parsed: " + newFile);
-                        } else if (newFileLower.endsWith(".php") || newFileLower.endsWith(".phtml")) {
+                        } else if (phpAllowed && (newFileLower.endsWith(".php") || newFileLower.endsWith(".phtml"))) {
                             final FileCoding fileCoding = new FileCoding(p);
                             globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, PhpSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
                             System.out.println("Parsed: " + newFile);
-                        } else if (newFileLower.endsWith(".go")) {
+                        } else if (goAllowed && newFileLower.endsWith(".go")) {
                             final FileCoding fileCoding = new FileCoding(p);
                             globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, GolangSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
                             System.out.println("Parsed: " + newFile);
-                        } else if (newFileLower.endsWith(".py")) {
+                        } else if (pythonAllowed && newFileLower.endsWith(".py")) {
                             final FileCoding fileCoding = new FileCoding(p);
                             globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, PythonSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
                             System.out.println("Parsed: " + newFile);

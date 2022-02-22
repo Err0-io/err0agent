@@ -8,12 +8,15 @@ import java.util.regex.Pattern;
 
 public abstract class SourceCodeParse {
 
-    public SourceCodeParse(final Language language, final CodePolicy policy) {
-        this.language = language; this.policy = policy;
+    public SourceCodeParse(final Language language, final CodePolicy policy, final LanguageCodePolicy languageCodePolicy) {
+        this.language = language;
+        this.policy = policy;
+        this.languageCodePolicy = languageCodePolicy; // or null
     }
 
     public final Language language;
     public final CodePolicy policy;
+    public final LanguageCodePolicy languageCodePolicy;
 
     public enum Language {
         JAVA, C_SHARP, GOLANG, PYTHON, JAVASCRIPT, TYPESCRIPT, PHP

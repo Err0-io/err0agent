@@ -1,5 +1,7 @@
 package io.err0.client.languages;
 
+import com.google.gson.JsonArray;
+import io.err0.client.Main;
 import io.err0.client.core.*;
 
 import java.util.Stack;
@@ -10,7 +12,7 @@ public class PhpSourceCodeParse extends SourceCodeParse {
 
     public PhpSourceCodeParse(final CodePolicy policy)
     {
-        super(Language.PHP, policy);
+        super(Language.PHP, policy, policy.adv_php);
         switch (policy.mode) {
             case DEFAULTS:
                 reLogger = Pattern.compile("(^|\\s|\\\\|\\$|->)(error_log|(m?_?)*log(ger)?(\\\\|::|->)(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info))\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE);
@@ -232,12 +234,39 @@ public class PhpSourceCodeParse extends SourceCodeParse {
                 break;
                 case SOURCE_CODE:
                 {
-                    Matcher matcherLogger = reLogger.matcher(token.source);
-                    if (matcherLogger.find()) {
-                        token.classification = Token.Classification.LOG_OUTPUT;
-                        // TODO: extract canonical log level meta data
-                        // only one level in php error_log
+                    token.classification = Token.Classification.NOT_FULLY_CLASSIFIED;
+                    Token next = token.next();
+                    if (next != null && (next.type == TokenClassification.QUOT_LITERAL || next.type == TokenClassification.APOS_LITERAL)) {
+                        // rule 0 - this code must be followed by a string literal
+                        if (null != languageCodePolicy && languageCodePolicy.rules.size() > 0) {
+                            // classify according to rules.
+                            final String stringLiteral = next.getStringLiteral();
+                            // now, also notice that the error code potential was detected first, so next has been evaluated already...
+                            String lineOfCode = null;
+                            if (Main.USE_NEAREST_CODE_FOR_LINE_OF_CODE) {
+                                lineOfCode = token.source;
+                            } else {
+                                JsonArray lineArray = getNLinesOfContext(token.startLineNumber, 0, Main.CHAR_RADIUS);
+                                if (null != lineArray && lineArray.size() > 0) {
+                                    lineOfCode = GsonHelper.getAsString(lineArray.get(0).getAsJsonObject(), "c", null);
+                                }
+                            }
+                            token.classification = languageCodePolicy.classify(lineOfCode, stringLiteral);
+                        }
                     } else {
+                        token.classification = Token.Classification.NO_MATCH;
+                    }
+
+                    if (token.classification == Token.Classification.NOT_FULLY_CLASSIFIED && (null == languageCodePolicy || !languageCodePolicy.disable_builtin_log_detection)) {
+                        Matcher matcherLogger = reLogger.matcher(token.source);
+                        if (matcherLogger.find()) {
+                            token.classification = Token.Classification.LOG_OUTPUT;
+                            // TODO: extract canonical log level meta data
+                            // only one level in php error_log
+                        }
+                    }
+
+                    if (token.classification == Token.Classification.NOT_FULLY_CLASSIFIED) {
                         Matcher matcherException = reException.matcher(token.source);
                         if (matcherException.find()) {
                             token.classification = Token.Classification.EXCEPTION_THROW;
@@ -245,8 +274,6 @@ public class PhpSourceCodeParse extends SourceCodeParse {
                             if (token.exceptionClass.startsWith("\\")) {
                                 token.exceptionClass = token.exceptionClass.substring(1);
                             }
-                        } else {
-                            token.classification = Token.Classification.NOT_FULLY_CLASSIFIED;
                         }
                     }
                 }
