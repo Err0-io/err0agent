@@ -80,6 +80,14 @@ tasks.withType<Test> {
 tasks.withType<JavaExec> {
 
   // Check-out bts projects...
+
+  /*
+  args = listOf(
+    "--token", "../ccc/api-masterdata-devel/err0-ccc-api-masterdata-ee9bfddb-94b3-11ec-8263-ae3b21a6cd73.json", "--insert", "../ccc/api-masterdata-devel/",
+  )
+  
+   */
+
   /*
   args = listOf(
     "--token", "../fp/futurepay-portal/err0-futurepay-portal-1f8d9570-90b7-11ec-b6db-1613dacd7971.json", "--insert", "../fp/futurepay-portal/",

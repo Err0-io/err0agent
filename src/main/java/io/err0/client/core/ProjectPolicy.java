@@ -15,51 +15,6 @@ import java.util.regex.Pattern;
 
 public class ProjectPolicy {
     /**
-     * Load an application policy from a local file.
-     */
-    public ProjectPolicy(final RealmPolicy realmPolicy, final String applicationJsonFile) throws IOException {
-        this.realmPolicy = realmPolicy;
-
-        applicationJson = JsonParser.parseString(Files.readString(Path.of(applicationJsonFile))).getAsJsonObject();
-        this.name = GsonHelper.getAsString(applicationJson, "name", null);
-        this.prj_code = GsonHelper.getAsString(applicationJson, "prj_code", null);
-        this.prj_uuid = UUID.fromString(GsonHelper.getAsString(applicationJson, "prj_uuid", null));
-        final JsonObject policyJson = applicationJson.getAsJsonObject("policy");
-        this.error_prefix = GsonHelper.getAsString(policyJson, "error_prefix", null);
-        this.error_template = GsonHelper.getAsString(policyJson, "error_template", null);
-        this.error_pad_to_n = GsonHelper.getAsInt(policyJson, "error_pad_to_n", -1);
-        this.has_context = policyJson.has("context");
-        this.context = GsonHelper.getAsBoolean(policyJson, "context", false);
-        this.has_context_n_lines = policyJson.has("context_n_lines");
-        this.context_n_lines = GsonHelper.getAsInt(policyJson, "context_n_lines", 0);
-        final JsonObject sourcesJson = applicationJson.getAsJsonObject("sources");
-        final JsonArray includeDirsAry = sourcesJson.getAsJsonArray("include_dirs");
-        if (null == includeDirsAry || includeDirsAry.isEmpty()) {
-            includeDirs.add(".");
-        } else {
-            for (int i = 0, l = includeDirsAry.size(); i < l; ++i) {
-                includeDirs.add(includeDirsAry.get(i).getAsString());
-            }
-        }
-        final JsonArray excludeDirsAry = sourcesJson.getAsJsonArray("exclude_dirs");
-        if (null != excludeDirsAry) {
-            for (int i = 0, l = excludeDirsAry.size(); i < l; ++i) {
-                excludeDirs.add(excludeDirsAry.get(i).getAsString());
-            }
-        }
-        final JsonArray excludeFilePatternsAry = sourcesJson.getAsJsonArray("exclude_file_patterns");
-        if (null != excludeFilePatternsAry) {
-            for (int i = 0, l = excludeFilePatternsAry.size(); i < l; ++i) {
-                excludeFilePatterns.add(Pattern.compile(excludeFilePatternsAry.get(i).getAsString(), Pattern.CASE_INSENSITIVE)); // Case insensitive for windows compatiblity
-            }
-        }
-
-        parseExceptionRules(applicationJson.getAsJsonArray("exception_rules"));
-
-        this.prj_code_policy = null; // use realm policy
-    }
-
-    /**
      * Load an app policy from the web service, note different format.
      * FIXME - formats.
      * @param realmJson
@@ -106,7 +61,7 @@ public class ProjectPolicy {
         parseExceptionRules(applicationData.getAsJsonArray("exception_rules"));
 
         JsonElement prj_code_policy = applicationData.get("prj_code_policy");
-        if (null == prj_code_policy) {
+        if (null == prj_code_policy || prj_code_policy.isJsonNull()) {
             this.prj_code_policy = null;
         } else {
             this.prj_code_policy = new CodePolicy(prj_code_policy.getAsJsonObject());
