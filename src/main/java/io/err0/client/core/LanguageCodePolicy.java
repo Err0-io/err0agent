@@ -88,21 +88,21 @@ public class LanguageCodePolicy {
                     if (null == lineOfCode) continue;
                     for (Pattern p : rule.pattern) {
                         if (p.matcher(lineOfCode).find())
-                            return Token.Classification.NO_MATCH;
+                            return Token.Classification.NOT_LOG_OUTPUT;
                     }
                     break;
                 case LITERAL_SHOULD_MATCH:
                     if (null == stringLiteral) continue;
                     for (Pattern p : rule.pattern) {
                         if (p.matcher(stringLiteral).find())
-                            classification = Token.Classification.LOG_OUTPUT;
+                            classification = Token.Classification.MAYBE_LOG_OR_EXCEPTION;
                     }
                     break;
                 case LITERAL_MUST_NOT_MATCH:
                     if (null == stringLiteral) continue;
                     for (Pattern p : rule.pattern) {
                         if (p.matcher(stringLiteral).find())
-                            return Token.Classification.NO_MATCH;
+                            return Token.Classification.NOT_LOG_OUTPUT;
                     }
                     break;
                 default:

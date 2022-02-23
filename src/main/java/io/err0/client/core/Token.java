@@ -65,6 +65,8 @@ public class Token {
         ERROR_NUMBER,
         POTENTIAL_ERROR_NUMBER,
         LOG_OUTPUT,
+        MAYBE_LOG_OR_EXCEPTION,
+        NOT_LOG_OUTPUT,
         EXCEPTION_THROW,
         CLASS_SIGNATURE,
         METHOD_SIGNATURE,

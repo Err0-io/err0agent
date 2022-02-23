@@ -241,7 +241,7 @@ public class CSharpSourceCodeParse extends SourceCodeParse {
                         token.classification = Token.Classification.NO_MATCH;
                     }
 
-                    if (token.classification == Token.Classification.NOT_FULLY_CLASSIFIED && (null == languageCodePolicy || !languageCodePolicy.disable_builtin_log_detection)) {
+                    if ((token.classification == Token.Classification.NOT_FULLY_CLASSIFIED || token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) && (null == languageCodePolicy || !languageCodePolicy.disable_builtin_log_detection)) {
                         Matcher matcherLogger = reLogger.matcher(token.source);
                         if (matcherLogger.find()) {
                             token.classification = Token.Classification.LOG_OUTPUT;
@@ -249,7 +249,7 @@ public class CSharpSourceCodeParse extends SourceCodeParse {
                         }
                     }
 
-                    if (token.classification == Token.Classification.NOT_FULLY_CLASSIFIED)
+                    if (token.classification == Token.Classification.NOT_FULLY_CLASSIFIED || token.classification == Token.Classification.NOT_LOG_OUTPUT || token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION)
                     {
                         Matcher matcherException = reException.matcher(token.source);
                         if (matcherException.find()) {
@@ -257,6 +257,8 @@ public class CSharpSourceCodeParse extends SourceCodeParse {
                             token.exceptionClass = matcherException.group(reException_group_class);
                         }
                     }
+
+                    if (token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) token.classification = Token.Classification.LOG_OUTPUT;
                 }
                 break;
                 default:
