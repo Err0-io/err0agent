@@ -53,6 +53,8 @@ public class Test0011JavaCustom {
             assertEquals(globalState.files.size(), apiProvider.resultStorage.size());
 
             previousState = apiProvider.getState();
+
+            assertEquals("EXCEPTION_THROW", previousState.metaDataStorage.get(3l).metaData.get("type").getAsString());
         }
 
         // pass #2 - scan and report (no changes)
