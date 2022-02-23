@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import io.err0.client.Main;
 import io.err0.client.core.*;
 
+import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 public class GolangSourceCodeParse extends SourceCodeParse {
@@ -22,7 +23,7 @@ public class GolangSourceCodeParse extends SourceCodeParse {
         }
     }
 
-    private static Pattern reMethod = Pattern.compile("(^|\\s+)func\\s+.*?$", Pattern.MULTILINE);
+    private static Pattern reMethod = Pattern.compile("(^|\\s+)func\\s+(.*)?$", Pattern.MULTILINE);
     private static Pattern reMethodIgnore = Pattern.compile("(\\s+|^\\s*)(catch|if|do|while|switch|for)\\s+", Pattern.MULTILINE);
     //private static Pattern reErrorNumber = Pattern.compile("^(`|'|\")\\[ERR-(\\d+)\\]\\s+");
     private Pattern reLogger = null;
@@ -45,12 +46,17 @@ public class GolangSourceCodeParse extends SourceCodeParse {
             switch (currentToken.type) {
                 case SOURCE_CODE:
                     if (ch == '{') {
-                        parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
-                        currentToken.sourceCode.append(ch);
-                        currentToken.depth = depth + 1;
-                        currentToken.startLineNumber = lineNumber;
+                        if (i < l-1 && chars[i+1] == '}') {
+                            currentToken.sourceCode.append(ch);
+                            currentToken.sourceCode.append(chars[++i]);
+                        } else {
+                            parse.tokenList.add(currentToken.finish(lineNumber));
+                            currentToken = new Token(n++, currentToken);
+                            currentToken.type = TokenClassification.SOURCE_CODE;
+                            currentToken.sourceCode.append(ch);
+                            currentToken.depth = depth + 1;
+                            currentToken.startLineNumber = lineNumber;
+                        }
                     } else if (ch == '}') {
                         currentToken.sourceCode.append(ch);
                         parse.tokenList.add(currentToken.finish(lineNumber));

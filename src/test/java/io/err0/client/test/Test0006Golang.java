@@ -1,5 +1,6 @@
 package io.err0.client.test;
 
+import com.google.gson.JsonArray;
 import io.err0.client.core.ProjectPolicy;
 import io.err0.client.core.GlobalState;
 import io.err0.client.Main;
@@ -50,5 +51,14 @@ public class Test0006Golang {
         });
 
         assertEquals(globalState.files.size(), apiProvider.resultStorage.size());
+
+        {
+            // assert regarding ProblemMethod
+            UnitTestApiProvider.MetaData r1 = apiProvider.metaDataStorage.get(2l);
+            assertNotNull(r1);
+            JsonArray array = r1.metaData.getAsJsonArray("methods");
+            assertEquals(1, array.size());
+            assertEquals("func (p *ExampleType) exampleFunc(src interface{}) error", array.get(0).getAsJsonObject().get("c").getAsString());
+        }
     }
 }

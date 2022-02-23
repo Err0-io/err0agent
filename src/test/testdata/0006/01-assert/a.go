@@ -59,3 +59,10 @@ func main() {
         fmt.Println(ae.prob)
     }
 }
+
+// from elsewhere
+type ExampleType []string
+
+func (p *ExampleType) exampleFunc(src interface{}) error {
+    return errors.New("[E-2] an example error")
+}
