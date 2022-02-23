@@ -16,13 +16,13 @@ public class JavaSourceCodeParse extends SourceCodeParse {
         switch (policy.mode) {
             case DEFAULTS:
                 reLogger = Pattern.compile("(m?_?)*log(ger)?\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE);
-                reFluentSlf4jConfirm = Pattern.compile("^\\s*(m?_?)*log(ger)?\\.(atError|atWarn|atInfo)\\(\\)\\."); // atDebug|atTrace
+                reFluentSlf4jConfirm = Pattern.compile("^\\s*(m?_?)*log(ger)?\\.(atFatal|atError|atWarn|atInfo)\\(\\)\\."); // atDebug|atTrace
                 break;
 
             case EASY_CONFIGURATION:
             case ADVANCED_CONFIGURATION:
                 reLogger = Pattern.compile(policy.easyModeObjectPattern() + "\\." + policy.easyModeMethodPattern() + "\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE);
-                reFluentSlf4jConfirm = Pattern.compile("^\\s*" + policy.easyModeObjectPattern() + "\\.(atError|atWarn|atInfo)\\(\\)\\.");
+                reFluentSlf4jConfirm = Pattern.compile("^\\s*" + policy.easyModeObjectPattern() + "\\.at" + policy.easyModeMethodPattern() + "\\(\\)\\.", Pattern.CASE_INSENSITIVE);
                 break;
         }
     }
