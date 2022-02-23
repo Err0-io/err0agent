@@ -242,7 +242,14 @@ public class Main {
 
             for (int i = 0, l = args.length; i < l; ++i) {
                 String arg = args[i];
-                if ("--token".equals(arg)) {
+                if ("--help".equals(arg)) {
+                    System.out.println("Usage");
+                    System.out.println("<command> --token path-to-token.json --insert /path/to/git/repo");
+                    System.out.println(" insert error codes into the source code");
+                    System.out.println("<command> --token path-to-token.json --analyse --check /path/to/git/repo");
+                    System.out.println(" analyse error codes in the project and return failure if some need to change");
+                }
+                else if ("--token".equals(arg)) {
 
                     // a new API provider per token
                     if (apiProvider != null) {

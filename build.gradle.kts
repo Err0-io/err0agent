@@ -49,6 +49,12 @@ dependencies {
   // depend on these:
   // testImplementation("org.apache.logging.log4j:log4j-core:2.14.1")
   // testImplementation("org.slf4j:slf4j-api:1.7.31")
+
+  // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
+  implementation("org.slf4j:slf4j-api:1.7.36")
+  // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
+  implementation("org.slf4j:slf4j-simple:1.7.36")
+
 }
 
 java {
