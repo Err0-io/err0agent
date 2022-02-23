@@ -14,15 +14,18 @@
 });
 
 class A {
+    
+    logger = LoggerFactory.getLogger();
+    
     get a_getter() {
         let foo = false;
 
-        console.debug('a debug message');
+        logger.debug('a debug message');
 
         if (foo) {
-            console.log('a log message');
-            console.warn("a warning to you");
-            console.error('an error condition');
+            logger.log('a log message');
+            logger.warn("a warning to you");
+            logger.error('an error condition');
 
             throw new Error('oops!  an error occurred.');
         }
@@ -33,12 +36,12 @@ class A {
     a_method() {
         let foo = false;
 
-        console.debug('a debug message');
+        logger.debug('a debug message');
 
         if (foo) {
-            console.log('a log message');
-            console.warn("a warning to you");
-            console.error('an error condition');
+            logger.log('a log message');
+            logger.warn("a warning to you");
+            logger.error('an error condition');
 
             throw new Error('oops!  an error occurred.');
         }
