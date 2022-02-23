@@ -18,4 +18,14 @@ public class TestPolicy {
             throw new RuntimeException(e);
         }
     }
+
+    public static ProjectPolicy getAdvJavaPolicy() {
+        try {
+            final RealmPolicy realmPolicy = new RealmPolicy(JsonParser.parseString(Files.readString(Path.of("policies/realm/example-realm.json"))).getAsJsonObject());
+            return new ProjectPolicy(realmPolicy, JsonParser.parseString(Files.readString(Path.of("policies/application/example-adv-java-app.json"))).getAsJsonObject());
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

@@ -74,7 +74,7 @@ public class LanguageCodePolicy {
     public ArrayList<LoggerRule> rules = new ArrayList<>();
 
     public Token.Classification classify(String lineOfCode, String stringLiteral) {
-        Token.Classification classification = Token.Classification.NOT_CLASSIFIED_YET;
+        Token.Classification classification = Token.Classification.NOT_FULLY_CLASSIFIED;
         for (LoggerRule rule : rules) {
             switch (rule.type) {
                 case LINE_SHOULD_MATCH:
