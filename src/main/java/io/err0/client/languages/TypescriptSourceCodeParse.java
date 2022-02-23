@@ -57,10 +57,10 @@ public class TypescriptSourceCodeParse extends SourceCodeParse {
                         currentToken.depth = depth + 1;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == '}') {
+                        currentToken.sourceCode.append(ch);
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenClassification.SOURCE_CODE;
-                        currentToken.sourceCode.append(ch);
                         currentToken.depth = depth - 1;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == ';') {
