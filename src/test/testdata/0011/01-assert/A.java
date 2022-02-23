@@ -21,7 +21,7 @@ public class A {
         if (foo) {
             _l("[E-2] foo is true.");
 
-            throw new RuntimeException("[E-3] This is an exception");
+            throw new RuntimeException("[E-3] ERROR\tThis is an exception");
         }
 
         _l("[E-4] Finishing...");
