@@ -10,33 +10,6 @@ import java.nio.file.Path;
 import java.util.UUID;
 
 public class RealmPolicy {
-    /**
-     * Load a realm policy from a local file.
-     */
-    public RealmPolicy(final String realmJsonFile) throws IOException {
-        realmJson = JsonParser.parseString(Files.readString(Path.of(realmJsonFile))).getAsJsonObject();
-        this.name = GsonHelper.getAsString(realmJson, "name", null);
-        this.realm_code = GsonHelper.getAsString(realmJson, "realm_code", null);
-        this.realm_uuid = UUID.fromString(GsonHelper.getAsString(realmJson, "realm_uuid", null));
-        String _customer_uuid = GsonHelper.getAsString(realmJson, "customer_uuid", null);
-        if (null != _customer_uuid) {
-            this.customer_uuid = UUID.fromString(_customer_uuid);
-        }
-        if (null == this.customer_uuid) {
-            System.err.println("customer_uuid is null in realm json.");
-            //System.exit(-1);
-        }
-        this.policy_editable_by_prj = GsonHelper.getAsBoolean(realmJson, "policy_editable_by_prj", false);
-        this.context_allowed_in_prj = GsonHelper.getAsBoolean(realmJson, "context_allowed_in_prj", true);
-        final JsonObject policyJson = realmJson.getAsJsonObject("policy");
-        this.error_prefix = GsonHelper.getAsString(policyJson, "error_prefix", null);
-        this.error_template = GsonHelper.getAsString(policyJson, "error_template", null);
-        this.error_pad_to_n = GsonHelper.getAsInt(policyJson, "error_pad_to_n", -1);
-        this.context = GsonHelper.getAsBoolean(policyJson, "context", false);
-        this.context_n_lines = GsonHelper.getAsInt(policyJson, "context_n_lines", 0);
-
-        realm_code_policy = new CodePolicy(); // defaults
-    }
 
     /**
      * Load a realm policy from the web service, note different format.
