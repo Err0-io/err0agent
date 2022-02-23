@@ -13,7 +13,7 @@ import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class Test0015Javascript {
+public class Test0015JavascriptCustom {
     @Test
     public void t0001InjectErrorCodes() {
 
