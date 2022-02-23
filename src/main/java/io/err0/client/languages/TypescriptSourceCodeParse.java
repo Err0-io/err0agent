@@ -14,12 +14,12 @@ public class TypescriptSourceCodeParse extends SourceCodeParse {
         super(Language.TYPESCRIPT, policy, policy.adv_ts);
         switch (policy.mode) {
             case DEFAULTS:
-                reLogger = Pattern.compile("((m?_?)*log(ger)?|console)\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE);
+                reLogger = Pattern.compile("(^|\\s+)((m?_?)*log(ger)?|console|window\\.console)\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
                 break;
 
             case EASY_CONFIGURATION:
             case ADVANCED_CONFIGURATION:
-                reLogger = Pattern.compile("(" + policy.easyModeObjectPattern() +"|console)\\." + policy.easyModeMethodPattern() + "\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE);
+                reLogger = Pattern.compile("(^|\\s+)(" + policy.easyModeObjectPattern() + "|console|window\\.console)\\." + policy.easyModeMethodPattern() + "\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
                 break;
         }
     }
