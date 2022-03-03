@@ -2,6 +2,7 @@ package io.err0.client.rules;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import io.err0.client.core.SourceCodeParse;
 import io.err0.client.core.Token;
 
 import java.util.regex.Pattern;
@@ -27,7 +28,7 @@ public class ExceptionRuleSelection {
     public final String checkValue;
     public final Pattern checkPattern;
 
-    public boolean isMatch(Token token) {
+    public boolean isMatch(SourceCodeParse.Language language, Token token) {
         switch (selector) {
             case NO_SELECTOR:
                 return false;

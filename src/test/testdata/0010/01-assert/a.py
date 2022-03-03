@@ -14,3 +14,8 @@ class Apps:
 
         # Mapping of app labels => model names => model classes. Every time a
         # model is imported, ModelBase.__new__ calls apps.register_model which
+
+class Example:
+
+    def method(list=()):
+        raise RuntimeError(", ".join("%s" % x for x in list)

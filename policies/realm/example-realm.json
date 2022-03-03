@@ -1,19 +1,21 @@
 {
-  "name": "Example Realm",
-  "realm_code": "RLM",
-  "realm_uuid": "01f646f8-e479-11eb-ba80-0242ac130004",
-  "policy_editable_by_app": true,
-  "context_allowed_in_app": true,
-  "error_number_unique_in_realm": false,
-  "error_number_unique_per_application": true,
-  "policy": {
-    "types": "all",
-    "language": "autodetect",
-    "mode": "non-strict",
-    "error_prefix": "E",
-    "error_template": "%error %realm %app %version",
-    "error_pad_to_n": 7,
-    "context": true,
-    "context_n_lines": 0
+  "pk": "01f646f8-e479-11eb-ba80-0242ac130004",
+  "data": {
+    "name": "Example Realm",
+    "realm_code": "RLM",
+    "policy_editable_by_prj": true,
+    "context_allowed_in_prj": true,
+    "error_number_unique_in_realm": false,
+    "error_number_unique_per_project": true,
+    "policy": {
+      "types": "all",
+      "language": "autodetect",
+      "mode": "non-strict",
+      "error_prefix": "E",
+      "error_template": "%error %realm %prj %version",
+      "error_pad_to_n": 7,
+      "context": true,
+      "context_n_lines": 0
+    }
   }
 }

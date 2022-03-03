@@ -1,5 +1,7 @@
 package io.err0.client.languages;
 
+import com.google.gson.JsonArray;
+import io.err0.client.Main;
 import io.err0.client.core.*;
 
 import java.util.regex.Matcher;
@@ -7,15 +9,31 @@ import java.util.regex.Pattern;
 
 public class PythonSourceCodeParse extends SourceCodeParse {
 
+    public PythonSourceCodeParse(final CodePolicy policy)
+    {
+        super(Language.PYTHON, policy, policy.adv_python);
+        switch (policy.mode) {
+            case DEFAULTS:
+                reLogger = Pattern.compile("(^|\\s+)(m?_?)*log(ger)?\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+                break;
+
+            case EASY_CONFIGURATION:
+            case ADVANCED_CONFIGURATION:
+                reLogger = Pattern.compile("(^|\\s+)" + policy.easyModeObjectPattern() + "\\." + policy.easyModeMethodPattern() + "\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+                break;
+        }
+    }
+
     private static Pattern reMethod = Pattern.compile("^(\\s*)(def|class|if|for|while|except)\\s+.*$");
-    private static Pattern reLogger = Pattern.compile("(^|\\s+)\\S*logger\\.(error|warning|info)\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE);
+    private Pattern reLogger = null;
     private static Pattern reException = Pattern.compile("(^|\\s+)raise\\s([^\\s\\(]*)\\s*\\(*.+$");
+    private static Pattern reFunctionOfLiteral = Pattern.compile("^\\s*\\.");
     private static int reException_group_class = 2;
 
-    public static PythonSourceCodeParse lex(final String sourceCode) {
+    public static PythonSourceCodeParse lex(final CodePolicy policy, final String sourceCode) {
         int n = 0;
-        PythonSourceCodeParse parse = new PythonSourceCodeParse();
-        Token currentToken = new Token(n++);
+        PythonSourceCodeParse parse = new PythonSourceCodeParse(policy);
+        Token currentToken = new Token(n++, null);
         currentToken.type = TokenClassification.SOURCE_CODE;
         int lineNumber = 1;
         int indentNumber = 0;
@@ -45,13 +63,13 @@ public class PythonSourceCodeParse extends SourceCodeParse {
                         currentToken.sourceCode.append(ch);
                         countIndent = true;
                         parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++);
+                        currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenClassification.SOURCE_CODE;
                         currentToken.depth = indentNumber;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == '\'') {
                         parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++);
+                        currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenClassification.APOS_LITERAL;
                         currentToken.sourceCode.append(ch);
                         currentToken.depth = indentNumber;
@@ -65,7 +83,7 @@ public class PythonSourceCodeParse extends SourceCodeParse {
                                     if (ch2 == '\"') {
                                         // comment literal """ <<comment>> """
                                         parse.tokenList.add(currentToken.finish(lineNumber));
-                                        currentToken = new Token(n++);
+                                        currentToken = new Token(n++, currentToken);
                                         currentToken.type = TokenClassification.QUOT3_LITERAL;
                                         currentToken.sourceCode.append(ch);
                                         currentToken.sourceCode.append(ch1);
@@ -83,14 +101,14 @@ public class PythonSourceCodeParse extends SourceCodeParse {
 
                         // otherwise, it is a quot literal.
                         parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++);
+                        currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenClassification.QUOT_LITERAL;
                         currentToken.sourceCode.append(ch);
                         currentToken.depth = indentNumber;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == '#') {
                         parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++);
+                        currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenClassification.COMMENT_LINE;
                         currentToken.sourceCode.append(ch);
                         currentToken.depth = indentNumber;
@@ -112,7 +130,7 @@ public class PythonSourceCodeParse extends SourceCodeParse {
                         currentToken.sourceCode.append(ch);
                         countIndent = true;
                         parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++);
+                        currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenClassification.SOURCE_CODE;
                         currentToken.depth = indentNumber;
                         currentToken.startLineNumber = lineNumber;
@@ -133,7 +151,7 @@ public class PythonSourceCodeParse extends SourceCodeParse {
                                         currentToken.sourceCode.append(ch1);
                                         currentToken.sourceCode.append(ch2);
                                         parse.tokenList.add(currentToken.finish(lineNumber));
-                                        currentToken = new Token(n++);
+                                        currentToken = new Token(n++, currentToken);
                                         currentToken.type = TokenClassification.SOURCE_CODE;
                                         currentToken.depth = indentNumber;
                                         currentToken.startLineNumber = lineNumber;
@@ -158,7 +176,7 @@ public class PythonSourceCodeParse extends SourceCodeParse {
                     if (ch == '\'') {
                         currentToken.sourceCode.append(ch);
                         parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++);
+                        currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenClassification.SOURCE_CODE;
                         currentToken.depth = indentNumber;
                         currentToken.startLineNumber = lineNumber;
@@ -174,7 +192,7 @@ public class PythonSourceCodeParse extends SourceCodeParse {
                     if (ch == '\"') {
                         currentToken.sourceCode.append(ch);
                         parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++);
+                        currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenClassification.SOURCE_CODE;
                         currentToken.depth = indentNumber;
                         currentToken.startLineNumber = lineNumber;
@@ -213,7 +231,7 @@ public class PythonSourceCodeParse extends SourceCodeParse {
     }
 
     @Override
-    public void classifyForErrorCode(ApiProvider apiProvider, GlobalState globalState, ApplicationPolicy policy, StateItem stateItem, Token token) {
+    public void classifyForErrorCode(ApiProvider apiProvider, GlobalState globalState, ProjectPolicy policy, StateItem stateItem, Token token) {
         if (token.classification == Token.Classification.NOT_CLASSIFIED_YET) {
             switch (token.type) {
                 case APOS_LITERAL:
@@ -222,7 +240,22 @@ public class PythonSourceCodeParse extends SourceCodeParse {
                 {
                     // 1) Strip '[ERR-nnnnnn] ' from string literals for re-injection
                     Matcher matcherErrorNumber = policy.getReErrorNumber_py().matcher(token.source);
-                    if (matcherErrorNumber.find()) {
+                    boolean found = matcherErrorNumber.find();
+
+                    // Is this in fact a function of a literal, e.g. ", ".join(...)?
+                    Token next = token.next();
+                    if (null != next) {
+                        if (reFunctionOfLiteral.matcher(next.source).find()) {
+                            if (found) {
+                                final String quot = matcherErrorNumber.group(1);
+                                token.sourceNoErrorCode = token.source = quot + token.source.substring(matcherErrorNumber.end());
+                            }
+                            token.classification = Token.Classification.NO_MATCH;
+                            return;
+                        }
+                    }
+
+                    if (found) {
                         token.classification = Token.Classification.ERROR_NUMBER;
                         final String quot = matcherErrorNumber.group(1);
                         long errorOrdinal = Long.parseLong(matcherErrorNumber.group(2));
@@ -245,19 +278,46 @@ public class PythonSourceCodeParse extends SourceCodeParse {
                 break;
                 case SOURCE_CODE:
                 {
-                    Matcher matcherLogger = reLogger.matcher(token.source);
-                    if (matcherLogger.find()) {
-                        token.classification = Token.Classification.LOG_OUTPUT;
-                        // TODO: extract canonical log level meta data
+                    token.classification = Token.Classification.NOT_FULLY_CLASSIFIED;
+                    Token next = token.next();
+                    if (next != null && (next.type == TokenClassification.QUOT_LITERAL || next.type == TokenClassification.APOS_LITERAL || next.type == TokenClassification.QUOT3_LITERAL)) {
+                        // rule 0 - this code must be followed by a string literal
+                        if (null != languageCodePolicy && languageCodePolicy.rules.size() > 0) {
+                            // classify according to rules.
+                            final String stringLiteral = next.getStringLiteral();
+                            // now, also notice that the error code potential was detected first, so next has been evaluated already...
+                            String lineOfCode = null;
+                            if (Main.USE_NEAREST_CODE_FOR_LINE_OF_CODE) {
+                                lineOfCode = token.source;
+                            } else {
+                                JsonArray lineArray = getNLinesOfContext(token.startLineNumber, 0, Main.CHAR_RADIUS);
+                                if (null != lineArray && lineArray.size() > 0) {
+                                    lineOfCode = GsonHelper.getAsString(lineArray.get(0).getAsJsonObject(), "c", null);
+                                }
+                            }
+                            token.classification = languageCodePolicy.classify(lineOfCode, stringLiteral);
+                        }
                     } else {
+                        token.classification = Token.Classification.NO_MATCH;
+                    }
+
+                    if ((token.classification == Token.Classification.NOT_FULLY_CLASSIFIED || token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) && (null == languageCodePolicy || !languageCodePolicy.disable_builtin_log_detection)) {
+                        Matcher matcherLogger = reLogger.matcher(token.source);
+                        if (matcherLogger.find()) {
+                            token.classification = Token.Classification.LOG_OUTPUT;
+                            // TODO: extract canonical log level meta data
+                        }
+                    }
+
+                    if (token.classification == Token.Classification.NOT_FULLY_CLASSIFIED || token.classification == Token.Classification.NOT_LOG_OUTPUT || token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) {
                         Matcher matcherException = reException.matcher(token.source);
                         if (matcherException.find()) {
                             token.classification = Token.Classification.EXCEPTION_THROW;
                             token.exceptionClass = matcherException.group(reException_group_class);
-                        } else {
-                            token.classification = Token.Classification.NOT_FULLY_CLASSIFIED;
                         }
                     }
+
+                    if (token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) token.classification = Token.Classification.LOG_OUTPUT;
                 }
                 break;
                 default:

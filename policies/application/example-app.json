@@ -1,13 +1,15 @@
 {
-  "name": "Example App",
-  "app_code": "APP",
-  "app_uuid": "a8c41db4-e480-11eb-ba80-0242ac130004",
-  "policy": {
-    "error_template": "%error",
-    "error_pad_to_n": 0,
-    "context_n_lines": 3
-  },
-  "sources": {
-    "include_dirs": ["."]
+  "pk": "a8c41db4-e480-11eb-ba80-0242ac130004",
+  "data": {
+    "name": "Example App",
+    "prj_code": "APP",
+    "policy": {
+      "error_template": "%error",
+      "error_pad_to_n": 0,
+      "context_n_lines": 3
+    },
+    "sources": {
+      "include_dirs": ["."]
+    }
   }
 }

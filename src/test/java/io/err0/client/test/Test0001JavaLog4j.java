@@ -2,7 +2,7 @@ package io.err0.client.test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import io.err0.client.core.ApplicationPolicy;
+import io.err0.client.core.ProjectPolicy;
 import io.err0.client.core.GlobalState;
 import io.err0.client.Main;
 import io.err0.client.core.ResultDriver;
@@ -25,7 +25,7 @@ public class Test0001JavaLog4j {
             final String sourceDir = "src/test/testdata/0001/01";
             final String assertDir = "src/test/testdata/0001/01-assert";
 
-            final ApplicationPolicy policy = TestPolicy.getPolicy();
+            final ProjectPolicy policy = TestPolicy.getPolicy();
             assertNotNull(policy);
 
             final GlobalState globalState = new GlobalState();
@@ -60,7 +60,7 @@ public class Test0001JavaLog4j {
 
             final String sourceDir = "src/test/testdata/0001/02";
 
-            final ApplicationPolicy policy = TestPolicy.getPolicy();
+            final ProjectPolicy policy = TestPolicy.getPolicy();
             assertNotNull(policy);
 
             final GlobalState globalState = new GlobalState();
@@ -89,7 +89,7 @@ public class Test0001JavaLog4j {
 
             final String sourceDir = "src/test/testdata/0001/03";
 
-            final ApplicationPolicy policy = TestPolicy.getPolicy();
+            final ProjectPolicy policy = TestPolicy.getPolicy();
             assertNotNull(policy);
 
             final GlobalState globalState = new GlobalState();

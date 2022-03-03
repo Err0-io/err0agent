@@ -1,3 +1,3 @@
 #!/bin/sh
 
-java -jar /root/err0agent.jar $@
+java -Xmx4096m -jar /root/err0agent.jar $@

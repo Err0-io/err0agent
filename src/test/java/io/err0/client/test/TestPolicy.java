@@ -1,15 +1,88 @@
 package io.err0.client.test;
 
-import io.err0.client.core.ApplicationPolicy;
+import com.google.gson.JsonParser;
+import io.err0.client.core.ProjectPolicy;
 import io.err0.client.core.RealmPolicy;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class TestPolicy {
-    public static ApplicationPolicy getPolicy() {
+    public static ProjectPolicy getPolicy() {
         try {
-            final RealmPolicy realmPolicy = new RealmPolicy("policies/realm/example-realm.json");
-            return new ApplicationPolicy(realmPolicy, "policies/application/example-app.json");
+            final RealmPolicy realmPolicy = new RealmPolicy(JsonParser.parseString(Files.readString(Path.of("policies/realm/example-realm.json"))).getAsJsonObject());
+            return new ProjectPolicy(realmPolicy, JsonParser.parseString(Files.readString(Path.of("policies/application/example-app.json"))).getAsJsonObject());
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static ProjectPolicy getAdvJavaPolicy() {
+        try {
+            final RealmPolicy realmPolicy = new RealmPolicy(JsonParser.parseString(Files.readString(Path.of("policies/realm/example-realm.json"))).getAsJsonObject());
+            return new ProjectPolicy(realmPolicy, JsonParser.parseString(Files.readString(Path.of("policies/application/example-adv-java-app.json"))).getAsJsonObject());
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static ProjectPolicy getAdvPhpPolicy() {
+        try {
+            final RealmPolicy realmPolicy = new RealmPolicy(JsonParser.parseString(Files.readString(Path.of("policies/realm/example-realm.json"))).getAsJsonObject());
+            return new ProjectPolicy(realmPolicy, JsonParser.parseString(Files.readString(Path.of("policies/application/example-adv-php-app.json"))).getAsJsonObject());
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static ProjectPolicy getAdvCSharpPolicy() {
+        try {
+            final RealmPolicy realmPolicy = new RealmPolicy(JsonParser.parseString(Files.readString(Path.of("policies/realm/example-realm.json"))).getAsJsonObject());
+            return new ProjectPolicy(realmPolicy, JsonParser.parseString(Files.readString(Path.of("policies/application/example-adv-csharp-app.json"))).getAsJsonObject());
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static ProjectPolicy getAdvGolangPolicy() {
+        try {
+            final RealmPolicy realmPolicy = new RealmPolicy(JsonParser.parseString(Files.readString(Path.of("policies/realm/example-realm.json"))).getAsJsonObject());
+            return new ProjectPolicy(realmPolicy, JsonParser.parseString(Files.readString(Path.of("policies/application/example-adv-golang-app.json"))).getAsJsonObject());
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static ProjectPolicy getAdvJavaScriptPolicy() {
+        try {
+            final RealmPolicy realmPolicy = new RealmPolicy(JsonParser.parseString(Files.readString(Path.of("policies/realm/example-realm.json"))).getAsJsonObject());
+            return new ProjectPolicy(realmPolicy, JsonParser.parseString(Files.readString(Path.of("policies/application/example-adv-javascript-app.json"))).getAsJsonObject());
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static ProjectPolicy getAdvTypeScriptPolicy() {
+        try {
+            final RealmPolicy realmPolicy = new RealmPolicy(JsonParser.parseString(Files.readString(Path.of("policies/realm/example-realm.json"))).getAsJsonObject());
+            return new ProjectPolicy(realmPolicy, JsonParser.parseString(Files.readString(Path.of("policies/application/example-adv-typescript-app.json"))).getAsJsonObject());
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static ProjectPolicy getAdvPythonPolicy() {
+        try {
+            final RealmPolicy realmPolicy = new RealmPolicy(JsonParser.parseString(Files.readString(Path.of("policies/realm/example-realm.json"))).getAsJsonObject());
+            return new ProjectPolicy(realmPolicy, JsonParser.parseString(Files.readString(Path.of("policies/application/example-adv-python-app.json"))).getAsJsonObject());
         }
         catch (IOException e) {
             throw new RuntimeException(e);

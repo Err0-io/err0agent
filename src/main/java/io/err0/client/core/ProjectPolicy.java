@@ -13,64 +13,21 @@ import java.util.ArrayList;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-public class ApplicationPolicy {
-    /**
-     * Load an application policy from a local file.
-     */
-    public ApplicationPolicy(final RealmPolicy realmPolicy, final String applicationJsonFile) throws IOException {
-        this.realmPolicy = realmPolicy;
-
-        applicationJson = JsonParser.parseString(Files.readString(Path.of(applicationJsonFile))).getAsJsonObject();
-        this.name = GsonHelper.getAsString(applicationJson, "name", null);
-        this.app_code = GsonHelper.getAsString(applicationJson, "app_code", null);
-        this.app_uuid = UUID.fromString(GsonHelper.getAsString(applicationJson, "app_uuid", null));
-        final JsonObject policyJson = applicationJson.getAsJsonObject("policy");
-        this.error_prefix = GsonHelper.getAsString(policyJson, "error_prefix", null);
-        this.error_template = GsonHelper.getAsString(policyJson, "error_template", null);
-        this.error_pad_to_n = GsonHelper.getAsInt(policyJson, "error_pad_to_n", -1);
-        this.has_context = policyJson.has("context");
-        this.context = GsonHelper.getAsBoolean(policyJson, "context", false);
-        this.has_context_n_lines = policyJson.has("context_n_lines");
-        this.context_n_lines = GsonHelper.getAsInt(policyJson, "context_n_lines", 0);
-        final JsonObject sourcesJson = applicationJson.getAsJsonObject("sources");
-        final JsonArray includeDirsAry = sourcesJson.getAsJsonArray("include_dirs");
-        if (null == includeDirsAry || includeDirsAry.isEmpty()) {
-            includeDirs.add(".");
-        } else {
-            for (int i = 0, l = includeDirsAry.size(); i < l; ++i) {
-                includeDirs.add(includeDirsAry.get(i).getAsString());
-            }
-        }
-        final JsonArray excludeDirsAry = sourcesJson.getAsJsonArray("exclude_dirs");
-        if (null != excludeDirsAry) {
-            for (int i = 0, l = excludeDirsAry.size(); i < l; ++i) {
-                excludeDirs.add(excludeDirsAry.get(i).getAsString());
-            }
-        }
-        final JsonArray excludeFilePatternsAry = sourcesJson.getAsJsonArray("exclude_file_patterns");
-        if (null != excludeFilePatternsAry) {
-            for (int i = 0, l = excludeFilePatternsAry.size(); i < l; ++i) {
-                excludeFilePatterns.add(Pattern.compile(excludeFilePatternsAry.get(i).getAsString(), Pattern.CASE_INSENSITIVE)); // Case insensitive for windows compatiblity
-            }
-        }
-
-        parseExceptionRules(applicationJson.getAsJsonArray("exception_rules"));
-    }
-
+public class ProjectPolicy {
     /**
      * Load an app policy from the web service, note different format.
      * FIXME - formats.
      * @param realmJson
      */
-    public ApplicationPolicy(final RealmPolicy realmPolicy, final JsonObject applicationJson) {
+    public ProjectPolicy(final RealmPolicy realmPolicy, final JsonObject applicationJson) {
         this.realmPolicy = realmPolicy;
 
         this.applicationJson = applicationJson;
         JsonObject applicationData = applicationJson.get("data").getAsJsonObject();
 
         this.name = GsonHelper.getAsString(applicationData, "name", null);
-        this.app_code = GsonHelper.getAsString(applicationData, "app_code", null);
-        this.app_uuid = UUID.fromString(GsonHelper.getAsString(applicationJson, "pk", null));
+        this.prj_code = GsonHelper.getAsString(applicationData, "prj_code", null);
+        this.prj_uuid = UUID.fromString(GsonHelper.getAsString(applicationJson, "pk", null));
         final JsonObject policyJson = applicationData.getAsJsonObject("policy");
         this.error_prefix = GsonHelper.getAsString(policyJson, "error_prefix", null);
         this.error_template = GsonHelper.getAsString(policyJson, "error_template", null);
@@ -102,6 +59,13 @@ public class ApplicationPolicy {
         }
 
         parseExceptionRules(applicationData.getAsJsonArray("exception_rules"));
+
+        JsonElement prj_code_policy = applicationData.get("prj_code_policy");
+        if (null == prj_code_policy || prj_code_policy.isJsonNull()) {
+            this.prj_code_policy = null;
+        } else {
+            this.prj_code_policy = new CodePolicy(prj_code_policy.getAsJsonObject());
+        }
     }
 
     String getStringOrNull(JsonObject o, String p) {
@@ -170,8 +134,8 @@ public class ApplicationPolicy {
     public final ArrayList<ExceptionRule> exceptionRules = new ArrayList<>();
 
     final String name;
-    final String app_code;
-    final UUID app_uuid;
+    final String prj_code;
+    final UUID prj_uuid;
     final String error_prefix;
     final String error_template;
     final int error_pad_to_n;
@@ -180,24 +144,26 @@ public class ApplicationPolicy {
     final boolean has_context_n_lines;
     final int context_n_lines;
 
+    final CodePolicy prj_code_policy;
+
     public final ArrayList<String> includeDirs = new ArrayList<>();
     public final ArrayList<String> excludeDirs = new ArrayList<>();
     public final ArrayList<Pattern> excludeFilePatterns = new ArrayList<>();
 
     public UUID getRealmUuid() { return realmPolicy.realm_uuid; }
-    public UUID getAppUuid() { return app_uuid; }
+    public UUID getAppUuid() { return prj_uuid; }
 
     String error_sequence_generator = null;
     public String getErrorSequenceName() {
         // TODO: do error numbers belong to the realm or to the app, here they belong to the app.
         if (null == error_sequence_generator) {
-            error_sequence_generator = "s_app_errno_" + app_uuid.toString().replaceAll("-", "_");
+            error_sequence_generator = "s_app_errno_" + prj_uuid.toString().replaceAll("-", "_");
         }
         return error_sequence_generator;
     }
 
     public String getErrorPrefix() {
-        if (realmPolicy.policy_editable_by_app && (null != error_prefix && !"".equals(error_prefix))) {
+        if (realmPolicy.policy_editable_by_prj && (null != error_prefix && !"".equals(error_prefix))) {
             return error_prefix;
         } else {
             if (null != realmPolicy.error_prefix && !"".equals(realmPolicy.error_prefix)) {
@@ -210,7 +176,7 @@ public class ApplicationPolicy {
     private ErrorCodeFormatter errorCodeFormatter = null;
     public ErrorCodeFormatter getErrorCodeFormatter() {
         if (null == errorCodeFormatter) {
-            if (realmPolicy.policy_editable_by_app && (null != error_template && !"".equals(error_template))) {
+            if (realmPolicy.policy_editable_by_prj && (null != error_template && !"".equals(error_template))) {
                 errorCodeFormatter = new ErrorCodeFormatter(this, error_template);
             } else if (null != realmPolicy.error_template && !"".equals(realmPolicy.error_template)) {
                 errorCodeFormatter = new ErrorCodeFormatter(this, realmPolicy.error_template);
@@ -222,7 +188,7 @@ public class ApplicationPolicy {
     }
 
     public int getErrorPadToN() {
-        if (realmPolicy.policy_editable_by_app && error_pad_to_n >= 0) {
+        if (realmPolicy.policy_editable_by_prj && error_pad_to_n >= 0) {
             return error_pad_to_n;
         } else if (realmPolicy.error_pad_to_n >= 0) {
             return realmPolicy.error_pad_to_n;
@@ -231,8 +197,8 @@ public class ApplicationPolicy {
     }
 
     public boolean getContext() {
-        if (! realmPolicy.context_allowed_in_app) return false;
-        if (realmPolicy.policy_editable_by_app && has_context) {
+        if (! realmPolicy.context_allowed_in_prj) return false;
+        if (realmPolicy.policy_editable_by_prj && has_context) {
             return context;
         } else {
             return realmPolicy.context;
@@ -240,7 +206,7 @@ public class ApplicationPolicy {
     }
 
     public int getContextNLines() {
-        if (realmPolicy.policy_editable_by_app && has_context_n_lines) {
+        if (realmPolicy.policy_editable_by_prj && has_context_n_lines) {
             return context_n_lines;
         } else {
             return realmPolicy.context_n_lines;
@@ -307,5 +273,13 @@ public class ApplicationPolicy {
             reErrorNumber_ts = Pattern.compile("^('|\"\"\"|\")\\[[^\\]]*?" + getErrorPrefix() + "-(\\d+)[^\\]]*?\\]\\s+");
         }
         return reErrorNumber_ts;
+    }
+
+    public CodePolicy getCodePolicy() {
+        if (null == this.prj_code_policy) {
+            return realmPolicy.realm_code_policy;
+        } else {
+            return this.prj_code_policy;
+        }
     }
 }

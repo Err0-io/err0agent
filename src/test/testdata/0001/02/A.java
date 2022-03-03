@@ -18,6 +18,8 @@ public class A {
 
         logger.trace("Starting...");
 
+        object.method("Don't add error code");
+
         var foo = false;
         if (foo) {
             logger.debug("foo is true.");

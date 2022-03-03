@@ -1,21 +1,38 @@
 package io.err0.client.languages;
 
+import com.google.gson.JsonArray;
+import io.err0.client.Main;
 import io.err0.client.core.*;
 
+import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 public class GolangSourceCodeParse extends SourceCodeParse {
 
-    private static Pattern reMethod = Pattern.compile("(^|\\s+)func\\s+.*?$", Pattern.MULTILINE);
+    public GolangSourceCodeParse(final CodePolicy policy) {
+        super(Language.GOLANG, policy, policy.adv_golang);
+        switch (policy.mode) {
+            case DEFAULTS:
+                reLogger = Pattern.compile("(^|\\s+)(m?_?)*log(ger)?\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)f?\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+                break;
+
+            case EASY_CONFIGURATION:
+            case ADVANCED_CONFIGURATION:
+                reLogger = Pattern.compile("(^|\\s+)" + policy.easyModeObjectPattern() + "\\." + policy.easyModeMethodPattern() + "f?\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+                break;
+        }
+    }
+
+    private static Pattern reMethod = Pattern.compile("(^|\\s+)func\\s+(.*)?$", Pattern.MULTILINE);
     private static Pattern reMethodIgnore = Pattern.compile("(\\s+|^\\s*)(catch|if|do|while|switch|for)\\s+", Pattern.MULTILINE);
     //private static Pattern reErrorNumber = Pattern.compile("^(`|'|\")\\[ERR-(\\d+)\\]\\s+");
-    private static Pattern reLogger = Pattern.compile("(^|\\s+)\\S*log\\.(fatal|error|warn|info)f?\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+    private Pattern reLogger = null;
     private static Pattern reException = Pattern.compile("(fmt\\.Errorf|errors\\.New)\\s*\\(\\s*$");
 
-    public static GolangSourceCodeParse lex(final String sourceCode) {
+    public static GolangSourceCodeParse lex(final CodePolicy policy, final String sourceCode) {
         int n = 0;
-        GolangSourceCodeParse parse = new GolangSourceCodeParse();
-        Token currentToken = new Token(n++);
+        GolangSourceCodeParse parse = new GolangSourceCodeParse(policy);
+        Token currentToken = new Token(n++, null);
         currentToken.type = TokenClassification.SOURCE_CODE;
         int lineNumber = 1;
         currentToken.startLineNumber = lineNumber;
@@ -29,36 +46,48 @@ public class GolangSourceCodeParse extends SourceCodeParse {
             switch (currentToken.type) {
                 case SOURCE_CODE:
                     if (ch == '{') {
-                        parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
-                        currentToken.sourceCode.append(ch);
-                        currentToken.depth = depth + 1;
-                        currentToken.startLineNumber = lineNumber;
+                        if (i < l-1 && chars[i+1] == '}') {
+                            currentToken.sourceCode.append(ch);
+                            currentToken.sourceCode.append(chars[++i]);
+                        } else {
+                            parse.tokenList.add(currentToken.finish(lineNumber));
+                            currentToken = new Token(n++, currentToken);
+                            currentToken.type = TokenClassification.SOURCE_CODE;
+                            currentToken.sourceCode.append(ch);
+                            currentToken.depth = depth + 1;
+                            currentToken.startLineNumber = lineNumber;
+                        }
                     } else if (ch == '}') {
-                        parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
                         currentToken.sourceCode.append(ch);
+                        parse.tokenList.add(currentToken.finish(lineNumber));
+                        currentToken = new Token(n++, currentToken);
+                        currentToken.type = TokenClassification.SOURCE_CODE;
                         currentToken.depth = depth - 1;
+                        currentToken.startLineNumber = lineNumber;
+                    } else if (ch == ';') {
+                        currentToken.sourceCode.append(ch);
+                        parse.tokenList.add(currentToken.finish(lineNumber));
+                        currentToken = new Token(n++, currentToken);
+                        currentToken.type = TokenClassification.SOURCE_CODE;
+                        currentToken.depth = depth;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == '\'') {
                         parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++);
+                        currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenClassification.APOS_LITERAL;
                         currentToken.sourceCode.append(ch);
                         currentToken.depth = depth;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == '\"') {
                         parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++);
+                        currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenClassification.QUOT_LITERAL;
                         currentToken.sourceCode.append(ch);
                         currentToken.depth = depth;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == '`') {
                         parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++);
+                        currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenClassification.BACKTICK_LITERAL;
                         currentToken.sourceCode.append(ch);
                         currentToken.depth = depth;
@@ -67,7 +96,7 @@ public class GolangSourceCodeParse extends SourceCodeParse {
                         final char ch2 = chars[i+1];
                         if (ch2 == '*') {
                             parse.tokenList.add(currentToken.finish(lineNumber));
-                            currentToken = new Token(n++);
+                            currentToken = new Token(n++, currentToken);
                             currentToken.type = TokenClassification.COMMENT_BLOCK;
                             currentToken.sourceCode.append(ch);
                             currentToken.sourceCode.append(ch2);
@@ -76,7 +105,7 @@ public class GolangSourceCodeParse extends SourceCodeParse {
                             ++i;
                         } else if (ch2 == '/') {
                             parse.tokenList.add(currentToken.finish(lineNumber));
-                            currentToken = new Token(n++);
+                            currentToken = new Token(n++, currentToken);
                             currentToken.type = TokenClassification.COMMENT_LINE;
                             currentToken.sourceCode.append(ch);
                             currentToken.sourceCode.append(ch2);
@@ -94,7 +123,7 @@ public class GolangSourceCodeParse extends SourceCodeParse {
                     if (ch == '\n') {
                         currentToken.sourceCode.append(ch);
                         parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++);
+                        currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenClassification.SOURCE_CODE;
                         currentToken.depth = depth;
                         currentToken.startLineNumber = lineNumber;
@@ -109,7 +138,7 @@ public class GolangSourceCodeParse extends SourceCodeParse {
                             currentToken.sourceCode.append(ch);
                             currentToken.sourceCode.append(ch2);
                             parse.tokenList.add(currentToken.finish(lineNumber));
-                            currentToken = new Token(n++);
+                            currentToken = new Token(n++, currentToken);
                             currentToken.type = TokenClassification.SOURCE_CODE;
                             currentToken.depth = depth;
                             currentToken.startLineNumber = lineNumber;
@@ -125,7 +154,7 @@ public class GolangSourceCodeParse extends SourceCodeParse {
                     if (ch == '\'') {
                         currentToken.sourceCode.append(ch);
                         parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++);
+                        currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenClassification.SOURCE_CODE;
                         currentToken.depth = depth;
                         currentToken.startLineNumber = lineNumber;
@@ -141,7 +170,7 @@ public class GolangSourceCodeParse extends SourceCodeParse {
                     if (ch == '\"') {
                         currentToken.sourceCode.append(ch);
                         parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++);
+                        currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenClassification.SOURCE_CODE;
                         currentToken.depth = depth;
                         currentToken.startLineNumber = lineNumber;
@@ -157,7 +186,7 @@ public class GolangSourceCodeParse extends SourceCodeParse {
                     if (ch == '`') {
                         currentToken.sourceCode.append(ch);
                         parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++);
+                        currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenClassification.SOURCE_CODE;
                         currentToken.depth = depth;
                         currentToken.startLineNumber = lineNumber;
@@ -177,7 +206,7 @@ public class GolangSourceCodeParse extends SourceCodeParse {
     }
 
     @Override
-    public void classifyForErrorCode(ApiProvider apiProvider, GlobalState globalState, ApplicationPolicy policy, StateItem stateItem, Token token) {
+    public void classifyForErrorCode(ApiProvider apiProvider, GlobalState globalState, ProjectPolicy policy, StateItem stateItem, Token token) {
         if (token.classification == Token.Classification.NOT_CLASSIFIED_YET) {
             switch (token.type) {
                 case APOS_LITERAL:
@@ -208,20 +237,48 @@ public class GolangSourceCodeParse extends SourceCodeParse {
                 break;
                 case SOURCE_CODE:
                 {
-                    Matcher matcherLogger = reLogger.matcher(token.source);
-                    if (matcherLogger.find()) {
-                        token.classification = Token.Classification.LOG_OUTPUT;
-                        // TODO: extract canonical log level meta data
+                    token.classification = Token.Classification.NOT_FULLY_CLASSIFIED;
+                    Token next = token.next();
+                    if (next != null && (next.type == TokenClassification.QUOT_LITERAL || next.type == TokenClassification.APOS_LITERAL || next.type == TokenClassification.BACKTICK_LITERAL)) {
+                        // rule 0 - this code must be followed by a string literal
+                        if (null != languageCodePolicy && languageCodePolicy.rules.size() > 0) {
+                            // classify according to rules.
+                            final String stringLiteral = next.getStringLiteral();
+                            // now, also notice that the error code potential was detected first, so next has been evaluated already...
+                            String lineOfCode = null;
+                            if (Main.USE_NEAREST_CODE_FOR_LINE_OF_CODE) {
+                                lineOfCode = token.source;
+                            } else {
+                                JsonArray lineArray = getNLinesOfContext(token.startLineNumber, 0, Main.CHAR_RADIUS);
+                                if (null != lineArray && lineArray.size() > 0) {
+                                    lineOfCode = GsonHelper.getAsString(lineArray.get(0).getAsJsonObject(), "c", null);
+                                }
+                            }
+                            token.classification = languageCodePolicy.classify(lineOfCode, stringLiteral);
+                        }
                     } else {
+                        token.classification = Token.Classification.NO_MATCH;
+                    }
+
+                    if ((token.classification == Token.Classification.NOT_FULLY_CLASSIFIED || token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) && (null == languageCodePolicy || !languageCodePolicy.disable_builtin_log_detection)) {
+                        Matcher matcherLogger = reLogger.matcher(token.source);
+                        if (matcherLogger.find()) {
+                            token.classification = Token.Classification.LOG_OUTPUT;
+                            // TODO: extract canonical log level meta data
+                        }
+                    }
+
+                    if (token.classification == Token.Classification.NOT_FULLY_CLASSIFIED || token.classification == Token.Classification.NOT_LOG_OUTPUT || token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION)
+                    {
                         Matcher matcherException = reException.matcher(token.source);
                         if (matcherException.find()) {
                             token.classification = Token.Classification.EXCEPTION_THROW;
                             // TODO: extract exception classname meta data
                             // not sure about this parser whether we can get this information
-                        } else {
-                            token.classification = Token.Classification.NOT_FULLY_CLASSIFIED;
                         }
                     }
+
+                    if (token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) token.classification = Token.Classification.LOG_OUTPUT;
                 }
                 break;
                 default:

@@ -32,7 +32,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -42,6 +41,8 @@ import java.util.stream.Stream;
 
 public class Main {
 
+    public final static boolean USE_NEAREST_CODE_FOR_LINE_OF_CODE = true;
+    public final static int CHAR_RADIUS = 4*1024;
     private static Pattern reGitdir = Pattern.compile("^gitdir: (.*?)$", Pattern.MULTILINE);
 
     static class GitMetadata {
@@ -174,17 +175,34 @@ public class Main {
                      */
                 }
             }
+            HashSet<String> dedupe = new HashSet<>();
             JsonArray gitBranches = new JsonArray();
-            List<Ref> branchList = git.branchList().call();
+            List<Ref> branchList = git.branchList().setListMode(ListBranchCommand.ListMode.ALL).call();
             for (Ref ref : branchList) {
                 final String fullBranchName = ref.getName();
                 if (fullBranchName.startsWith("refs/heads/")) {
                     final String branchName = fullBranchName.substring(11);
-                    final String branchObjectId = ObjectId.toString(ref.getObjectId());
-                    if (branchObjectId.equals(objectId)) {
-                        gitBranches.add(branchName);
+                    if (! "HEAD".equals(branchName) && dedupe.add(branchName)) {
+                        final String branchObjectId = ObjectId.toString(ref.getObjectId());
+                        if (branchObjectId.equals(objectId)) {
+                            gitBranches.add(branchName);
+                        }
+                        branches.addProperty(branchName, branchObjectId);
                     }
-                    branches.addProperty(branchName, branchObjectId);
+                }
+                else if (fullBranchName.startsWith("refs/remotes/")) {
+                    final String remoteNameBranchName = fullBranchName.substring(13);
+                    final int i = remoteNameBranchName.indexOf('/');
+                    if (i >= 0) {
+                        final String branchName = remoteNameBranchName.substring(i+1);
+                        if (! "HEAD".equals(branchName) && dedupe.add(branchName)) {
+                            final String branchObjectId = ObjectId.toString(ref.getObjectId());
+                            if (branchObjectId.equals(objectId)) {
+                                gitBranches.add(branchName);
+                            }
+                            branches.addProperty(branchName, branchObjectId);
+                        }
+                    }
                 }
             }
             runGitMetadata.add("git_tags", gitTags);
@@ -218,45 +236,52 @@ public class Main {
         ResultDriver driver = new FileResultDriver();
 
         RealmPolicy realmPolicy = null;
-        ApplicationPolicy applicationPolicy = null;
+        ProjectPolicy projectPolicy = null;
 
         try {
 
             for (int i = 0, l = args.length; i < l; ++i) {
                 String arg = args[i];
-                if ("--token".equals(arg)) {
+                if ("--help".equals(arg)) {
+                    System.out.println("Usage");
+                    System.out.println("<command> --token path-to-token.json --insert /path/to/git/repo");
+                    System.out.println(" insert error codes into the source code");
+                    System.out.println("<command> --token path-to-token.json --analyse --check /path/to/git/repo");
+                    System.out.println(" analyse error codes in the project and return failure if some need to change");
+                }
+                else if ("--token".equals(arg)) {
 
                     // a new API provider per token
                     if (apiProvider != null) {
                         apiProvider.close();
                         apiProvider = null;
                     }
-                    applicationPolicy = null;
+                    projectPolicy = null;
                     realmPolicy = null;
 
                     apiProvider = new RestApiProvider(args[++i]);
                     RestApiProvider restApiProvider = (RestApiProvider) apiProvider;
 
                     AtomicReference<RealmPolicy> arRealmPolicy = new AtomicReference<>();
-                    AtomicReference<ApplicationPolicy> arApplicationPolicy = new AtomicReference<>();
+                    AtomicReference<ProjectPolicy> arApplicationPolicy = new AtomicReference<>();
 
                     // Download the policies...
                     restApiProvider.getPolicy(responseJson -> {
                         if (responseJson.get("success").getAsBoolean()) {
                             arRealmPolicy.set(new RealmPolicy(responseJson.get("realm").getAsJsonObject()));
-                            arApplicationPolicy.set(new ApplicationPolicy(arRealmPolicy.get(), responseJson.get("app").getAsJsonObject()));
+                            arApplicationPolicy.set(new ProjectPolicy(arRealmPolicy.get(), responseJson.get("app").getAsJsonObject()));
                         } else {
                             throw new RuntimeException(responseJson.toString());
                         }
                     });
 
                     realmPolicy = arRealmPolicy.get();
-                    applicationPolicy = arApplicationPolicy.get();
+                    projectPolicy = arApplicationPolicy.get();
                     // We're ready!
 
                 } else if ("--checkout".equals(arg) || "--insert".equals(arg)) {
                     if (null == realmPolicy) throw new Exception("[AGENT-000001] Must specify realm policy using --realm before specifying checkout dir");
-                    if (null == applicationPolicy) throw new Exception("[AGENT-000002] Must specify application policy using --app before specifying checkout dir");
+                    if (null == projectPolicy) throw new Exception("[AGENT-000002] Must specify application policy using --app before specifying checkout dir");
                     String checkoutDir = args[++i];
                     boolean importCodes = false;
                     if ("--import".equals(checkoutDir)) {
@@ -269,10 +294,10 @@ public class Main {
 
                     final GlobalState globalState = new GlobalState();
 
-                    apiProvider.ensurePolicyIsSetUp(applicationPolicy);
+                    apiProvider.ensurePolicyIsSetUp(projectPolicy);
 
                     if (! importCodes) {
-                        apiProvider.importPreviousState(applicationPolicy, globalState);
+                        apiProvider.importPreviousState(projectPolicy, globalState);
                     }
 
                     JsonObject appGitMetadata = new JsonObject();
@@ -285,21 +310,21 @@ public class Main {
 
                     final String gitHash = gitMetadata.gitHash;
 
-                    final UUID run_uuid = apiProvider.createRun(applicationPolicy, appGitMetadata, runGitMetadata, "insert");
+                    final UUID run_uuid = apiProvider.createRun(projectPolicy, appGitMetadata, runGitMetadata, "insert");
 
                     final StatisticsGatherer statisticsGatherer = new StatisticsGatherer();
                     boolean didChangeAFile = false;
 
                     try {
 
-                        scan(applicationPolicy, globalState, checkoutDir, apiProvider);
+                        scan(projectPolicy, globalState, checkoutDir, apiProvider);
 
                         if (importCodes) {
-                            _import(apiProvider, globalState, applicationPolicy);
+                            _import(apiProvider, globalState, projectPolicy);
                         }
 
 
-                        didChangeAFile = runInsert(apiProvider, globalState, applicationPolicy, driver, run_uuid, statisticsGatherer);
+                        didChangeAFile = runInsert(apiProvider, globalState, projectPolicy, driver, run_uuid, statisticsGatherer);
                     }
                     catch (Throwable t) {
                         statisticsGatherer.throwable = t;
@@ -309,7 +334,7 @@ public class Main {
                         runGitMetadata.addProperty("git_hash", gitHash + "-dirty");
                     }
 
-                    apiProvider.updateRun(applicationPolicy, run_uuid, runGitMetadata, statisticsGatherer.toRunMetadata());
+                    apiProvider.updateRun(projectPolicy, run_uuid, runGitMetadata, statisticsGatherer.toRunMetadata());
 
                     if (null != statisticsGatherer.throwable) {
                         System.err.println(statisticsGatherer.throwable.getMessage());
@@ -318,7 +343,7 @@ public class Main {
 
                 } if ("--report".equals(arg) || "--analyse".equals(arg)) {
                     if (null == realmPolicy) throw new Exception("[AGENT-000004] Must specify realm policy using --realm before specifying report dir");
-                    if (null == applicationPolicy) throw new Exception("[AGENT-000005] Must specify application policy using --app before specifying report dir");
+                    if (null == projectPolicy) throw new Exception("[AGENT-000005] Must specify application policy using --app before specifying report dir");
                     String reportDir = args[++i];
                     String current_branch = null;
                     boolean check = false;
@@ -341,9 +366,9 @@ public class Main {
 
                     final GlobalState globalState = new GlobalState();
 
-                    apiProvider.ensurePolicyIsSetUp(applicationPolicy);
+                    apiProvider.ensurePolicyIsSetUp(projectPolicy);
 
-                    apiProvider.importPreviousState(applicationPolicy, globalState);
+                    apiProvider.importPreviousState(projectPolicy, globalState);
 
                     JsonObject appGitMetadata = new JsonObject();
                     JsonObject runGitMetadata = new JsonObject();
@@ -364,23 +389,23 @@ public class Main {
                             System.exit(-1);
                         }
                     }
-                    final UUID run_uuid = apiProvider.createRun(applicationPolicy, appGitMetadata, runGitMetadata, "analyse");
+                    final UUID run_uuid = apiProvider.createRun(projectPolicy, appGitMetadata, runGitMetadata, "analyse");
 
                     final StatisticsGatherer statisticsGatherer = new StatisticsGatherer();
                     boolean wouldChangeAFile = true;
                     try {
-                        scan(applicationPolicy, globalState, reportDir, apiProvider);
+                        scan(projectPolicy, globalState, reportDir, apiProvider);
 
-                        wouldChangeAFile = runAnalyse(apiProvider, globalState, applicationPolicy, driver, run_uuid, statisticsGatherer);
+                        wouldChangeAFile = runAnalyse(apiProvider, globalState, projectPolicy, driver, run_uuid, statisticsGatherer);
                     }
                     catch (Throwable t) {
                         statisticsGatherer.throwable = t;
                     }
 
-                    apiProvider.updateRun(applicationPolicy, run_uuid, runGitMetadata, statisticsGatherer.toRunMetadata());
+                    apiProvider.updateRun(projectPolicy, run_uuid, runGitMetadata, statisticsGatherer.toRunMetadata());
 
                     if (! wouldChangeAFile) {
-                        apiProvider.finaliseRun(applicationPolicy, run_uuid);
+                        apiProvider.finaliseRun(projectPolicy, run_uuid);
                     }
 
                     if (wouldChangeAFile) {
@@ -419,7 +444,7 @@ public class Main {
         }
     }
 
-    public static void _import(final ApiProvider apiProvider, final GlobalState globalState, final ApplicationPolicy policy) {
+    public static void _import(final ApiProvider apiProvider, final GlobalState globalState, final ProjectPolicy policy) {
         final String fileNamesInOrder[] = new String[globalState.files.size()];
         globalState.files.keySet().toArray(fileNamesInOrder);
         Arrays.sort(fileNamesInOrder);
@@ -465,9 +490,9 @@ public class Main {
         }
     }
 
-    public static void scan(final ApplicationPolicy applicationPolicy, final GlobalState globalState, String path, ApiProvider apiProvider) {
+    public static void scan(final ProjectPolicy projectPolicy, final GlobalState globalState, String path, ApiProvider apiProvider) {
 
-        apiProvider.cacheAllValidErrorNumbers(applicationPolicy);
+        apiProvider.cacheAllValidErrorNumbers(projectPolicy);
 
         path = Paths.get(path).toAbsolutePath().toString();
 
@@ -480,7 +505,7 @@ public class Main {
         final int lFinalPath = finalPath.length();
 
         ArrayList<String> excludePaths = new ArrayList<>();
-        applicationPolicy.excludeDirs.forEach(dir -> {
+        projectPolicy.excludeDirs.forEach(dir -> {
             if (dir.endsWith("/")) {
                 excludePaths.add(finalPath + dir);
             } else {
@@ -488,15 +513,24 @@ public class Main {
             }
         });
         int n_exclude_paths = excludePaths.size();
-        int n_exclude_patterns = applicationPolicy.excludeFilePatterns.size();
+        int n_exclude_patterns = projectPolicy.excludeFilePatterns.size();
 
-        applicationPolicy.includeDirs.forEach(dir -> {
+        projectPolicy.includeDirs.forEach(dir -> {
             String startPoint = null;
             if (".".equals(dir)) {
                 startPoint = finalPath;
             } else {
                 startPoint = finalPath + dir;
             }
+
+            final CodePolicy codePolicy = projectPolicy.getCodePolicy();
+            final boolean javaAllowed = codePolicy.mode != CodePolicy.CodePolicyMode.ADVANCED_CONFIGURATION || (null == codePolicy.adv_java || !codePolicy.adv_java.disable_language);
+            final boolean cSharpAllowed = codePolicy.mode != CodePolicy.CodePolicyMode.ADVANCED_CONFIGURATION || (null == codePolicy.adv_csharp || !codePolicy.adv_csharp.disable_language);
+            final boolean javascriptAllowed = codePolicy.mode != CodePolicy.CodePolicyMode.ADVANCED_CONFIGURATION || (null == codePolicy.adv_js || !codePolicy.adv_js.disable_language);
+            final boolean typescriptAllowed = codePolicy.mode != CodePolicy.CodePolicyMode.ADVANCED_CONFIGURATION || (null == codePolicy.adv_ts || !codePolicy.adv_ts.disable_language);
+            final boolean phpAllowed = codePolicy.mode != CodePolicy.CodePolicyMode.ADVANCED_CONFIGURATION || (null == codePolicy.adv_php || !codePolicy.adv_php.disable_language);
+            final boolean goAllowed = codePolicy.mode != CodePolicy.CodePolicyMode.ADVANCED_CONFIGURATION || (null == codePolicy.adv_golang || !codePolicy.adv_golang.disable_language);
+            final boolean pythonAllowed = codePolicy.mode != CodePolicy.CodePolicyMode.ADVANCED_CONFIGURATION || (null == codePolicy.adv_python || !codePolicy.adv_python.disable_language);
 
             try (Stream<Path> paths = Files.walk(Paths.get(startPoint)))
             {
@@ -507,7 +541,7 @@ public class Main {
                         if (newFile.startsWith(excludePaths.get(i))) return;
                     }
                     for (int i = 0, l = n_exclude_patterns; i < l; ++i) {
-                        if (applicationPolicy.excludeFilePatterns.get(i).matcher(newFile).find()) return;
+                        if (projectPolicy.excludeFilePatterns.get(i).matcher(newFile).find()) return;
                     }
                     if (! Files.isDirectory(p)) {
                         if (!newFile.startsWith(finalPath)) {
@@ -518,33 +552,33 @@ public class Main {
                         final String localToCheckoutLower = localToCheckoutUnchanged.toLowerCase(Locale.ROOT);
 
                         final String newFileLower = newFile.toLowerCase(Locale.ROOT);
-                        if (newFileLower.endsWith(".java")) {
+                        if (javaAllowed && newFileLower.endsWith(".java")) {
                             final FileCoding fileCoding = new FileCoding(p);
-                            globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, JavaSourceCodeParse.lex(fileCoding.content), fileCoding.charset);
+                            globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, JavaSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
                             System.out.println("Parsed: " + newFile);
-                        } else if (newFileLower.endsWith(".cs") && !newFileLower.endsWith(".designer.cs") && !newFileLower.endsWith(".generated.cs")) {
+                        } else if (cSharpAllowed && newFileLower.endsWith(".cs") && !newFileLower.endsWith(".designer.cs") && !newFileLower.endsWith(".generated.cs")) {
                             final FileCoding fileCoding = new FileCoding(p);
-                            globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, CSharpSourceCodeParse.lex(fileCoding.content), fileCoding.charset);
+                            globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, CSharpSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
                             System.out.println("Parsed: " + newFile);
-                        } else if (newFileLower.endsWith(".js") && !newFileLower.endsWith(".min.js")) {
+                        } else if (javascriptAllowed && newFileLower.endsWith(".js") && !newFileLower.endsWith(".min.js")) {
                             final FileCoding fileCoding = new FileCoding(p);
-                            globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, JavascriptSourceCodeParse.lex(fileCoding.content), fileCoding.charset);
+                            globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, JavascriptSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
                             System.out.println("Parsed: " + newFile);
-                        } else if (newFileLower.endsWith(".ts")) {
+                        } else if (typescriptAllowed && newFileLower.endsWith(".ts")) {
                             final FileCoding fileCoding = new FileCoding(p);
-                            globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, TypescriptSourceCodeParse.lex(fileCoding.content), fileCoding.charset);
+                            globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, TypescriptSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
                             System.out.println("Parsed: " + newFile);
-                        } else if (newFileLower.endsWith(".php") || newFileLower.endsWith(".phtml")) {
+                        } else if (phpAllowed && (newFileLower.endsWith(".php") || newFileLower.endsWith(".phtml"))) {
                             final FileCoding fileCoding = new FileCoding(p);
-                            globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, PhpSourceCodeParse.lex(fileCoding.content), fileCoding.charset);
+                            globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, PhpSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
                             System.out.println("Parsed: " + newFile);
-                        } else if (newFileLower.endsWith(".go")) {
+                        } else if (goAllowed && newFileLower.endsWith(".go")) {
                             final FileCoding fileCoding = new FileCoding(p);
-                            globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, GolangSourceCodeParse.lex(fileCoding.content), fileCoding.charset);
+                            globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, GolangSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
                             System.out.println("Parsed: " + newFile);
-                        } else if (newFileLower.endsWith(".py")) {
+                        } else if (pythonAllowed && newFileLower.endsWith(".py")) {
                             final FileCoding fileCoding = new FileCoding(p);
-                            globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, PythonSourceCodeParse.lex(fileCoding.content), fileCoding.charset);
+                            globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, PythonSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
                             System.out.println("Parsed: " + newFile);
                         }
                     }
@@ -583,7 +617,7 @@ public class Main {
     }
 
 
-    public static boolean runInsert(final ApiProvider apiProvider, final GlobalState globalState, final ApplicationPolicy policy, final ResultDriver driver, final UUID run_uuid, final StatisticsGatherer statisticsGatherer) {
+    public static boolean runInsert(final ApiProvider apiProvider, final GlobalState globalState, final ProjectPolicy policy, final ResultDriver driver, final UUID run_uuid, final StatisticsGatherer statisticsGatherer) {
         final AnalyseLogic logic = new AnalyseLogic() {
 
             boolean didChangeAFile = false;
@@ -627,7 +661,7 @@ public class Main {
         return analyseWholeProject(apiProvider, globalState, policy, driver, run_uuid, logic, statisticsGatherer);
     }
 
-    public static boolean runAnalyse(final ApiProvider apiProvider, final GlobalState globalState, final ApplicationPolicy policy, final ResultDriver driver, final UUID run_uuid, final StatisticsGatherer statisticsGatherer) {
+    public static boolean runAnalyse(final ApiProvider apiProvider, final GlobalState globalState, final ProjectPolicy policy, final ResultDriver driver, final UUID run_uuid, final StatisticsGatherer statisticsGatherer) {
         final AnalyseLogic logic = new AnalyseLogic() {
 
             boolean wouldChangeAFile = false;
@@ -682,7 +716,7 @@ public class Main {
 
     private static Pattern reWhitespace = Pattern.compile("^\\s*$");
 
-    private static boolean analyseWholeProject(final ApiProvider apiProvider, final GlobalState globalState, final ApplicationPolicy policy, final ResultDriver driver, final UUID run_uuid, final AnalyseLogic logic, final StatisticsGatherer statisticsGatherer) {
+    private static boolean analyseWholeProject(final ApiProvider apiProvider, final GlobalState globalState, final ProjectPolicy policy, final ResultDriver driver, final UUID run_uuid, final AnalyseLogic logic, final StatisticsGatherer statisticsGatherer) {
         final String fileNamesInOrder[] = new String[globalState.files.size()];
         globalState.files.keySet().toArray(fileNamesInOrder);
         Arrays.sort(fileNamesInOrder);
@@ -857,9 +891,14 @@ public class Main {
                             if (policy.getContext()) {
                                 int n = policy.getContextNLines();
                                 if (n < 0) n = 0;
-                                JsonArray contextArray = parse.getNLinesOfContext(currentToken.startLineNumber, n);
-                                metaData.add("context", contextArray);
-                                metaData.add("line_of_code", parse.getNLinesOfContext(currentToken.startLineNumber, 0).get(0));
+                                JsonArray contextArray = parse.getNLinesOfContext(currentToken.startLineNumber, n, Main.CHAR_RADIUS);
+                                if (null != contextArray && contextArray.size() > 0) {
+                                    metaData.add("context", contextArray);
+                                }
+                                JsonArray lineArray = parse.getNLinesOfContext(currentToken.startLineNumber, 0, Main.CHAR_RADIUS);
+                                if (null != lineArray && lineArray.size() > 0) {
+                                    metaData.add("line_of_code", lineArray.get(0));
+                                }
                             }
 
                             /*
@@ -889,7 +928,7 @@ public class Main {
                                         boolean matchAll = true;
                                         for (int k = 0, n = rule.selectors.size(); k < n; ++k) {
                                             ExceptionRuleSelection selection = rule.selectors.get(k);
-                                            boolean match = selection.isMatch(currentToken);
+                                            boolean match = selection.isMatch(stateItem.parse.language, currentToken);
                                             matchAny |= match;
                                             matchAll &= match;
                                         }
@@ -1119,7 +1158,7 @@ public class Main {
                         final String errorCode = policy.getErrorCodeFormatter().formatErrorCodeOnly(currentToken.errorOrdinal);
                         // update database with this information
                         if (currentToken.getChanged()) {
-                            System.out.println(stateItem.localToCheckoutUnchanged + ":\t" + currentToken.startLineNumber + "\t" + errorCode);
+                            System.out.println(stateItem.localToCheckoutUnchanged + ":\t" + currentToken.startLineNumber + "\t" + errorCode + "\t" + (null == currentToken.prev ? "" : currentToken.prev.classification));
                             //if (null != comments && !"".equals(comments)) {
                             //    System.out.println(comments);
                             //}

@@ -1,7 +1,7 @@
 package io.err0.client.test;
 
 import com.google.gson.JsonArray;
-import io.err0.client.core.ApplicationPolicy;
+import io.err0.client.core.ProjectPolicy;
 import io.err0.client.core.GlobalState;
 import io.err0.client.Main;
 import io.err0.client.core.ResultDriver;
@@ -21,7 +21,7 @@ public class Test0005CSharpLog4Net {
         final String sourceDir = "src/test/testdata/0005/01";
         final String assertDir = "src/test/testdata/0005/01-assert";
 
-        final ApplicationPolicy policy = TestPolicy.getPolicy();
+        final ProjectPolicy policy = TestPolicy.getPolicy();
         assertNotNull(policy);
 
         final GlobalState globalState = new GlobalState();

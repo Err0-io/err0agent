@@ -1,36 +1,13 @@
 == Building
 
-To run your application, first head over to the `err0server` project where the database now lives and in that run:
+Make sure you're running err0server and that it is working...
 
-```
-err0server $ rm -rf .docker-build
-err0server $ ./docker-start.sh
-```
+Make sure that `open-source-bundle` is checked out in the same parent directory as err0agent (e.g. it is ../open-source-bundle ...)
 
-to start-up a local postgres on port 54321
-
-edit the last part of ``build.gradle.kts`` to add a directory to scan
-as the program arguments.
+== Run the test cases
 
 ```
 err0proto $ ./gradlew clean runShadow
 ```
 
-to run the program with the arguments in the ``build.gradle.kts``.
-
-=== Using on your project, doesn't need the database running...
-
-Using the 'unit test' API provider you can get repeatable results with your project!
-
-First - create a realm/application and an API token, donwload the token json and use as follows:
-
-```
-err0proto $ ./gradlew runShadow --args="--token tokens/err0-open-source-software-moodle-fcc1f565-0ff0-11ec-b8c2-a63d063ada96.json /your/local/path/to/your/local/git/repo"
-```
-
-This will communicate with ```err0server``` on localhost and import error
-codes according to the server's policy for the application.
-
-You should be able to test the result, find that it works, and commit the changes to your
-repository so that your customers get better error reports and your log
-files are more descriptive.
+See what's to run in `build.gradle.kts` - the arguments are at the end of the build.gradle.kts file.

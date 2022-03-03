@@ -6,11 +6,19 @@ import java.util.function.Consumer;
 
 public class Token {
 
-    public Token(final int n) {
+    public Token(final int n, final Token prev) {
         this.n = n;
+        this.prev = prev;
+        if (null != this.prev) {
+            this.prev.setNext(this);
+        }
     }
 
     public final int n;
+    public final Token prev;
+    private Token next = null;
+    private void setNext(Token next) { this.next = next; }
+    public Token next() { return this.next; }
 
     public TokenClassification type;
     public StringBuilder sourceCode = new StringBuilder();
@@ -22,6 +30,26 @@ public class Token {
     public int lastLineNumber = 0;
 
     public Consumer<Void> errorCodeConsumer = null;
+
+    // FIXME: per-language do the escaping calculation on this please
+    public String getStringLiteral()
+    {
+        String s = null != sourceNoErrorCode ? sourceNoErrorCode : source;
+        if (null == s) return null;
+
+        switch (type) {
+            case QUOT_LITERAL:
+                return s.length() > 2 ? s.substring(1, s.length() - 2) : "";
+            case APOS_LITERAL:
+                return s.length() > 2 ? s.substring(1, s.length() - 2) : "";
+            case QUOT3_LITERAL:
+                return s.length() > 6 ? s.substring(3, s.length() - 6) : "";
+            case BACKTICK_LITERAL:
+                return s.length() > 2 ? s.substring(1, s.length() - 2) : "";
+            default:
+                throw new RuntimeException();
+        }
+    }
 
     public Token finish(int lineNumber) {
         this.initialSource = this.source = this.sourceCode.toString();
@@ -37,6 +65,8 @@ public class Token {
         ERROR_NUMBER,
         POTENTIAL_ERROR_NUMBER,
         LOG_OUTPUT,
+        MAYBE_LOG_OR_EXCEPTION,
+        NOT_LOG_OUTPUT,
         EXCEPTION_THROW,
         CLASS_SIGNATURE,
         METHOD_SIGNATURE,

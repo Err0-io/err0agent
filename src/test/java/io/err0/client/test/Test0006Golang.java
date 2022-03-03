@@ -1,6 +1,7 @@
 package io.err0.client.test;
 
-import io.err0.client.core.ApplicationPolicy;
+import com.google.gson.JsonArray;
+import io.err0.client.core.ProjectPolicy;
 import io.err0.client.core.GlobalState;
 import io.err0.client.Main;
 import io.err0.client.core.ResultDriver;
@@ -23,7 +24,7 @@ public class Test0006Golang {
         final String sourceDir = "src/test/testdata/0006/01";
         final String assertDir = "src/test/testdata/0006/01-assert";
 
-        final ApplicationPolicy policy = TestPolicy.getPolicy();
+        final ProjectPolicy policy = TestPolicy.getPolicy();
         assertNotNull(policy);
 
         final GlobalState globalState = new GlobalState();
@@ -50,5 +51,14 @@ public class Test0006Golang {
         });
 
         assertEquals(globalState.files.size(), apiProvider.resultStorage.size());
+
+        {
+            // assert regarding ProblemMethod
+            UnitTestApiProvider.MetaData r1 = apiProvider.metaDataStorage.get(2l);
+            assertNotNull(r1);
+            JsonArray array = r1.metaData.getAsJsonArray("methods");
+            assertEquals(1, array.size());
+            assertEquals("func (p *ExampleType) exampleFunc(src interface{}) error", array.get(0).getAsJsonObject().get("c").getAsString());
+        }
     }
 }

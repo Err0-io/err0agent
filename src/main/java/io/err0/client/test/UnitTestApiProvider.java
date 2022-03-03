@@ -18,17 +18,17 @@ public class UnitTestApiProvider implements ApiProvider {
     }
 
     @Override
-    public void ensurePolicyIsSetUp(ApplicationPolicy policy) {
+    public void ensurePolicyIsSetUp(ProjectPolicy policy) {
 
     }
 
     @Override
-    public void cacheAllValidErrorNumbers(ApplicationPolicy policy) {
+    public void cacheAllValidErrorNumbers(ProjectPolicy policy) {
         // does nothing
     }
 
     @Override
-    public boolean validErrorNumber(final ApplicationPolicy policy, final long errorCode) {
+    public boolean validErrorNumber(final ProjectPolicy policy, final long errorCode) {
         return true;
     }
 
@@ -41,17 +41,17 @@ public class UnitTestApiProvider implements ApiProvider {
     private long currentErrorNumber = 0;
 
     @Override
-    public long nextErrorNumber(final ApplicationPolicy policy) {
+    public long nextErrorNumber(final ProjectPolicy policy) {
         return ++currentErrorNumber;
     }
 
     @Override
-    public void cacheErrorNumberBatch(ApplicationPolicy policy, long number) {
+    public void cacheErrorNumberBatch(ProjectPolicy policy, long number) {
         // do nothing
     }
 
     @Override
-    public void setNextErrorNumber(final ApplicationPolicy policy, final long nextErrorNumber) {
+    public void setNextErrorNumber(final ProjectPolicy policy, final long nextErrorNumber) {
         currentErrorNumber = nextErrorNumber-1;
     }
 
@@ -69,7 +69,7 @@ public class UnitTestApiProvider implements ApiProvider {
     public HashMap<Long, MetaData> metaDataStorage = new HashMap<>();
 
     @Override
-    public void bulkInsertMetaData(final ApplicationPolicy policy, final UUID run_uuid, final String errorPrefix, final ArrayList<ForInsert> forBulkInsert) {
+    public void bulkInsertMetaData(final ProjectPolicy policy, final UUID run_uuid, final String errorPrefix, final ArrayList<ForInsert> forBulkInsert) {
         forBulkInsert.forEach(forInsert -> {
             metaDataStorage.put(forInsert.errorOrdinal, new MetaData(forInsert.errorCode, forInsert.errorOrdinal, forInsert.metaData));
         });
@@ -120,17 +120,17 @@ public class UnitTestApiProvider implements ApiProvider {
         });
     }
 
-    public UUID createRun(ApplicationPolicy policy) {
+    public UUID createRun(ProjectPolicy policy) {
         return createRun(policy, new JsonObject(), new JsonObject(), "insert");
     }
     
     @Override
-    public UUID createRun(ApplicationPolicy policy, JsonObject appGitMetadata, JsonObject runGitMetadata, final String runState) {
+    public UUID createRun(ProjectPolicy policy, JsonObject appGitMetadata, JsonObject runGitMetadata, final String runState) {
         return UUID.randomUUID();
     }
 
     @Override
-    public void updateRun(ApplicationPolicy policy, UUID run_uuid, JsonObject gitMetadata, JsonObject runMetadata) {
+    public void updateRun(ProjectPolicy policy, UUID run_uuid, JsonObject gitMetadata, JsonObject runMetadata) {
         // do nothing
     }
 
@@ -157,13 +157,13 @@ public class UnitTestApiProvider implements ApiProvider {
     }
 
     @Override
-    public void importPreviousState(final ApplicationPolicy policy, final GlobalState globalState) {
+    public void importPreviousState(final ProjectPolicy policy, final GlobalState globalState) {
         // does nothing, unit tests work slightly differently to the database
         // methods.
     }
 
     @Override
-    public void finaliseRun(ApplicationPolicy policy, UUID run_uuid) {
+    public void finaliseRun(ProjectPolicy policy, UUID run_uuid) {
         // does nothing
     }
 }

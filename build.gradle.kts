@@ -4,11 +4,11 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent.*
 plugins {
   java
   application
-  id("com.github.johnrengelman.shadow") version "7.0.0"
+  id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
 group = "io.err0"
-version = "1.0.2-SNAPSHOT"
+version = "1.0.3-SNAPSHOT"
 
 repositories {
   mavenCentral()
@@ -29,6 +29,9 @@ application {
 }
 
 dependencies {
+  // https://mvnrepository.com/artifact/org.apache.ant/ant-launcher
+  implementation("org.apache.ant:ant-launcher:1.10.11") //needed by shadow
+
   //implementation(platform("io.vertx:vertx-stack-depchain:$vertxVersion"))
   //implementation("io.vertx:vertx-web-client")
   //testImplementation("io.vertx:vertx-junit5")
@@ -46,6 +49,12 @@ dependencies {
   // depend on these:
   // testImplementation("org.apache.logging.log4j:log4j-core:2.14.1")
   // testImplementation("org.slf4j:slf4j-api:1.7.31")
+
+  // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
+  implementation("org.slf4j:slf4j-api:1.7.36")
+  // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
+  implementation("org.slf4j:slf4j-simple:1.7.36")
+
 }
 
 java {
@@ -69,53 +78,32 @@ tasks.withType<Test> {
 }
 
 tasks.withType<JavaExec> {
-  //args = listOf("run", mainVerticleName, "--redeploy=$watchForChange", "--launcher-class=$launcherClassName", "--on-redeploy=$doOnChange")
-    /*
-  args = listOf(
-          "--realm", "policies/realm/amb1ent.json",
-          "--app", "policies/application/streetstall.json",
-          "--insert", "/tank/street-stall/street-stall-space",
-          "--app", "policies/application/corefabric.json",
-          "--insert", "/tank/street-stall/street-stall-space/corefabric",
-          "--app", "policies/application/streetstallangularlib.json",
-          "--insert", "/tank/street-stall/street-stall-space/web/site/src/app/library"
-  ) // java, typescript
-    */
+
+  // Check-out bts projects...
+
   /*
-  args = listOf("--realm", "policies/realm/opensource-realm.json", "--app", "policies/application/umbraco.json", "--insert", "/tank/bts/examples/Umbraco-CMS/src", // c#
-    "--realm", "policies/realm/opensource-realm.json", "--app", "policies/application/roslyn.json", "--insert", "/tank/bts/examples/roslyn", // c#
-    "--realm", "policies/realm/opensource-realm.json", "--app", "policies/application/nodebb.json", "--insert", "/tank/bts/examples/NodeBB/src", // node.js
-    "--realm", "policies/realm/opensource-realm.json", "--app", "policies/application/zf2-orders.json", "--insert", "/tank/bts/examples/zf2-orders", // php + Zend framework
-    "--realm", "policies/realm/opensource-realm.json", "--app", "policies/application/moodle.json", "--insert", "/tank/bts/examples/moodle", // very tidy php lms for universities
-    "--realm", "policies/realm/opensource-realm.json", "--app", "policies/application/magneto2.json", "--insert", "/tank/bts/examples/magento2", // php e-commerce
-    "--realm", "policies/realm/opensource-realm.json", "--app", "policies/application/kubernetes.json", "--insert", "/tank/bts/examples/kubernetes") // a big go project
+  args = listOf(
+    "--token", "../ccc/api-masterdata-devel/err0-ccc-api-masterdata-ee9bfddb-94b3-11ec-8263-ae3b21a6cd73.json", "--insert", "../ccc/api-masterdata-devel/",
+  )
+  
+   */
+
+  /*
+  args = listOf(
+    "--token", "../fp/futurepay-portal/err0-futurepay-portal-1f8d9570-90b7-11ec-b6db-1613dacd7971.json", "--insert", "../fp/futurepay-portal/",
+    "--token", "../fp/futurepay-checkout-backend/err0-futurepay-checkout-backend-1ac49bae-90b7-11ec-b6db-1613dacd7971.json", "--insert", "../fp/futurepay-checkout-backend/",
+    "--token", "../fp/futurepay-credit-api/err0-futurepay-credit-service-1d26f5af-90b7-11ec-b6db-1613dacd7971.json", "--insert", "../fp/futurepay-credit-api/"
+  )
+
+  */
+
+  /*
+  // Check-out bts projects...
+  args = listOf(
+    "--token", "tokens/err0-bts-internal-projects-bts-platform-8ae046e8-8f12-11ec-b3b7-de7ff53b7565.json", "--insert", "../bts_internship_2019_be_app"
+  )
 
    */
-  /*
-  args = listOf(
-    // pass #1 -- insert error codes (or re-insert error codes).
-    "--token", "tokens/err0-open-source-software-spring-framework-918d1448-3731-11ec-9e2d-46a00e0b2797.json", "--insert", "/tank/bts/examples/spring-framework", // java
-    "--token", "tokens/err0-open-source-software-django-74df2c06-19f4-11ec-8253-56f6e5f49a04.json", "--insert", "/tank/bts/examples/django", // python
-    "--token", "tokens/err0-open-source-software-kubernetes-f26f7103-0ff0-11ec-b8c2-a63d063ada96.json", "--insert", "/tank/bts/examples/kubernetes", // go
-    "--token", "tokens/err0-open-source-software-roslyn-01c36447-0ff1-11ec-b8c2-a63d063ada96.json", "--insert", "/tank/bts/examples/roslyn", // c#
-    "--token", "tokens/err0-open-source-software-node-bb-000ed676-0ff1-11ec-b8c2-a63d063ada96.json", "--insert", "/tank/bts/examples/NodeBB/src", // node.js
-    "--token", "tokens/err0-open-source-software-zf2-orders-057066b9-0ff1-11ec-b8c2-a63d063ada96.json", "--insert", "/tank/bts/examples/zf2-orders", // php + Zend framework
-    "--token", "tokens/err0-open-source-software-moodle-fcc1f565-0ff0-11ec-b8c2-a63d063ada96.json", "--insert", "/tank/bts/examples/moodle", // very tidy php lms for universities
-    "--token", "tokens/err0-open-source-software-magneto-2-f9bf8ad4-0ff0-11ec-b8c2-a63d063ada96.json", "--insert", "/tank/bts/examples/magento2", // php e-commerce
-    "--token", "tokens/err0-open-source-software-umbraco-0387f7a8-0ff1-11ec-b8c2-a63d063ada96.json", "--insert", "/tank/bts/examples/Umbraco-CMS/src", // c#
-    // pass #2 -- analyse source code, ignoring dirty checkout.
-    "--token", "tokens/err0-open-source-software-spring-framework-918d1448-3731-11ec-9e2d-46a00e0b2797.json", "--analyse", "--dirty", "/tank/bts/examples/spring-framework", // java
-    "--token", "tokens/err0-open-source-software-django-74df2c06-19f4-11ec-8253-56f6e5f49a04.json", "--analyse", "--dirty", "/tank/bts/examples/django", // python
-    "--token", "tokens/err0-open-source-software-kubernetes-f26f7103-0ff0-11ec-b8c2-a63d063ada96.json", "--analyse", "--dirty", "/tank/bts/examples/kubernetes", // go
-    "--token", "tokens/err0-open-source-software-roslyn-01c36447-0ff1-11ec-b8c2-a63d063ada96.json", "--analyse", "--dirty", "/tank/bts/examples/roslyn", // c#
-    "--token", "tokens/err0-open-source-software-node-bb-000ed676-0ff1-11ec-b8c2-a63d063ada96.json", "--analyse", "--dirty", "/tank/bts/examples/NodeBB/src", // node.js
-    "--token", "tokens/err0-open-source-software-zf2-orders-057066b9-0ff1-11ec-b8c2-a63d063ada96.json", "--analyse", "--dirty", "/tank/bts/examples/zf2-orders", // php + Zend framework
-    "--token", "tokens/err0-open-source-software-moodle-fcc1f565-0ff0-11ec-b8c2-a63d063ada96.json", "--analyse", "--dirty", "/tank/bts/examples/moodle", // very tidy php lms for universities
-    "--token", "tokens/err0-open-source-software-magneto-2-f9bf8ad4-0ff0-11ec-b8c2-a63d063ada96.json", "--analyse", "--dirty", "/tank/bts/examples/magento2", // php e-commerce
-    "--token", "tokens/err0-open-source-software-umbraco-0387f7a8-0ff1-11ec-b8c2-a63d063ada96.json", "--analyse", "--dirty", "/tank/bts/examples/Umbraco-CMS/src", // c#
-
-  )
-  */
 
   // Check-out the open-source-bundle project at the same parent level as this project:
   args = listOf(

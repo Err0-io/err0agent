@@ -1,0 +1,16 @@
+{
+  "pk": "a8c41db4-e480-11eb-ba80-0242ac130007",
+  "data": {
+    "name": "Example Advanced GO App",
+    "prj_code": "ADVGO",
+    "policy": {
+      "error_template": "%error",
+      "error_pad_to_n": 0,
+      "context_n_lines": 3
+    },
+    "sources": {
+      "include_dirs": ["."]
+    },
+    "prj_code_policy": {"mode": 2, "adv_golang": {"rules": [{"type": 0, "pattern": ["\\s*_l\\("]}, {"type": 2, "pattern": ["^ERROR"]}], "disable_language": false, "disable_builtin_log_detection": true}, "easy_mode_logger_method_naming_pattern": "(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info|debug|trace)", "easy_mode_logger_object_naming_pattern": "(m?_?)*log(ger)?"}
+  }
+}
