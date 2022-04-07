@@ -53,7 +53,7 @@ public class ErrorCodeFormatter {
             hasErrorCode = list.get(i).fieldType == FieldType.ERROR;
         }
         if (!hasErrorCode) {
-            throw new RuntimeException("[AGENT-000010] Error code template must include %error");
+            throw new RuntimeException("[AGENT-000012] Error code template must include %error");
         }
     }
     public ErrorCodeFormatter(final ProjectPolicy policy) {
