@@ -1,5 +1,5 @@
 {
-  "host" : "self-service-uat.err0.io:8443",
+  "host" : "self-service.err0.io",
   "realm_uuid" : "4c04fe56-5da5-11ec-b05d-0242c0a88002",
   "prj_uuid" : "7e9933f0-5da5-11ec-b05d-0242c0a88002",
   "token_uuid" : "dc4ccb4c-5da5-11ec-a0b8-4622287bbd85",
