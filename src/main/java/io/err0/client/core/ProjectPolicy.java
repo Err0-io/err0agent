@@ -170,7 +170,7 @@ public class ProjectPolicy {
                 return realmPolicy.error_prefix;
             }
         }
-        throw new RuntimeException("[AGENT-000009] Error prefix not set in either application policy or realm policy.");
+        throw new RuntimeException("[AGENT-000013] Error prefix not set in either application policy or realm policy.");
     }
 
     private ErrorCodeFormatter errorCodeFormatter = null;

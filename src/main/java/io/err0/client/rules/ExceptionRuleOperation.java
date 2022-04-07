@@ -7,14 +7,14 @@ public class ExceptionRuleOperation {
         switch (this.operation) {
             case SET_CODE_COMMENT:
                 if (null == operationValue) {
-                    throw new RuntimeException("[AGENT-000012] Needs a value.");
+                    throw new RuntimeException("[AGENT-000015] Needs a value.");
                 }
                 if (operationValue.contains("/*") ||
                     operationValue.contains("//") ||
                     operationValue.contains("*/") ||
                     operationValue.contains("#")
                 ) {
-                    throw new RuntimeException("[AGENT-000013] Invalid code comment: " + operationValue);
+                    throw new RuntimeException("[AGENT-000016] Invalid code comment: " + operationValue);
                 }
                 break;
         }
