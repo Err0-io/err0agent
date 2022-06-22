@@ -11,19 +11,19 @@ permissions:
 
 jobs:
 
-  err0:
-  
-    runs-on: ubuntu-latest
-    container: err0io/agent:latest
-    
-    steps:
-    - uses: actions/checkout@v3
-    - run: err0.sh --token tokens/err0-err0-io-err0agent-dc4ccb4c-5da5-11ec-a0b8-4622287bbd85.json --analyse --check .
+  #err0:
+  #
+  #  runs-on: ubuntu-latest
+  #  container: err0io/agent:latest
+  #  
+  #  steps:
+  #  - uses: actions/checkout@v3
+  #  - run: err0.sh --token tokens/err0-err0-io-err0agent-dc4ccb4c-5da5-11ec-a0b8-4622287bbd85.json --analyse --check .
 
   build:
 
     runs-on: ubuntu-latest
-    needs: err0
+    #needs: err0
 
     steps:
     - uses: actions/checkout@v3
@@ -60,7 +60,7 @@ jobs:
     - uses: actions/download-artifact@v3.0.0
       with: 
         name: err0agent-fat-jar
-        path: docker/agent/err0agent-build-fat.jar
+        path: docker/agent
     - run: docker info
     - run: echo -n ${{ secrets.DOCKER_HUB_ERR0IO_PASSWORD }} | docker login -u err0io --password-stdin
     - run: docker buildx create --driver docker-container --use
@@ -83,7 +83,7 @@ jobs:
       - uses: actions/download-artifact@v3.0.0
         with:
           name: err0agent-fat-jar
-          path: docker/agent/err0agent-build-fat.jar
+          path: docker/agent
       - run: docker info
       - run: echo -n ${{ secrets.DOCKER_HUB_ERR0IO_PASSWORD }} | docker login -u err0io --password-stdin
       - run: docker buildx create --driver docker-container --use
