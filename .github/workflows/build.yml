@@ -11,19 +11,19 @@ permissions:
 
 jobs:
 
-  #err0:
-  #
-  #  runs-on: ubuntu-latest
-  #  container: err0io/agent:latest
-  #  
-  #  steps:
-  #  - uses: actions/checkout@v3
-  #  - run: err0.sh --token tokens/err0-err0-io-err0agent-dc4ccb4c-5da5-11ec-a0b8-4622287bbd85.json --analyse --check .
+  err0:
+  
+    runs-on: ubuntu-latest
+    container: err0io/agent:latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    - run: err0.sh --token tokens/err0-err0-io-err0agent-dc4ccb4c-5da5-11ec-a0b8-4622287bbd85.json --analyse --check .
 
   build:
 
     runs-on: ubuntu-latest
-    #needs: err0
+    needs: err0
 
     steps:
     - uses: actions/checkout@v3
@@ -43,7 +43,7 @@ jobs:
         path: |
           build/libs/err0agent-*-fat.jar
 
-  pacakge-develop:
+  package-develop:
   
     if: github.ref == 'refs/heads/develop'
   
@@ -66,7 +66,7 @@ jobs:
     - run: docker buildx create --driver docker-container --use
     - run: docker buildx build --platform linux/amd64,linux/arm64 --no-cache docker/agent --tag err0io/agent:develop --push
 
-  pacakge-master:
+  package-master:
 
     if: github.ref == 'refs/heads/master'
 
