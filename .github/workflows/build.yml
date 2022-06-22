@@ -61,5 +61,6 @@ jobs:
         path: docker/agent/err0agent-build-fat.jar
     - run: docker info
     - run: echo -n ${{ secrets.DOCKER_HUB_ERR0IO_PASSWORD }} | docker login -u err0io --password-stdin
+    - run: docker buildx create --driver docker-container --use
     - run: docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6 --no-cache docker/agent --tag err0io/agent:develop
     - run: docker push err0io/agent:develop
