@@ -55,6 +55,7 @@ jobs:
     
     steps:
     - uses: actions/checkout@v3
+    - uses: actions/download-artifact@v3.0.0
     - run: docker info
     - run: echo -n ${{ secrets.DOCKER_HUB_ERR0IO_PASSWORD }} | docker login -u err0io --password-stdin
     - run: cp build/libs/err0agent-*-fat.jar docker/agent
