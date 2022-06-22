@@ -43,7 +43,7 @@ jobs:
         path: |
           build/libs/err0agent-*-fat.jar
 
-  pacakge-develop:
+  package-develop:
   
     if: github.ref == 'refs/heads/develop'
   
@@ -60,13 +60,13 @@ jobs:
     - uses: actions/download-artifact@v3.0.0
       with: 
         name: err0agent-fat-jar
-        path: docker/agent/err0agent-build-fat.jar
+        path: docker/agent
     - run: docker info
     - run: echo -n ${{ secrets.DOCKER_HUB_ERR0IO_PASSWORD }} | docker login -u err0io --password-stdin
     - run: docker buildx create --driver docker-container --use
     - run: docker buildx build --platform linux/amd64,linux/arm64 --no-cache docker/agent --tag err0io/agent:develop --push
 
-  pacakge-master:
+  package-master:
 
     if: github.ref == 'refs/heads/master'
 
@@ -83,7 +83,7 @@ jobs:
       - uses: actions/download-artifact@v3.0.0
         with:
           name: err0agent-fat-jar
-          path: docker/agent/err0agent-build-fat.jar
+          path: docker/agent
       - run: docker info
       - run: echo -n ${{ secrets.DOCKER_HUB_ERR0IO_PASSWORD }} | docker login -u err0io --password-stdin
       - run: docker buildx create --driver docker-container --use
