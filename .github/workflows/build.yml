@@ -62,5 +62,5 @@ jobs:
     - run: docker info
     - run: echo -n ${{ secrets.DOCKER_HUB_ERR0IO_PASSWORD }} | docker login -u err0io --password-stdin
     - run: docker buildx create --driver docker-container --use
-    - run: docker buildx build --platform linux/amd64,linux/arm64 --no-cache docker/agent --tag err0io/agent --tag err0io/agent:develop
-    - run: docker push err0io/agent:develop
+    - run: docker buildx build --platform linux/amd64,linux/arm64 --no-cache docker/agent --tag err0io/agent:develop
+    - run: docker buildx push --platform linux/amd64,linux/arm64 err0io/agent:develop
