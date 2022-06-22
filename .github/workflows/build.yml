@@ -17,8 +17,7 @@ jobs:
     container: err0io/agent:latest
     steps:
     - uses: actions/checkout@v3
-    - run: |
-      err0.sh --token tokens/err0-err0-io-err0agent-dc4ccb4c-5da5-11ec-a0b8-4622287bbd85.json --analyse --check .
+    - run: err0.sh --token tokens/err0-err0-io-err0agent-dc4ccb4c-5da5-11ec-a0b8-4622287bbd85.json --analyse --check .
 
   build:
 
