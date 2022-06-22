@@ -10,6 +10,16 @@ permissions:
   contents: read
 
 jobs:
+
+  err0:
+  
+    runs-on: ubuntu-latest
+    container: err0io/agent:latest
+    steps:
+    - uses: actions/checkout@v3
+    - run: |
+      err0.sh --token tokens/err0-err0-io-err0agent-dc4ccb4c-5da5-11ec-a0b8-4622287bbd85.json --analyse --check .
+
   build:
 
     runs-on: ubuntu-latest
@@ -28,6 +38,6 @@ jobs:
     - name: Archive production artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: dist-without-markdown
+        name: err0agent fat jar
         path: |
           build/libs/err0agent-*-fat.jar
