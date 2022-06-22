@@ -15,6 +15,7 @@ jobs:
   
     runs-on: ubuntu-latest
     container: err0io/agent:latest
+    
     steps:
     - uses: actions/checkout@v3
     - run: err0.sh --token tokens/err0-err0-io-err0agent-dc4ccb4c-5da5-11ec-a0b8-4622287bbd85.json --analyse --check .
@@ -40,3 +41,18 @@ jobs:
         name: err0agent fat jar
         path: |
           build/libs/err0agent-*-fat.jar
+
+  pacakge-develop-x64:
+  
+    runs-on: ubuntu-latest
+    container: docker:latest
+    services:
+      dind:
+        image: docker:dind
+    
+    steps:
+    - uses: actions/checkout@v3
+    - run: docker info
+    - run: echo -n ${{ secrets.DOCKER_HUB_ERR0IO_PASSWORD }} | docker login -u err0io --password-stdin
+    - run: docker build --no-cache docker/agent --tag err0io/agent:develop
+    - run: docker push err0io/agent:develop
