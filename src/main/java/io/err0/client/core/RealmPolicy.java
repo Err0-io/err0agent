@@ -28,7 +28,7 @@ public class RealmPolicy {
         this.context_allowed_in_prj = GsonHelper.getAsBoolean(realmData, "context_allowed_in_prj", true);
         final JsonObject policyJson = realmData.getAsJsonObject("policy");
         this.error_prefix = GsonHelper.getAsString(policyJson, "error_prefix", null);
-        this.error_template = GsonHelper.getAsString(policyJson, "error_template", null);
+        //this.error_template = GsonHelper.getAsString(policyJson, "error_template", null);
         this.error_pad_to_n = GsonHelper.getAsInt(policyJson, "error_pad_to_n", -1);
         this.context = GsonHelper.getAsBoolean(policyJson, "context", false);
         this.context_n_lines = GsonHelper.getAsInt(policyJson, "context_n_lines", 0);
@@ -49,7 +49,7 @@ public class RealmPolicy {
     final boolean policy_editable_by_prj;
     final boolean context_allowed_in_prj;
     final String error_prefix;
-    final String error_template;
+    //final String error_template;
     final int error_pad_to_n;
     final boolean context;
     final int context_n_lines;

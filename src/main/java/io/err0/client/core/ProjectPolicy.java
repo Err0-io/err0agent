@@ -3,12 +3,8 @@ package io.err0.client.core;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import io.err0.client.rules.*;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -17,7 +13,6 @@ public class ProjectPolicy {
     /**
      * Load an app policy from the web service, note different format.
      * FIXME - formats.
-     * @param realmJson
      */
     public ProjectPolicy(final RealmPolicy realmPolicy, final JsonObject applicationJson) {
         this.realmPolicy = realmPolicy;
@@ -30,7 +25,7 @@ public class ProjectPolicy {
         this.prj_uuid = UUID.fromString(GsonHelper.getAsString(applicationJson, "pk", null));
         final JsonObject policyJson = applicationData.getAsJsonObject("policy");
         this.error_prefix = GsonHelper.getAsString(policyJson, "error_prefix", null);
-        this.error_template = GsonHelper.getAsString(policyJson, "error_template", null);
+        //this.error_template = GsonHelper.getAsString(policyJson, "error_template", null);
         this.error_pad_to_n = GsonHelper.getAsInt(policyJson, "error_pad_to_n", -1);
         this.has_context = policyJson.has("context");
         this.context = GsonHelper.getAsBoolean(policyJson, "context", false);
@@ -137,7 +132,7 @@ public class ProjectPolicy {
     final String prj_code;
     final UUID prj_uuid;
     final String error_prefix;
-    final String error_template;
+    //final String error_template;
     final int error_pad_to_n;
     final boolean has_context;
     final boolean context;
@@ -176,13 +171,7 @@ public class ProjectPolicy {
     private ErrorCodeFormatter errorCodeFormatter = null;
     public ErrorCodeFormatter getErrorCodeFormatter() {
         if (null == errorCodeFormatter) {
-            if (realmPolicy.policy_editable_by_prj && (null != error_template && !"".equals(error_template))) {
-                errorCodeFormatter = new ErrorCodeFormatter(this, error_template);
-            } else if (null != realmPolicy.error_template && !"".equals(realmPolicy.error_template)) {
-                errorCodeFormatter = new ErrorCodeFormatter(this, realmPolicy.error_template);
-            } else {
-                errorCodeFormatter = new ErrorCodeFormatter(this);
-            }
+            errorCodeFormatter = new ErrorCodeFormatter(this);
         }
         return errorCodeFormatter;
     }
@@ -226,7 +215,7 @@ public class ProjectPolicy {
     private Pattern reErrorNumber_cs = null;
     public Pattern getReErrorNumber_cs() {
         if (null == reErrorNumber_cs) {
-            reErrorNumber_cs = Pattern.compile("^\"\\[[^\\]]*?" + getErrorPrefix() + "-(\\d+)[^\\]]*?\\]\\s+");
+            reErrorNumber_cs = Pattern.compile("^\"\\[" + getErrorPrefix() + "-(\\d+)\\]\\s+");
         }
         return reErrorNumber_cs;
     }
@@ -235,7 +224,7 @@ public class ProjectPolicy {
     private Pattern reErrorNumber_go = null;
     public Pattern getReErrorNumber_go() {
         if (null == reErrorNumber_go) {
-            reErrorNumber_go = Pattern.compile("^(`|'|\")\\[[^\\]]*?" + getErrorPrefix() + "-(\\d+)[^\\]]*?\\]\\s+");
+            reErrorNumber_go = Pattern.compile("^(`|'|\")\\[" + getErrorPrefix() + "-(\\d+)\\]\\s+");
         }
         return reErrorNumber_go;
     }
@@ -244,7 +233,7 @@ public class ProjectPolicy {
     private Pattern reErrorNumber_java = null;
     public Pattern getReErrorNumber_java() {
         if (null == reErrorNumber_java) {
-            reErrorNumber_java = Pattern.compile("^\"\\[[^\\]]*?" + getErrorPrefix() + "-(\\d+)[^\\]]*?\\]\\s+");
+            reErrorNumber_java = Pattern.compile("^\"\\[" + getErrorPrefix() + "-(\\d+)\\]\\s+");
         }
         return reErrorNumber_java;
     }
@@ -253,7 +242,7 @@ public class ProjectPolicy {
     private Pattern reErrorNumber_php = null;
     public Pattern getReErrorNumber_php() {
         if (null == reErrorNumber_php) {
-            reErrorNumber_php = Pattern.compile("^(\'|\")\\[[^\\]]*?" + getErrorPrefix() + "-(\\d+)[^\\]]*?\\]\\s+");
+            reErrorNumber_php = Pattern.compile("^(\'|\")\\[" + getErrorPrefix() + "-(\\d+)\\]\\s+");
         }
         return reErrorNumber_php;
     }
@@ -262,7 +251,7 @@ public class ProjectPolicy {
     private Pattern reErrorNumber_ts = null;
     public Pattern getReErrorNumber_ts() {
         if (null == reErrorNumber_ts) {
-            reErrorNumber_ts = Pattern.compile("^(`|'|\")\\[[^\\]]*?" + getErrorPrefix() + "-(\\d+)[^\\]]*?\\]\\s+");
+            reErrorNumber_ts = Pattern.compile("^(`|'|\")\\[" + getErrorPrefix() + "-(\\d+)\\]\\s+");
         }
         return reErrorNumber_ts;
     }
@@ -270,7 +259,7 @@ public class ProjectPolicy {
     private Pattern reErrorNumber_py = null;
     public Pattern getReErrorNumber_py() {
         if (null == reErrorNumber_py) {
-            reErrorNumber_ts = Pattern.compile("^('|\"\"\"|\")\\[[^\\]]*?" + getErrorPrefix() + "-(\\d+)[^\\]]*?\\]\\s+");
+            reErrorNumber_ts = Pattern.compile("^('|\"\"\"|\")\\[" + getErrorPrefix() + "-(\\d+)\\]\\s+");
         }
         return reErrorNumber_ts;
     }
