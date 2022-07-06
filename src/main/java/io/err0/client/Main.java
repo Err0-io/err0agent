@@ -107,8 +107,6 @@ public class Main {
 
         runGitMetadata.addProperty("git_hash", gitHash);
 
-        boolean statusIsClean = true;
-
         Git git = Git.wrap(repo);
         RevWalk walk = new RevWalk(repo);
         if (null != gitHash) {
@@ -221,10 +219,14 @@ public class Main {
             }
         }
         Status status = git.status().call();
-        statusIsClean = status.isClean();
+        boolean statusIsClean = status.isClean();
 
-        if (! statusIsClean && null != gitHash) {
-            runGitMetadata.addProperty("git_hash", gitHash + "-dirty");
+        if (! statusIsClean) {
+            // repo is dirty before agent run, flag hash as dirty and remove tags from this run's metadata.
+            if (null != gitHash) {
+                runGitMetadata.addProperty("git_hash", gitHash + "-dirty");
+            }
+            runGitMetadata.add("git_tags", new JsonArray());
         }
 
         return new GitMetadata(gitHash, statusIsClean, detachedHead);
@@ -330,8 +332,13 @@ public class Main {
                         statisticsGatherer.throwable = t;
                     }
 
-                    if (didChangeAFile && null != gitHash) {
-                        runGitMetadata.addProperty("git_hash", gitHash + "-dirty");
+                    if (didChangeAFile) {
+                        // flag the hash as dirty, we changed files
+                        if (null != gitHash && !gitHash.endsWith("-dirty")) {
+                            runGitMetadata.addProperty("git_hash", gitHash + "-dirty");
+                        }
+                        // remove tags, it no longer corresponds to the tagged version
+                        runGitMetadata.add("git_tags", new JsonArray());
                     }
 
                     apiProvider.updateRun(projectPolicy, run_uuid, runGitMetadata, statisticsGatherer.toRunMetadata());
