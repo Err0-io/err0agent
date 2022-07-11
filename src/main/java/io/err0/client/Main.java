@@ -348,7 +348,7 @@ public class Main {
                         System.exit(-1);
                     }
 
-                } if ("--report".equals(arg) || "--analyse".equals(arg)) {
+                } if ("--report".equals(arg) || "--analyse".equals(arg) || "--analyze".equals(arg)) {
                     if (null == realmPolicy) throw new Exception("[AGENT-000004] Must specify realm policy using --realm before specifying report dir");
                     if (null == projectPolicy) throw new Exception("[AGENT-000005] Must specify application policy using --app before specifying report dir");
                     String reportDir = args[++i];
