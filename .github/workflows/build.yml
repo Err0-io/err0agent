@@ -15,8 +15,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: print secrets
+    - name: create token from secret
       run: |
+          mkdir -p tokens
           echo "$SECRET" >> tokens/err0agent.json
           cat tokens/err0agent.json
       shell: bash
