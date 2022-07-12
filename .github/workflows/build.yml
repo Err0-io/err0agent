@@ -42,7 +42,7 @@ jobs:
       with: 
         name: err0agent-token
         path: tokens
-    - run: err0.sh --token tokens/err0agent-token.json --analyse --check .
+    - run: err0.sh --token tokens/err0agent.json --analyse --check .
 
   build:
 
