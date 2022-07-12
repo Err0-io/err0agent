@@ -1,3 +1,23 @@
+== Using err0agent
+
+We have made two scripts `./err0-insert.sh` and `./err0-check.sh` to run
+the agent with docker against this code base.
+
+You will need to modify these scripts in order to be able to use the agent.
+
+`err0-insert.sh` should be used on a clean checkout, to add error codes into
+your project.  After your project will be changed.  Review the diff, build
+and then commit these error codes to your git repository.
+
+`err0-check.sh` should be run during the build phase, to check for missing
+error codes.  If it finds one, it aborts; otherwise the script returns success.
+
+They need a token (don't check this in!) and to be able to mount your git
+project.
+
+See also our `.github/workflows/build.yml` to see how to run `./err0-check.sh` in
+the CI/CD pipeline; including storing the token value in a repository secret.
+
 == Building
 
 Make sure you're running err0server and that it is working...
