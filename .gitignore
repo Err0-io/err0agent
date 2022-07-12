@@ -2,3 +2,4 @@
 /.idea
 /build
 /.docker-build
+/tokens/err0agent.json
