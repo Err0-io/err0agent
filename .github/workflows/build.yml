@@ -11,6 +11,24 @@ permissions:
 
 jobs:
 
+  err0-secret:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: print secrets
+      run: |
+          echo "$SECRET" >> tokens/err0agent.json
+          cat tokens/err0agent.json
+      shell: bash
+      env:
+        SECRET: ${{secrets.ERR0_TOKEN}}
+    - name: Archive production artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: err0agent-token
+        path: |
+          tokens/err0agent.json
+
   err0:
   
     runs-on: ubuntu-latest
@@ -18,7 +36,11 @@ jobs:
     
     steps:
     - uses: actions/checkout@v3
-    - run: err0.sh --token tokens/err0-err0-io-err0agent-dc4ccb4c-5da5-11ec-a0b8-4622287bbd85.json --analyse --check .
+    - uses: actions/download-artifact@v3.0.0
+      with: 
+        name: err0agent-token
+        path: tokens
+    - run: err0.sh --token tokens/err0agent-token.json --analyse --check .
 
   build:
 
