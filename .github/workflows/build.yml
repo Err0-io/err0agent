@@ -34,6 +34,7 @@ jobs:
   
     runs-on: ubuntu-latest
     container: err0io/agent:latest
+    needs: err0-secret
     
     steps:
     - uses: actions/checkout@v3
