@@ -1062,14 +1062,18 @@ public class Main {
                         if (!item.token.keepErrorCode) {
                             logic.pass2ResolveDuplicateErrorNumber(item, errorOrdinal); // item.token.errorOrdinal = errorOrdinal;
 
-                            item.token.source = item.token.sourceNoErrorCode.substring(0, 1) + "[" + policy.getErrorCodeFormatter().formatErrorCode(item.token.errorOrdinal) + "] " + item.token.sourceNoErrorCode.substring(1).stripLeading();
+                            final String start = item.token.sourceNoErrorCode.substring(0, 1);
+                            final String remainder = item.token.sourceNoErrorCode.substring(1).stripLeading();
+                            item.token.source = start + "[" + policy.getErrorCodeFormatter().formatErrorCode(item.token.errorOrdinal) + (remainder.length() == 0 || remainder.equals(start) ? "]" : "] ") + remainder;
                         }
                     } else {
                         item.token.keepErrorCode = false;
                         item.token.errorOrdinal = 0;
                         item.token.errorCodeConsumer = (ignore1) -> {
                             logic.pass2AssignNewErrorNumber(item); // item.token.errorOrdinal = apiProvider.nextErrorNumber();
-                            item.token.source = item.token.sourceNoErrorCode.substring(0, 1) + "[" + policy.getErrorCodeFormatter().formatErrorCode(item.token.errorOrdinal) + "] " + item.token.sourceNoErrorCode.substring(1).stripLeading();
+                            final String start = item.token.sourceNoErrorCode.substring(0, 1);
+                            final String remainder = item.token.sourceNoErrorCode.substring(1).stripLeading();
+                            item.token.source = start + "[" + policy.getErrorCodeFormatter().formatErrorCode(item.token.errorOrdinal) + (remainder.length() == 0 || remainder.equals(start) ? "]" : "] ") + remainder;
                         };
                     }
                 }
@@ -1128,9 +1132,13 @@ public class Main {
                         if (!currentToken.keepErrorCode) {
                             // log match
                             //currentToken.errorOrdinal = apiProvider.nextErrorNumber();
-                            currentToken.source = currentToken.sourceNoErrorCode.substring(0, 1) + "[" + policy.getErrorCodeFormatter().formatErrorCode(currentToken.errorOrdinal) + "] " + currentToken.sourceNoErrorCode.substring(1).stripLeading();
+                            final String start = currentToken.sourceNoErrorCode.substring(0, 1);
+                            final String remainder = currentToken.sourceNoErrorCode.substring(1).stripLeading();
+                            currentToken.source = start + "[" + policy.getErrorCodeFormatter().formatErrorCode(currentToken.errorOrdinal) + (remainder.length() == 0 || remainder.equals(start) ? "]" : "] ") + remainder;
                         } else {
-                            final String formatted = currentToken.sourceNoErrorCode.substring(0, 1) + "[" + policy.getErrorCodeFormatter().formatErrorCode(currentToken.errorOrdinal) + "] " + currentToken.sourceNoErrorCode.substring(1).stripLeading();
+                            final String start = currentToken.sourceNoErrorCode.substring(0, 1);
+                            final String remainder = currentToken.sourceNoErrorCode.substring(1).stripLeading();
+                            final String formatted = start + "[" + policy.getErrorCodeFormatter().formatErrorCode(currentToken.errorOrdinal) + (remainder.length() == 0 || remainder.equals(start) ? "]" : "] ") + remainder;
                             if (!formatted.equals(currentToken.initialSource)) {
                                 currentToken.source = formatted;
                                 logic.pass3InsertExistingErrorNumber(stateItem, currentToken); // no code corresponds to this in the main 'do everything' analyse method
