@@ -22,7 +22,7 @@ public enum ExceptionRuleCheckEnum {
             case 2: return DOES_NOT_EQUAL;
             case 3: return MATCHES_REGEX;
             case 4: return DOES_NOT_MATCH_REGEX;
-            default: throw new RuntimeException();
+            default: throw new RuntimeException("[AGENT-000022] Unexpected exception rule check value=" + value);
         }
     }
 }

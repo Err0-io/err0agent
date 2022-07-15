@@ -31,7 +31,7 @@ public class LanguageCodePolicy {
                 case 3:
                     return LITERAL_MUST_NOT_MATCH;
                 default:
-                    throw new RuntimeException();
+                    throw new RuntimeException("[AGENT-000018] Unexpected logger rule type value="+value);
             }
         }
     }
@@ -106,7 +106,7 @@ public class LanguageCodePolicy {
                     }
                     break;
                 default:
-                    throw new RuntimeException();
+                    throw new RuntimeException("[AGENT-000019] Unexpected logger rule type " + rule.type.name());
             }
         }
         return classification;

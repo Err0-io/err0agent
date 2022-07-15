@@ -16,7 +16,7 @@ public enum ExceptionRuleActionEnum {
         switch (value) {
             case 0: return NO_ACTION;
             case 1: return NO_ERROR_NUMBER;
-            default: throw new RuntimeException();
+            default: throw new RuntimeException("[AGENT-000021] Unexpected exception rule action value=" + value);
         }
     }
 }

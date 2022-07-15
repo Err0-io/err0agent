@@ -22,7 +22,7 @@ public enum ExceptionRuleSelectorEnum {
             case 2: return CODE_SNIPPET;
             case 3: return LINE_OF_CODE;
             case 4: return ATTRIBUTE;
-            default: throw new RuntimeException();
+            default: throw new RuntimeException("[AGENT-000026] Unexpected exception rule selector value=" + value);
         }
     }
 }

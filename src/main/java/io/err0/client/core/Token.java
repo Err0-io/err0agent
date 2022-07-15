@@ -47,7 +47,7 @@ public class Token {
             case BACKTICK_LITERAL:
                 return s.length() > 2 ? s.substring(1, s.length() - 2) : "";
             default:
-                throw new RuntimeException();
+                throw new RuntimeException("[AGENT-000020] Not a string literal, type = " + type.name());
         }
     }
     public int getStringQuoteWidth()
@@ -61,7 +61,7 @@ public class Token {
             case QUOT3_LITERAL:
                 return 3;
             default:
-                throw new RuntimeException("[AGENT-000017] Not a string literal.");
+                throw new RuntimeException("[AGENT-000017] Not a string literal, type = " + type.name());
         }
     }
 

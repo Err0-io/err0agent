@@ -26,7 +26,7 @@ public enum ExceptionRuleOperationEnum {
             case 4: return SET_HTTP_STATUS;
             case 5: return SET_CATEGORY;
             case 6: return SET_ERROR_PRIORITY_LEVEL;
-            default: throw new RuntimeException();
+            default: throw new RuntimeException("[AGENT-000023] Unexpected exception rule operation value=" + value);
         }
     }
 }

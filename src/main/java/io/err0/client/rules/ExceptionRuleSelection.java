@@ -56,7 +56,7 @@ public class ExceptionRuleSelection {
                 return check(attr.getAsString());
             }
         }
-        throw new RuntimeException();
+        throw new RuntimeException("[AGENT-000024] Unhandled selector = " + selector.name());
     }
 
     public boolean check(String value) {
@@ -75,6 +75,6 @@ public class ExceptionRuleSelection {
             case DOES_NOT_MATCH_REGEX:
                 return ! checkPattern.matcher(value).find();
         }
-        throw new RuntimeException();
+        throw new RuntimeException("[AGENT-000025] Unhandled check = " + check.name());
     }
 }
