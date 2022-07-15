@@ -50,6 +50,20 @@ public class Token {
                 throw new RuntimeException();
         }
     }
+    public int getStringQuoteWidth()
+    {
+        switch (type)
+        {
+            case QUOT_LITERAL:
+            case APOS_LITERAL:
+            case BACKTICK_LITERAL:
+                return 1;
+            case QUOT3_LITERAL:
+                return 3;
+            default:
+                throw new RuntimeException("[AGENT-000017] Not a string literal.");
+        }
+    }
 
     public Token finish(int lineNumber) {
         this.initialSource = this.source = this.sourceCode.toString();
