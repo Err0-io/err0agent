@@ -206,7 +206,7 @@ public class ProjectPolicy {
     private Pattern reErrorNumber_js = null;
     public Pattern getReErrorNumber_js() {
         if (null == reErrorNumber_js) {
-            reErrorNumber_js = Pattern.compile("^(`|'|\")\\[[^\\]]*?" + getErrorPrefix() + "-(\\d+)[^\\]]*?\\]\\s+");
+            reErrorNumber_js = Pattern.compile("^(`|'|\")\\[[^\\]]*?" + getErrorPrefix() + "-(\\d+)[^\\]]*?\\]\\s*");
         }
         return reErrorNumber_js;
     }
@@ -215,7 +215,7 @@ public class ProjectPolicy {
     private Pattern reErrorNumber_cs = null;
     public Pattern getReErrorNumber_cs() {
         if (null == reErrorNumber_cs) {
-            reErrorNumber_cs = Pattern.compile("^\"\\[" + getErrorPrefix() + "-(\\d+)\\]\\s+");
+            reErrorNumber_cs = Pattern.compile("^\"\\[" + getErrorPrefix() + "-(\\d+)\\]\\s*");
         }
         return reErrorNumber_cs;
     }
@@ -224,7 +224,7 @@ public class ProjectPolicy {
     private Pattern reErrorNumber_go = null;
     public Pattern getReErrorNumber_go() {
         if (null == reErrorNumber_go) {
-            reErrorNumber_go = Pattern.compile("^(`|'|\")\\[" + getErrorPrefix() + "-(\\d+)\\]\\s+");
+            reErrorNumber_go = Pattern.compile("^(`|'|\")\\[" + getErrorPrefix() + "-(\\d+)\\]\\s*");
         }
         return reErrorNumber_go;
     }
@@ -233,7 +233,7 @@ public class ProjectPolicy {
     private Pattern reErrorNumber_java = null;
     public Pattern getReErrorNumber_java() {
         if (null == reErrorNumber_java) {
-            reErrorNumber_java = Pattern.compile("^\"\\[" + getErrorPrefix() + "-(\\d+)\\]\\s+");
+            reErrorNumber_java = Pattern.compile("^\"\\[" + getErrorPrefix() + "-(\\d+)\\]\\s*");
         }
         return reErrorNumber_java;
     }
@@ -242,7 +242,7 @@ public class ProjectPolicy {
     private Pattern reErrorNumber_php = null;
     public Pattern getReErrorNumber_php() {
         if (null == reErrorNumber_php) {
-            reErrorNumber_php = Pattern.compile("^(\'|\")\\[" + getErrorPrefix() + "-(\\d+)\\]\\s+");
+            reErrorNumber_php = Pattern.compile("^(\'|\")\\[" + getErrorPrefix() + "-(\\d+)\\]\\s*");
         }
         return reErrorNumber_php;
     }
@@ -251,7 +251,7 @@ public class ProjectPolicy {
     private Pattern reErrorNumber_ts = null;
     public Pattern getReErrorNumber_ts() {
         if (null == reErrorNumber_ts) {
-            reErrorNumber_ts = Pattern.compile("^(`|'|\")\\[" + getErrorPrefix() + "-(\\d+)\\]\\s+");
+            reErrorNumber_ts = Pattern.compile("^(`|'|\")\\[" + getErrorPrefix() + "-(\\d+)\\]\\s*");
         }
         return reErrorNumber_ts;
     }
@@ -259,7 +259,7 @@ public class ProjectPolicy {
     private Pattern reErrorNumber_py = null;
     public Pattern getReErrorNumber_py() {
         if (null == reErrorNumber_py) {
-            reErrorNumber_ts = Pattern.compile("^('|\"\"\"|\")\\[" + getErrorPrefix() + "-(\\d+)\\]\\s+");
+            reErrorNumber_ts = Pattern.compile("^('|\"\"\"|\")\\[" + getErrorPrefix() + "-(\\d+)\\]\\s*");
         }
         return reErrorNumber_ts;
     }
