@@ -54,5 +54,34 @@ public class Test0018EmptyMessages {
 
             previousState = apiProvider.getState();
         }
+
+        // pass #2 - scan and report (no changes)
+        {
+
+            final String sourceDir = "src/test/testdata/0018/02";
+
+            final ProjectPolicy policy = TestPolicy.getPolicy();
+            assertNotNull(policy);
+
+            final GlobalState globalState = new GlobalState();
+            assertNotNull(globalState);
+
+            final UnitTestApiProvider apiProvider = new UnitTestApiProvider();
+
+            previousState.transferSignatures(globalState);
+            apiProvider.setNextErrorNumber(policy, previousState.currentErrorNumber + 1);
+
+            final ResultDriver driver = apiProvider.getDriver();
+
+            Main.scan(policy, globalState, sourceDir, apiProvider);
+            Main._import(apiProvider, globalState, policy);
+            boolean wouldChangeAFile = Main.runAnalyse(apiProvider, globalState, policy, driver, apiProvider.createRun(policy), new StatisticsGatherer());
+
+            assertFalse(wouldChangeAFile);
+
+            previousState = apiProvider.getState();
+
+            assertEquals(20, previousState.metaDataStorage.size());
+        }
     }
 }
