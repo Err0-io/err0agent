@@ -1,3 +1,19 @@
+/*
+Copyright 2022 BlueTrailSoftware, Holding Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package io.err0.client;
 
 import io.err0.client.core.*;
@@ -1062,8 +1078,9 @@ public class Main {
                         if (!item.token.keepErrorCode) {
                             logic.pass2ResolveDuplicateErrorNumber(item, errorOrdinal); // item.token.errorOrdinal = errorOrdinal;
 
-                            final String start = item.token.sourceNoErrorCode.substring(0, 1);
-                            final String remainder = item.token.sourceNoErrorCode.substring(1).stripLeading();
+                            final int width = item.token.getStringQuoteWidth();
+                            final String start = item.token.sourceNoErrorCode.substring(0, width);
+                            final String remainder = item.token.sourceNoErrorCode.substring(width).stripLeading();
                             item.token.source = start + "[" + policy.getErrorCodeFormatter().formatErrorCode(item.token.errorOrdinal) + (remainder.length() == 0 || remainder.equals(start) ? "]" : "] ") + remainder;
                         }
                     } else {
@@ -1071,8 +1088,9 @@ public class Main {
                         item.token.errorOrdinal = 0;
                         item.token.errorCodeConsumer = (ignore1) -> {
                             logic.pass2AssignNewErrorNumber(item); // item.token.errorOrdinal = apiProvider.nextErrorNumber();
-                            final String start = item.token.sourceNoErrorCode.substring(0, 1);
-                            final String remainder = item.token.sourceNoErrorCode.substring(1).stripLeading();
+                            final int width = item.token.getStringQuoteWidth();
+                            final String start = item.token.sourceNoErrorCode.substring(0, width);
+                            final String remainder = item.token.sourceNoErrorCode.substring(width).stripLeading();
                             item.token.source = start + "[" + policy.getErrorCodeFormatter().formatErrorCode(item.token.errorOrdinal) + (remainder.length() == 0 || remainder.equals(start) ? "]" : "] ") + remainder;
                         };
                     }
@@ -1132,12 +1150,14 @@ public class Main {
                         if (!currentToken.keepErrorCode) {
                             // log match
                             //currentToken.errorOrdinal = apiProvider.nextErrorNumber();
-                            final String start = currentToken.sourceNoErrorCode.substring(0, 1);
-                            final String remainder = currentToken.sourceNoErrorCode.substring(1).stripLeading();
+                            final int width = currentToken.getStringQuoteWidth();
+                            final String start = currentToken.sourceNoErrorCode.substring(0, width);
+                            final String remainder = currentToken.sourceNoErrorCode.substring(width).stripLeading();
                             currentToken.source = start + "[" + policy.getErrorCodeFormatter().formatErrorCode(currentToken.errorOrdinal) + (remainder.length() == 0 || remainder.equals(start) ? "]" : "] ") + remainder;
                         } else {
-                            final String start = currentToken.sourceNoErrorCode.substring(0, 1);
-                            final String remainder = currentToken.sourceNoErrorCode.substring(1).stripLeading();
+                            final int width = currentToken.getStringQuoteWidth();
+                            final String start = currentToken.sourceNoErrorCode.substring(0, width);
+                            final String remainder = currentToken.sourceNoErrorCode.substring(width).stripLeading();
                             final String formatted = start + "[" + policy.getErrorCodeFormatter().formatErrorCode(currentToken.errorOrdinal) + (remainder.length() == 0 || remainder.equals(start) ? "]" : "] ") + remainder;
                             if (!formatted.equals(currentToken.initialSource)) {
                                 currentToken.source = formatted;
