@@ -316,6 +316,13 @@ public class Main {
                         doRenumber = true;
                     }
 
+                    if (projectPolicy.renumber_on_next_run) {
+                        doRenumber = true;
+                        if (! apiProvider.markRenumberingOK(projectPolicy)) {
+                            throw new RuntimeException("[AGENT-000027] Unable to renumber automatically.");
+                        }
+                    }
+
                     final GlobalState globalState = new GlobalState();
 
                     apiProvider.ensurePolicyIsSetUp(projectPolicy);
