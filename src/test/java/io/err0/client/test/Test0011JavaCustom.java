@@ -50,7 +50,7 @@ public class Test0011JavaCustom {
             final UnitTestApiProvider apiProvider = new UnitTestApiProvider();
             final ResultDriver driver = apiProvider.getDriver();
 
-            Main.scan(policy, globalState, sourceDir, apiProvider);
+            Main.scan(policy, globalState, sourceDir, apiProvider, false);
             Main._import(apiProvider, globalState, policy);
             Main.runInsert(apiProvider, globalState, policy, driver, apiProvider.createRun(policy), new StatisticsGatherer());
 
@@ -91,7 +91,7 @@ public class Test0011JavaCustom {
 
             final ResultDriver driver = apiProvider.getDriver();
 
-            Main.scan(policy, globalState, sourceDir, apiProvider);
+            Main.scan(policy, globalState, sourceDir, apiProvider, false);
             Main._import(apiProvider, globalState, policy);
             boolean wouldChangeAFile = Main.runAnalyse(apiProvider, globalState, policy, driver, apiProvider.createRun(policy), new StatisticsGatherer());
 
