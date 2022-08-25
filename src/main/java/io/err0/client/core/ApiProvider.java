@@ -49,6 +49,14 @@ public interface ApiProvider {
     boolean validErrorNumber(final ProjectPolicy policy, final long errorCode);
 
     /**
+     * empty the cache of valid error numbers.
+     * @param policy
+     */
+    void clearErrorNumberCache(final ProjectPolicy policy);
+
+    boolean markRenumberingOK(final ProjectPolicy policy);
+
+    /**
      * Return the next error number in sequence.
      * @return
      */
@@ -107,7 +115,7 @@ public interface ApiProvider {
     /**
      * Import previous state, if applicable
      */
-    void importPreviousState(final ProjectPolicy policy, final GlobalState globalState);
+    void importPreviousState(final ProjectPolicy policy, final GlobalState globalState, final String currentBranch);
 
     void finaliseRun(final ProjectPolicy policy, UUID run_uuid);
 }

@@ -47,6 +47,7 @@ public class ProjectPolicy {
         this.context = GsonHelper.getAsBoolean(policyJson, "context", false);
         this.has_context_n_lines = policyJson.has("context_n_lines");
         this.context_n_lines = GsonHelper.getAsInt(policyJson, "context_n_lines", 0);
+        this.renumber_on_next_run = GsonHelper.getAsBoolean(applicationData, "renumber_on_next_run", false);
         final JsonObject sourcesJson = applicationData.getAsJsonObject("sources");
         final JsonArray includeDirsAry = sourcesJson.getAsJsonArray("include_dirs");
         if (null == includeDirsAry || includeDirsAry.isEmpty()) {
@@ -154,6 +155,8 @@ public class ProjectPolicy {
     final boolean context;
     final boolean has_context_n_lines;
     final int context_n_lines;
+
+    public final boolean renumber_on_next_run;
 
     final CodePolicy prj_code_policy;
 

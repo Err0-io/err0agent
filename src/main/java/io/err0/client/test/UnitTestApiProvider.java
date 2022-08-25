@@ -44,6 +44,16 @@ public class UnitTestApiProvider implements ApiProvider {
     }
 
     @Override
+    public void clearErrorNumberCache(ProjectPolicy policy) {
+        // does nothing
+    }
+
+    @Override
+    public boolean markRenumberingOK(ProjectPolicy policy) {
+        return true; // carry on...
+    }
+
+    @Override
     public boolean validErrorNumber(final ProjectPolicy policy, final long errorCode) {
         return true;
     }
@@ -173,7 +183,7 @@ public class UnitTestApiProvider implements ApiProvider {
     }
 
     @Override
-    public void importPreviousState(final ProjectPolicy policy, final GlobalState globalState) {
+    public void importPreviousState(final ProjectPolicy policy, final GlobalState globalState, final String currentBranch) {
         // does nothing, unit tests work slightly differently to the database
         // methods.
     }

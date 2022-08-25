@@ -26,10 +26,12 @@ import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 public class RestApiProvider implements ApiProvider {
@@ -126,6 +128,41 @@ public class RestApiProvider implements ApiProvider {
     @Override
     public boolean validErrorNumber(ProjectPolicy policy, long errorOrdinal) {
         return validErrorNumbers.contains(errorOrdinal);
+    }
+
+    @Override
+    public void clearErrorNumberCache(ProjectPolicy policy) {
+        validErrorNumbers.clear();
+    }
+
+    @Override
+    public boolean markRenumberingOK(ProjectPolicy policy) {
+        AtomicBoolean result = new AtomicBoolean(false);
+        try {
+            HttpPost request = new HttpPost("https://" + tokenJson.get("host").getAsString() + "/~/client/mark-renumber-ok");
+            request.addHeader("Authorization", "token " + tokenJson.get("token_value").getAsString());
+            request.addHeader("Content-Type", "application/json");
+            request.addHeader("Accept", "application/json");
+            StringEntity stringEntity = new StringEntity(new JsonObject().toString());
+            request.setEntity(stringEntity);
+
+            httpClient.execute(request, response -> {
+                String jsonAsString = new String(response.getEntity().getContent().readAllBytes(), StandardCharsets.UTF_8);
+                JsonObject json = JsonParser.parseString(jsonAsString).getAsJsonObject();
+                if (json.get("success").getAsBoolean() && json.get("ok_to_renumber").getAsBoolean()) {
+                    result.set(true);
+                } else {
+                    // FIXME - proper error/fault reports...
+                    throw new RuntimeException(jsonAsString);
+                }
+                return null;
+            });
+
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return result.get();
     }
 
     private LinkedList<Long> cache = new LinkedList<>();
@@ -283,12 +320,17 @@ public class RestApiProvider implements ApiProvider {
         }
     }
 
+    public static String q(String value) {
+        if (null == value) return "";
+        return URLEncoder.encode(value, StandardCharsets.UTF_8);
+    }
+
     @Override
-    public void importPreviousState(ProjectPolicy policy, GlobalState globalState) {
+    public void importPreviousState(ProjectPolicy policy, GlobalState globalState, String currentBranch) {
         globalState.previousRunSignatures.clear();
 
         try {
-            HttpGet request = new HttpGet("https://" + tokenJson.get("host").getAsString() + "/~/client/get-previous-state");
+            HttpGet request = new HttpGet("https://" + tokenJson.get("host").getAsString() + "/~/client/get-previous-state?branch=" + q(currentBranch));
             request.addHeader("Authorization", "token " + tokenJson.get("token_value").getAsString());
 
             httpClient.execute(request, response -> {

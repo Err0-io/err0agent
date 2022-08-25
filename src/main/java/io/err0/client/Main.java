@@ -310,13 +310,22 @@ public class Main {
                         }
                     }
 
+                    boolean doRenumber = false;
+                    if ("--renumber".equals(checkoutDir)) {
+                        checkoutDir = args[++i];
+                        doRenumber = true;
+                    }
+
+                    if (projectPolicy.renumber_on_next_run) {
+                        doRenumber = true;
+                        if (! apiProvider.markRenumberingOK(projectPolicy)) {
+                            throw new RuntimeException("[AGENT-000027] Unable to renumber automatically.");
+                        }
+                    }
+
                     final GlobalState globalState = new GlobalState();
 
                     apiProvider.ensurePolicyIsSetUp(projectPolicy);
-
-                    if (! importCodes) {
-                        apiProvider.importPreviousState(projectPolicy, globalState);
-                    }
 
                     JsonObject appGitMetadata = new JsonObject();
                     JsonObject runGitMetadata = new JsonObject();
@@ -328,6 +337,10 @@ public class Main {
 
                     final String gitHash = gitMetadata.gitHash;
 
+                    if (! importCodes) {
+                        apiProvider.importPreviousState(projectPolicy, globalState, runGitMetadata.get("current_branch").getAsString());
+                    }
+
                     final UUID run_uuid = apiProvider.createRun(projectPolicy, appGitMetadata, runGitMetadata, "insert");
 
                     final StatisticsGatherer statisticsGatherer = new StatisticsGatherer();
@@ -335,7 +348,7 @@ public class Main {
 
                     try {
 
-                        scan(projectPolicy, globalState, checkoutDir, apiProvider);
+                        scan(projectPolicy, globalState, checkoutDir, apiProvider, doRenumber);
 
                         if (importCodes) {
                             _import(apiProvider, globalState, projectPolicy);
@@ -391,8 +404,6 @@ public class Main {
 
                     apiProvider.ensurePolicyIsSetUp(projectPolicy);
 
-                    apiProvider.importPreviousState(projectPolicy, globalState);
-
                     JsonObject appGitMetadata = new JsonObject();
                     JsonObject runGitMetadata = new JsonObject();
                     final GitMetadata gitMetadata = populateGitMetadata(reportDir, appGitMetadata, runGitMetadata);
@@ -412,12 +423,15 @@ public class Main {
                             System.exit(-1);
                         }
                     }
+
+                    apiProvider.importPreviousState(projectPolicy, globalState, runGitMetadata.get("current_branch").getAsString());
+
                     final UUID run_uuid = apiProvider.createRun(projectPolicy, appGitMetadata, runGitMetadata, "analyse");
 
                     final StatisticsGatherer statisticsGatherer = new StatisticsGatherer();
                     boolean wouldChangeAFile = true;
                     try {
-                        scan(projectPolicy, globalState, reportDir, apiProvider);
+                        scan(projectPolicy, globalState, reportDir, apiProvider, false);
 
                         wouldChangeAFile = runAnalyse(apiProvider, globalState, projectPolicy, driver, run_uuid, statisticsGatherer);
                     }
@@ -513,9 +527,14 @@ public class Main {
         }
     }
 
-    public static void scan(final ProjectPolicy projectPolicy, final GlobalState globalState, String path, ApiProvider apiProvider) {
+    public static void scan(final ProjectPolicy projectPolicy, final GlobalState globalState, String path, ApiProvider apiProvider, boolean doRenumber) {
 
-        apiProvider.cacheAllValidErrorNumbers(projectPolicy);
+        if (doRenumber) {
+            globalState.previousRunSignatures.clear();
+            apiProvider.clearErrorNumberCache(projectPolicy);
+        } else {
+            apiProvider.cacheAllValidErrorNumbers(projectPolicy);
+        }
 
         path = Paths.get(path).toAbsolutePath().toString();
 
