@@ -54,6 +54,8 @@ public interface ApiProvider {
      */
     void clearErrorNumberCache(final ProjectPolicy policy);
 
+    boolean markRenumberingOK(final ProjectPolicy policy);
+
     /**
      * Return the next error number in sequence.
      * @return

@@ -49,6 +49,11 @@ public class UnitTestApiProvider implements ApiProvider {
     }
 
     @Override
+    public boolean markRenumberingOK(ProjectPolicy policy) {
+        return true; // carry on...
+    }
+
+    @Override
     public boolean validErrorNumber(final ProjectPolicy policy, final long errorCode) {
         return true;
     }

@@ -31,6 +31,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 public class RestApiProvider implements ApiProvider {
@@ -132,6 +133,36 @@ public class RestApiProvider implements ApiProvider {
     @Override
     public void clearErrorNumberCache(ProjectPolicy policy) {
         validErrorNumbers.clear();
+    }
+
+    @Override
+    public boolean markRenumberingOK(ProjectPolicy policy) {
+        AtomicBoolean result = new AtomicBoolean(false);
+        try {
+            HttpPost request = new HttpPost("https://" + tokenJson.get("host").getAsString() + "/~/client/mark-renumber-ok");
+            request.addHeader("Authorization", "token " + tokenJson.get("token_value").getAsString());
+            request.addHeader("Content-Type", "application/json");
+            request.addHeader("Accept", "application/json");
+            StringEntity stringEntity = new StringEntity(new JsonObject().toString());
+            request.setEntity(stringEntity);
+
+            httpClient.execute(request, response -> {
+                String jsonAsString = new String(response.getEntity().getContent().readAllBytes(), StandardCharsets.UTF_8);
+                JsonObject json = JsonParser.parseString(jsonAsString).getAsJsonObject();
+                if (json.get("success").getAsBoolean() && json.get("ok_to_renumber").getAsBoolean()) {
+                    result.set(true);
+                } else {
+                    // FIXME - proper error/fault reports...
+                    throw new RuntimeException(jsonAsString);
+                }
+                return null;
+            });
+
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return result.get();
     }
 
     private LinkedList<Long> cache = new LinkedList<>();
