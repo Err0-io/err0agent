@@ -173,7 +173,7 @@ public class UnitTestApiProvider implements ApiProvider {
     }
 
     @Override
-    public void importPreviousState(final ProjectPolicy policy, final GlobalState globalState) {
+    public void importPreviousState(final ProjectPolicy policy, final GlobalState globalState, final String currentBranch) {
         // does nothing, unit tests work slightly differently to the database
         // methods.
     }

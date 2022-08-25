@@ -107,7 +107,7 @@ public interface ApiProvider {
     /**
      * Import previous state, if applicable
      */
-    void importPreviousState(final ProjectPolicy policy, final GlobalState globalState);
+    void importPreviousState(final ProjectPolicy policy, final GlobalState globalState, final String currentBranch);
 
     void finaliseRun(final ProjectPolicy policy, UUID run_uuid);
 }

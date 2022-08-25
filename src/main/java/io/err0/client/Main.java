@@ -314,10 +314,6 @@ public class Main {
 
                     apiProvider.ensurePolicyIsSetUp(projectPolicy);
 
-                    if (! importCodes) {
-                        apiProvider.importPreviousState(projectPolicy, globalState);
-                    }
-
                     JsonObject appGitMetadata = new JsonObject();
                     JsonObject runGitMetadata = new JsonObject();
                     final GitMetadata gitMetadata = populateGitMetadata(checkoutDir, appGitMetadata, runGitMetadata);
@@ -327,6 +323,10 @@ public class Main {
                     }
 
                     final String gitHash = gitMetadata.gitHash;
+
+                    if (! importCodes) {
+                        apiProvider.importPreviousState(projectPolicy, globalState, runGitMetadata.get("current_branch").getAsString());
+                    }
 
                     final UUID run_uuid = apiProvider.createRun(projectPolicy, appGitMetadata, runGitMetadata, "insert");
 
@@ -391,8 +391,6 @@ public class Main {
 
                     apiProvider.ensurePolicyIsSetUp(projectPolicy);
 
-                    apiProvider.importPreviousState(projectPolicy, globalState);
-
                     JsonObject appGitMetadata = new JsonObject();
                     JsonObject runGitMetadata = new JsonObject();
                     final GitMetadata gitMetadata = populateGitMetadata(reportDir, appGitMetadata, runGitMetadata);
@@ -412,6 +410,9 @@ public class Main {
                             System.exit(-1);
                         }
                     }
+
+                    apiProvider.importPreviousState(projectPolicy, globalState, runGitMetadata.get("current_branch").getAsString());
+
                     final UUID run_uuid = apiProvider.createRun(projectPolicy, appGitMetadata, runGitMetadata, "analyse");
 
                     final StatisticsGatherer statisticsGatherer = new StatisticsGatherer();

@@ -26,6 +26,7 @@ import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -283,12 +284,17 @@ public class RestApiProvider implements ApiProvider {
         }
     }
 
+    public static String q(String value) {
+        if (null == value) return "";
+        return URLEncoder.encode(value, StandardCharsets.UTF_8);
+    }
+
     @Override
-    public void importPreviousState(ProjectPolicy policy, GlobalState globalState) {
+    public void importPreviousState(ProjectPolicy policy, GlobalState globalState, String currentBranch) {
         globalState.previousRunSignatures.clear();
 
         try {
-            HttpGet request = new HttpGet("https://" + tokenJson.get("host").getAsString() + "/~/client/get-previous-state");
+            HttpGet request = new HttpGet("https://" + tokenJson.get("host").getAsString() + "/~/client/get-previous-state?branch=" + q(currentBranch));
             request.addHeader("Authorization", "token " + tokenJson.get("token_value").getAsString());
 
             httpClient.execute(request, response -> {
