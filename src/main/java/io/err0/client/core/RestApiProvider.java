@@ -129,6 +129,11 @@ public class RestApiProvider implements ApiProvider {
         return validErrorNumbers.contains(errorOrdinal);
     }
 
+    @Override
+    public void clearErrorNumberCache(ProjectPolicy policy) {
+        validErrorNumbers.clear();
+    }
+
     private LinkedList<Long> cache = new LinkedList<>();
 
     public long nextErrorNumber(ProjectPolicy policy) {

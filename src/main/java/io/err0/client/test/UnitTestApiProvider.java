@@ -44,6 +44,11 @@ public class UnitTestApiProvider implements ApiProvider {
     }
 
     @Override
+    public void clearErrorNumberCache(ProjectPolicy policy) {
+        // does nothing
+    }
+
+    @Override
     public boolean validErrorNumber(final ProjectPolicy policy, final long errorCode) {
         return true;
     }

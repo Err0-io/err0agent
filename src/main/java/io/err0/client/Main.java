@@ -310,6 +310,12 @@ public class Main {
                         }
                     }
 
+                    boolean doRenumber = false;
+                    if ("--renumber".equals(checkoutDir)) {
+                        checkoutDir = args[++i];
+                        doRenumber = true;
+                    }
+
                     final GlobalState globalState = new GlobalState();
 
                     apiProvider.ensurePolicyIsSetUp(projectPolicy);
@@ -335,7 +341,7 @@ public class Main {
 
                     try {
 
-                        scan(projectPolicy, globalState, checkoutDir, apiProvider);
+                        scan(projectPolicy, globalState, checkoutDir, apiProvider, doRenumber);
 
                         if (importCodes) {
                             _import(apiProvider, globalState, projectPolicy);
@@ -418,7 +424,7 @@ public class Main {
                     final StatisticsGatherer statisticsGatherer = new StatisticsGatherer();
                     boolean wouldChangeAFile = true;
                     try {
-                        scan(projectPolicy, globalState, reportDir, apiProvider);
+                        scan(projectPolicy, globalState, reportDir, apiProvider, false);
 
                         wouldChangeAFile = runAnalyse(apiProvider, globalState, projectPolicy, driver, run_uuid, statisticsGatherer);
                     }
@@ -514,9 +520,14 @@ public class Main {
         }
     }
 
-    public static void scan(final ProjectPolicy projectPolicy, final GlobalState globalState, String path, ApiProvider apiProvider) {
+    public static void scan(final ProjectPolicy projectPolicy, final GlobalState globalState, String path, ApiProvider apiProvider, boolean doRenumber) {
 
-        apiProvider.cacheAllValidErrorNumbers(projectPolicy);
+        if (doRenumber) {
+            globalState.previousRunSignatures.clear();
+            apiProvider.clearErrorNumberCache(projectPolicy);
+        } else {
+            apiProvider.cacheAllValidErrorNumbers(projectPolicy);
+        }
 
         path = Paths.get(path).toAbsolutePath().toString();
 

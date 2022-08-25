@@ -49,6 +49,12 @@ public interface ApiProvider {
     boolean validErrorNumber(final ProjectPolicy policy, final long errorCode);
 
     /**
+     * empty the cache of valid error numbers.
+     * @param policy
+     */
+    void clearErrorNumberCache(final ProjectPolicy policy);
+
+    /**
      * Return the next error number in sequence.
      * @return
      */
