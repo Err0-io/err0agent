@@ -17,13 +17,14 @@ limitations under the License.
 package io.err0.client.core;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 
 public class GsonHelper {
 
     public static String getAsString(JsonObject object, String propertyName, String defaultValue) {
         JsonElement element = object.get(propertyName);
-        if (null != element) {
+        if (null != element && !element.getClass().equals(JsonNull.class)) {
             return element.getAsString();
         }
         return defaultValue;
@@ -31,7 +32,7 @@ public class GsonHelper {
 
     public static int getAsInt(JsonObject object, String propertyName, int defaultValue) {
         JsonElement element = object.get(propertyName);
-        if (null != element) {
+        if (null != element && !element.getClass().equals(JsonNull.class)) {
             return element.getAsInt();
         }
         return defaultValue;
@@ -39,7 +40,7 @@ public class GsonHelper {
 
     public static boolean getAsBoolean(JsonObject object, String propertyName, boolean defaultValue) {
         JsonElement element = object.get(propertyName);
-        if (null != element) {
+        if (null != element && !element.getClass().equals(JsonNull.class)) {
             return element.getAsBoolean();
         }
         return defaultValue;
