@@ -270,7 +270,7 @@ public class TypescriptSourceCodeParse extends SourceCodeParse {
                             } else {
                                 JsonArray lineArray = getNLinesOfContext(token.startLineNumber, 0, Main.CHAR_RADIUS);
                                 if (null != lineArray && lineArray.size() > 0) {
-                                    lineOfCode = GsonHelper.getAsString(lineArray.get(0).getAsJsonObject(), "c", null);
+                                    lineOfCode = GsonHelper.asString(lineArray.get(0).getAsJsonObject(), "c", null);
                                 }
                             }
                             token.classification = languageCodePolicy.classify(lineOfCode, stringLiteral);

@@ -16,7 +16,6 @@ limitations under the License.
 
 package io.err0.client.core;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
@@ -39,7 +38,7 @@ public class CodePolicy {
     public CodePolicy(final JsonObject codePolicyJson)
     {
         this.codePolicyJson = codePolicyJson;
-        int i = this.codePolicyJson.get("mode").getAsInt();
+        int i = GsonHelper.asInt(this.codePolicyJson, "mode", -1);
         switch (i) {
             case 0:
                 this.mode = CodePolicyMode.DEFAULTS;

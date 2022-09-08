@@ -22,7 +22,7 @@ import com.google.gson.JsonObject;
 
 public class GsonHelper {
 
-    public static String getAsString(JsonObject object, String propertyName, String defaultValue) {
+    public static String asString(JsonObject object, String propertyName, String defaultValue) {
         JsonElement element = object.get(propertyName);
         if (null != element && !element.getClass().equals(JsonNull.class)) {
             return element.getAsString();
@@ -30,7 +30,7 @@ public class GsonHelper {
         return defaultValue;
     }
 
-    public static int getAsInt(JsonObject object, String propertyName, int defaultValue) {
+    public static int asInt(JsonObject object, String propertyName, int defaultValue) {
         JsonElement element = object.get(propertyName);
         if (null != element && !element.getClass().equals(JsonNull.class)) {
             return element.getAsInt();
@@ -38,7 +38,7 @@ public class GsonHelper {
         return defaultValue;
     }
 
-    public static boolean getAsBoolean(JsonObject object, String propertyName, boolean defaultValue) {
+    public static boolean asBoolean(JsonObject object, String propertyName, boolean defaultValue) {
         JsonElement element = object.get(propertyName);
         if (null != element && !element.getClass().equals(JsonNull.class)) {
             return element.getAsBoolean();

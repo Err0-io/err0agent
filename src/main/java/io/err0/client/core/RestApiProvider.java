@@ -50,8 +50,8 @@ public class RestApiProvider implements ApiProvider {
         validErrorNumbers.clear();
 
         try {
-            HttpGet request = new HttpGet("https://" + tokenJson.get("host").getAsString() + "/~/client/get-policy");
-            request.addHeader("Authorization", "token " + tokenJson.get("token_value").getAsString());
+            HttpGet request = new HttpGet("https://" + GsonHelper.asString(tokenJson, "host", "localhost") + "/~/client/get-policy");
+            request.addHeader("Authorization", "token " + GsonHelper.asString(tokenJson, "token_value", "-"));
 
             httpClient.execute(request, response -> {
                 onResult.accept(JsonParser.parseString(new String(response.getEntity().getContent().readAllBytes(), StandardCharsets.UTF_8)).getAsJsonObject());
@@ -67,8 +67,8 @@ public class RestApiProvider implements ApiProvider {
     @Override
     public void ensurePolicyIsSetUp(ProjectPolicy policy) {
         try {
-            HttpPost request = new HttpPost("https://" + tokenJson.get("host").getAsString() + "/~/client/ensure-policy");
-            request.addHeader("Authorization", "token " + tokenJson.get("token_value").getAsString());
+            HttpPost request = new HttpPost("https://" + GsonHelper.asString(tokenJson, "host", "localhost") + "/~/client/ensure-policy");
+            request.addHeader("Authorization", "token " + GsonHelper.asString(tokenJson, "token_value", "-"));
             request.addHeader("Content-Type", "application/json");
             request.addHeader("Accept", "application/json");
             StringEntity stringEntity = new StringEntity(new JsonObject().toString());
@@ -77,7 +77,7 @@ public class RestApiProvider implements ApiProvider {
             httpClient.execute(request, response -> {
                 String jsonAsString = new String(response.getEntity().getContent().readAllBytes(), StandardCharsets.UTF_8);
                 JsonObject json = JsonParser.parseString(jsonAsString).getAsJsonObject();
-                if (json.get("success").getAsBoolean()) {
+                if (GsonHelper.asBoolean(json, "success", false)) {
                     // ignore :-)
                 } else {
                     // FIXME - proper error/fault reports...
@@ -106,12 +106,12 @@ public class RestApiProvider implements ApiProvider {
     public void cacheAllValidErrorNumbers(ProjectPolicy policy) {
         validErrorNumbers.clear();
         try {
-            HttpGet request = new HttpGet("https://" + tokenJson.get("host").getAsString() + "/~/client/get-valid-error-numbers");
-            request.addHeader("Authorization", "token " + tokenJson.get("token_value").getAsString());
+            HttpGet request = new HttpGet("https://" + GsonHelper.asString(tokenJson, "host", "localhost") + "/~/client/get-valid-error-numbers");
+            request.addHeader("Authorization", "token " + GsonHelper.asString(tokenJson, "token_value", "-"));
 
             httpClient.execute(request, response -> {
                 JsonObject o = JsonParser.parseString(new String(response.getEntity().getContent().readAllBytes(), StandardCharsets.UTF_8)).getAsJsonObject();
-                if (o.get("success").getAsBoolean()) {
+                if (GsonHelper.asBoolean(o, "success", false)) {
                     JsonArray a = o.get("valid").getAsJsonArray();
                     for (int i = 0, l = a.size(); i < l; ++i)
                         validErrorNumbers.add(a.get(i).getAsLong());
@@ -139,8 +139,8 @@ public class RestApiProvider implements ApiProvider {
     public boolean markRenumberingOK(ProjectPolicy policy) {
         AtomicBoolean result = new AtomicBoolean(false);
         try {
-            HttpPost request = new HttpPost("https://" + tokenJson.get("host").getAsString() + "/~/client/mark-renumber-ok");
-            request.addHeader("Authorization", "token " + tokenJson.get("token_value").getAsString());
+            HttpPost request = new HttpPost("https://" + GsonHelper.asString(tokenJson, "host", "localhost") + "/~/client/mark-renumber-ok");
+            request.addHeader("Authorization", "token " + GsonHelper.asString(tokenJson, "token_value", "-"));
             request.addHeader("Content-Type", "application/json");
             request.addHeader("Accept", "application/json");
             StringEntity stringEntity = new StringEntity(new JsonObject().toString());
@@ -149,7 +149,7 @@ public class RestApiProvider implements ApiProvider {
             httpClient.execute(request, response -> {
                 String jsonAsString = new String(response.getEntity().getContent().readAllBytes(), StandardCharsets.UTF_8);
                 JsonObject json = JsonParser.parseString(jsonAsString).getAsJsonObject();
-                if (json.get("success").getAsBoolean() && json.get("ok_to_renumber").getAsBoolean()) {
+                if (GsonHelper.asBoolean(json, "success", false) && json.get("ok_to_renumber").getAsBoolean()) {
                     result.set(true);
                 } else {
                     // FIXME - proper error/fault reports...
@@ -178,8 +178,8 @@ public class RestApiProvider implements ApiProvider {
         cache.clear();
 
         try {
-            HttpPost request = new HttpPost("https://" + tokenJson.get("host").getAsString() + "/~/client/get-next-error-number-batch");
-            request.addHeader("Authorization", "token " + tokenJson.get("token_value").getAsString());
+            HttpPost request = new HttpPost("https://" + GsonHelper.asString(tokenJson, "host", "localhost") + "/~/client/get-next-error-number-batch");
+            request.addHeader("Authorization", "token " + GsonHelper.asString(tokenJson, "token_value", "-"));
             request.addHeader("Content-Type", "application/json");
             request.addHeader("Accept", "application/json");
 
@@ -192,7 +192,7 @@ public class RestApiProvider implements ApiProvider {
             cache = httpClient.execute(request, response -> {
                 String jsonAsString = new String(response.getEntity().getContent().readAllBytes(), StandardCharsets.UTF_8);
                 JsonObject json = JsonParser.parseString(jsonAsString).getAsJsonObject();
-                if (json.get("success").getAsBoolean()) {
+                if (GsonHelper.asBoolean(json, "success", false)) {
                     JsonArray error_ordinals = json.get("error_ordinals").getAsJsonArray();
                     LinkedList<Long> eo = new LinkedList<>();
                     for (int i = 0, l = error_ordinals.size(); i < l; ++i) {
@@ -213,8 +213,8 @@ public class RestApiProvider implements ApiProvider {
     @Override
     public void bulkInsertMetaData(ProjectPolicy policy, UUID run_uuid, String errorPrefix, ArrayList<ForInsert> forBulkInsert) {
         try {
-            HttpPost request = new HttpPost("https://" + tokenJson.get("host").getAsString() + "/~/client/bulk-insert-meta-data");
-            request.addHeader("Authorization", "token " + tokenJson.get("token_value").getAsString());
+            HttpPost request = new HttpPost("https://" + GsonHelper.asString(tokenJson, "host", "localhost") + "/~/client/bulk-insert-meta-data");
+            request.addHeader("Authorization", "token " + GsonHelper.asString(tokenJson, "token_value", "-"));
             request.addHeader("Content-Type", "application/json");
             request.addHeader("Accept", "application/json");
 
@@ -237,7 +237,7 @@ public class RestApiProvider implements ApiProvider {
             httpClient.execute(request, response -> {
                 String jsonAsString = new String(response.getEntity().getContent().readAllBytes(), StandardCharsets.UTF_8);
                 JsonObject json = JsonParser.parseString(jsonAsString).getAsJsonObject();
-                if (json.get("success").getAsBoolean()) {
+                if (GsonHelper.asBoolean(json, "success", false)) {
                     return true;
                 } else {
                     // FIXME - proper error/fault reports...
@@ -259,8 +259,8 @@ public class RestApiProvider implements ApiProvider {
     public UUID createRun(ProjectPolicy policy, JsonObject appGitMetadata, JsonObject runGitMetadata, String runState) {
 
         try {
-            HttpPost request = new HttpPost("https://" + tokenJson.get("host").getAsString() + "/~/client/create-run");
-            request.addHeader("Authorization", "token " + tokenJson.get("token_value").getAsString());
+            HttpPost request = new HttpPost("https://" + GsonHelper.asString(tokenJson, "host", "localhost") + "/~/client/create-run");
+            request.addHeader("Authorization", "token " + GsonHelper.asString(tokenJson, "token_value", "-"));
             request.addHeader("Content-Type", "application/json");
             request.addHeader("Accept", "application/json");
 
@@ -275,8 +275,8 @@ public class RestApiProvider implements ApiProvider {
             return httpClient.execute(request, response -> {
                 String jsonAsString = new String(response.getEntity().getContent().readAllBytes(), StandardCharsets.UTF_8);
                 JsonObject json = JsonParser.parseString(jsonAsString).getAsJsonObject();
-                if (json.get("success").getAsBoolean()) {
-                    return UUID.fromString(json.get("run_uuid").getAsString());
+                if (GsonHelper.asBoolean(json, "success", false)) {
+                    return UUID.fromString(GsonHelper.asString(json, "run_uuid", ""));
                 } else {
                     // FIXME - proper error/fault reports...
                     throw new RuntimeException(jsonAsString);
@@ -291,8 +291,8 @@ public class RestApiProvider implements ApiProvider {
     @Override
     public void updateRun(ProjectPolicy policy, UUID run_uuid, JsonObject gitMetadata, JsonObject runMetadata) {
         try {
-            HttpPost request = new HttpPost("https://" + tokenJson.get("host").getAsString() + "/~/client/update-run");
-            request.addHeader("Authorization", "token " + tokenJson.get("token_value").getAsString());
+            HttpPost request = new HttpPost("https://" + GsonHelper.asString(tokenJson, "host", "localhost") + "/~/client/update-run");
+            request.addHeader("Authorization", "token " + GsonHelper.asString(tokenJson, "token_value", "-"));
             request.addHeader("Content-Type", "application/json");
             request.addHeader("Accept", "application/json");
 
@@ -307,7 +307,7 @@ public class RestApiProvider implements ApiProvider {
             httpClient.execute(request, response -> {
                 String jsonAsString = new String(response.getEntity().getContent().readAllBytes(), StandardCharsets.UTF_8);
                 JsonObject json = JsonParser.parseString(jsonAsString).getAsJsonObject();
-                if (json.get("success").getAsBoolean()) {
+                if (GsonHelper.asBoolean(json, "success", false)) {
                     return true;
                 } else {
                     // FIXME - proper error/fault reports...
@@ -330,13 +330,13 @@ public class RestApiProvider implements ApiProvider {
         globalState.previousRunSignatures.clear();
 
         try {
-            HttpGet request = new HttpGet("https://" + tokenJson.get("host").getAsString() + "/~/client/get-previous-state?branch=" + q(currentBranch));
-            request.addHeader("Authorization", "token " + tokenJson.get("token_value").getAsString());
+            HttpGet request = new HttpGet("https://" + GsonHelper.asString(tokenJson, "host", "localhost") + "/~/client/get-previous-state?branch=" + q(currentBranch));
+            request.addHeader("Authorization", "token " + GsonHelper.asString(tokenJson, "token_value", "-"));
 
             httpClient.execute(request, response -> {
                 String jsonAsString = new String(response.getEntity().getContent().readAllBytes(), StandardCharsets.UTF_8);
                 JsonObject json = JsonParser.parseString(jsonAsString).getAsJsonObject();
-                if (json.get("success").getAsBoolean()) {
+                if (GsonHelper.asBoolean(json, "success", false)) {
                     JsonArray error_codes = json.get("error_codes").getAsJsonArray();
                     for (int i = 0, l = error_codes.size(); i < l; ++i) {
                         JsonObject x = error_codes.get(i).getAsJsonObject();
@@ -360,8 +360,8 @@ public class RestApiProvider implements ApiProvider {
     @Override
     public void finaliseRun(ProjectPolicy policy, UUID run_uuid) {
         try {
-            HttpPost request = new HttpPost("https://" + tokenJson.get("host").getAsString() + "/~/client/finalise-run");
-            request.addHeader("Authorization", "token " + tokenJson.get("token_value").getAsString());
+            HttpPost request = new HttpPost("https://" + GsonHelper.asString(tokenJson, "host", "localhost") + "/~/client/finalise-run");
+            request.addHeader("Authorization", "token " + GsonHelper.asString(tokenJson, "token_value", "-"));
             request.addHeader("Content-Type", "application/json");
             request.addHeader("Accept", "application/json");
 
@@ -374,7 +374,7 @@ public class RestApiProvider implements ApiProvider {
             httpClient.execute(request, response -> {
                 String jsonAsString = new String(response.getEntity().getContent().readAllBytes(), StandardCharsets.UTF_8);
                 JsonObject json = JsonParser.parseString(jsonAsString).getAsJsonObject();
-                if (json.get("success").getAsBoolean()) {
+                if (GsonHelper.asBoolean(json, "success", false)) {
                     return null;
                 } else {
                     // FIXME - proper error/fault reports...
