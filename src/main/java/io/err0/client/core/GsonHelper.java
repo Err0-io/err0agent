@@ -22,6 +22,14 @@ import com.google.gson.JsonObject;
 
 public class GsonHelper {
 
+    public static JsonObject asJsonObject(JsonObject object, String propertyName, JsonObject defaultValue) {
+        JsonElement element = object.get(propertyName);
+        if (null != element && !element.getClass().equals(JsonNull.class)) {
+            return element.getAsJsonObject();
+        }
+        return defaultValue;
+    }
+
     public static String asString(JsonObject object, String propertyName, String defaultValue) {
         JsonElement element = object.get(propertyName);
         if (null != element && !element.getClass().equals(JsonNull.class)) {

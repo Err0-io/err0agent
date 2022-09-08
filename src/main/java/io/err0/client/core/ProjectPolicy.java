@@ -39,7 +39,7 @@ public class ProjectPolicy {
         this.name = GsonHelper.asString(applicationData, "name", null);
         this.prj_code = GsonHelper.asString(applicationData, "prj_code", null);
         this.prj_uuid = UUID.fromString(GsonHelper.asString(applicationJson, "pk", null));
-        final JsonObject policyJson = applicationData.getAsJsonObject("policy");
+        final JsonObject policyJson = GsonHelper.asJsonObject(applicationData, "policy", new JsonObject());
         this.error_prefix = GsonHelper.asString(policyJson, "error_prefix", null);
         //this.error_template = GsonHelper.getAsString(policyJson, "error_template", null);
         this.error_pad_to_n = GsonHelper.asInt(policyJson, "error_pad_to_n", -1);
@@ -48,7 +48,7 @@ public class ProjectPolicy {
         this.has_context_n_lines = policyJson.has("context_n_lines");
         this.context_n_lines = GsonHelper.asInt(policyJson, "context_n_lines", 0);
         this.renumber_on_next_run = GsonHelper.asBoolean(applicationData, "renumber_on_next_run", false);
-        final JsonObject sourcesJson = applicationData.getAsJsonObject("sources");
+        final JsonObject sourcesJson = GsonHelper.asJsonObject(applicationData, "sources", new JsonObject());
         final JsonArray includeDirsAry = sourcesJson.getAsJsonArray("include_dirs");
         if (null == includeDirsAry || includeDirsAry.isEmpty()) {
             includeDirs.add(".");
