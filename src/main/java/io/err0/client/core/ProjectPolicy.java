@@ -36,19 +36,19 @@ public class ProjectPolicy {
         this.applicationJson = applicationJson;
         JsonObject applicationData = applicationJson.get("data").getAsJsonObject();
 
-        this.name = GsonHelper.getAsString(applicationData, "name", null);
-        this.prj_code = GsonHelper.getAsString(applicationData, "prj_code", null);
-        this.prj_uuid = UUID.fromString(GsonHelper.getAsString(applicationJson, "pk", null));
-        final JsonObject policyJson = applicationData.getAsJsonObject("policy");
-        this.error_prefix = GsonHelper.getAsString(policyJson, "error_prefix", null);
+        this.name = GsonHelper.asString(applicationData, "name", null);
+        this.prj_code = GsonHelper.asString(applicationData, "prj_code", null);
+        this.prj_uuid = UUID.fromString(GsonHelper.asString(applicationJson, "pk", null));
+        final JsonObject policyJson = GsonHelper.asJsonObject(applicationData, "policy", new JsonObject());
+        this.error_prefix = GsonHelper.asString(policyJson, "error_prefix", null);
         //this.error_template = GsonHelper.getAsString(policyJson, "error_template", null);
-        this.error_pad_to_n = GsonHelper.getAsInt(policyJson, "error_pad_to_n", -1);
+        this.error_pad_to_n = GsonHelper.asInt(policyJson, "error_pad_to_n", -1);
         this.has_context = policyJson.has("context");
-        this.context = GsonHelper.getAsBoolean(policyJson, "context", false);
+        this.context = GsonHelper.asBoolean(policyJson, "context", false);
         this.has_context_n_lines = policyJson.has("context_n_lines");
-        this.context_n_lines = GsonHelper.getAsInt(policyJson, "context_n_lines", 0);
-        this.renumber_on_next_run = GsonHelper.getAsBoolean(applicationData, "renumber_on_next_run", false);
-        final JsonObject sourcesJson = applicationData.getAsJsonObject("sources");
+        this.context_n_lines = GsonHelper.asInt(policyJson, "context_n_lines", 0);
+        this.renumber_on_next_run = GsonHelper.asBoolean(applicationData, "renumber_on_next_run", false);
+        final JsonObject sourcesJson = GsonHelper.asJsonObject(applicationData, "sources", new JsonObject());
         final JsonArray includeDirsAry = sourcesJson.getAsJsonArray("include_dirs");
         if (null == includeDirsAry || includeDirsAry.isEmpty()) {
             includeDirs.add(".");
@@ -91,15 +91,15 @@ public class ProjectPolicy {
         for (int i=0, l=rules.size(); i<l; ++i) {
             JsonObject ruleJson = rules.get(i).getAsJsonObject();
             ExceptionRule rule = new ExceptionRule();
-            rule.name = ruleJson.get("name").getAsString();
-            rule.selectorAnd = ruleJson.get("selectorAnd").getAsBoolean();
+            rule.name = GsonHelper.asString(ruleJson, "name", "");
+            rule.selectorAnd = GsonHelper.asBoolean(ruleJson, "selectorAnd", false);
             JsonArray selectorAry = ruleJson.get("selectors").getAsJsonArray();
             for (int j=0, m=selectorAry.size(); j<m; ++j) {
                 JsonObject selectorJson = selectorAry.get(j).getAsJsonObject();
                 ExceptionRuleSelection selection = new ExceptionRuleSelection(
-                        ExceptionRuleSelectorEnum.forValue(selectorJson.get("selector").getAsInt()),
+                        ExceptionRuleSelectorEnum.forValue(GsonHelper.asInt(selectorJson, "selector", -1)),
                         getStringOrNull(selectorJson, "selectorValue"),
-                        ExceptionRuleCheckEnum.forValue(selectorJson.get("check").getAsInt()),
+                        ExceptionRuleCheckEnum.forValue(GsonHelper.asInt(selectorJson, "check", -1)),
                         getStringOrNull(selectorJson, "checkValue")
                 );
                 if (selection.selector != ExceptionRuleSelectorEnum.NO_SELECTOR) {
@@ -110,7 +110,7 @@ public class ProjectPolicy {
             for (int j=0, m=operationAry.size(); j<m; ++j) {
                 JsonObject operationJson = operationAry.get(j).getAsJsonObject();
                 ExceptionRuleOperation operation = new ExceptionRuleOperation(
-                        ExceptionRuleOperationEnum.forValue(operationJson.get("operation").getAsInt()),
+                        ExceptionRuleOperationEnum.forValue(GsonHelper.asInt(operationJson, "operation", -1)),
                         getStringOrNull(operationJson, "operationValue")
                 );
                 if (operation.operation != ExceptionRuleOperationEnum.NO_OPERATION) {
@@ -121,7 +121,7 @@ public class ProjectPolicy {
             for (int j=0, m=actionAry.size(); j<m; ++j) {
                 JsonObject actionJson = actionAry.get(j).getAsJsonObject();
                 ExceptionRuleAction action = new ExceptionRuleAction(
-                        ExceptionRuleActionEnum.forValue(actionJson.get("action").getAsInt()),
+                        ExceptionRuleActionEnum.forValue(GsonHelper.asInt(actionJson, "action", -1)),
                         getStringOrNull(actionJson, "actionValue")
                 );
                 if (action.action != ExceptionRuleActionEnum.NO_ACTION) {

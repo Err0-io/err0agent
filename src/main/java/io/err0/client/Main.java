@@ -285,7 +285,7 @@ public class Main {
 
                     // Download the policies...
                     restApiProvider.getPolicy(responseJson -> {
-                        if (responseJson.get("success").getAsBoolean()) {
+                        if (GsonHelper.asBoolean(responseJson, "success", false)) {
                             arRealmPolicy.set(new RealmPolicy(responseJson.get("realm").getAsJsonObject()));
                             arApplicationPolicy.set(new ProjectPolicy(arRealmPolicy.get(), responseJson.get("app").getAsJsonObject()));
                         } else {
@@ -338,7 +338,7 @@ public class Main {
                     final String gitHash = gitMetadata.gitHash;
 
                     if (! importCodes) {
-                        apiProvider.importPreviousState(projectPolicy, globalState, runGitMetadata.get("current_branch").getAsString());
+                        apiProvider.importPreviousState(projectPolicy, globalState, GsonHelper.asString(runGitMetadata, "current_branch", null));
                     }
 
                     final UUID run_uuid = apiProvider.createRun(projectPolicy, appGitMetadata, runGitMetadata, "insert");
@@ -424,7 +424,7 @@ public class Main {
                         }
                     }
 
-                    apiProvider.importPreviousState(projectPolicy, globalState, runGitMetadata.get("current_branch").getAsString());
+                    apiProvider.importPreviousState(projectPolicy, globalState, GsonHelper.asString(runGitMetadata, "current_branch", null));
 
                     final UUID run_uuid = apiProvider.createRun(projectPolicy, appGitMetadata, runGitMetadata, "analyse");
 

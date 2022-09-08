@@ -18,11 +18,7 @@ package io.err0.client.core;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.UUID;
 
 public class RealmPolicy {
@@ -36,18 +32,18 @@ public class RealmPolicy {
         this.realmJson = realmJson;
         JsonObject realmData = realmJson.get("data").getAsJsonObject();
 
-        this.name = GsonHelper.getAsString(realmData, "name", null);
-        this.realm_code = GsonHelper.getAsString(realmData, "realm_code", null);
-        this.realm_uuid = UUID.fromString(GsonHelper.getAsString(realmJson, "pk", null));
+        this.name = GsonHelper.asString(realmData, "name", null);
+        this.realm_code = GsonHelper.asString(realmData, "realm_code", null);
+        this.realm_uuid = UUID.fromString(GsonHelper.asString(realmJson, "pk", null));
         this.customer_uuid = null;
-        this.policy_editable_by_prj = GsonHelper.getAsBoolean(realmData, "policy_editable_by_prj", false);
-        this.context_allowed_in_prj = GsonHelper.getAsBoolean(realmData, "context_allowed_in_prj", true);
+        this.policy_editable_by_prj = GsonHelper.asBoolean(realmData, "policy_editable_by_prj", false);
+        this.context_allowed_in_prj = GsonHelper.asBoolean(realmData, "context_allowed_in_prj", true);
         final JsonObject policyJson = realmData.getAsJsonObject("policy");
-        this.error_prefix = GsonHelper.getAsString(policyJson, "error_prefix", null);
+        this.error_prefix = GsonHelper.asString(policyJson, "error_prefix", null);
         //this.error_template = GsonHelper.getAsString(policyJson, "error_template", null);
-        this.error_pad_to_n = GsonHelper.getAsInt(policyJson, "error_pad_to_n", -1);
-        this.context = GsonHelper.getAsBoolean(policyJson, "context", false);
-        this.context_n_lines = GsonHelper.getAsInt(policyJson, "context_n_lines", 0);
+        this.error_pad_to_n = GsonHelper.asInt(policyJson, "error_pad_to_n", -1);
+        this.context = GsonHelper.asBoolean(policyJson, "context", false);
+        this.context_n_lines = GsonHelper.asInt(policyJson, "context_n_lines", 0);
 
         JsonElement realm_code_policy = realmData.get("realm_code_policy");
         if (null != realm_code_policy) {

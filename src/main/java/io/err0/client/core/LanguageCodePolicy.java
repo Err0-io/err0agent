@@ -60,14 +60,14 @@ public class LanguageCodePolicy {
     public LanguageCodePolicy(final JsonObject languagePolicyJson)
     {
         if (null != languagePolicyJson) {
-            this.disable_language = GsonHelper.getAsBoolean(languagePolicyJson, "disable_language", false);
-            this.disable_builtin_log_detection = GsonHelper.getAsBoolean(languagePolicyJson, "disable_builtin_log_detection", false);
+            this.disable_language = GsonHelper.asBoolean(languagePolicyJson, "disable_language", false);
+            this.disable_builtin_log_detection = GsonHelper.asBoolean(languagePolicyJson, "disable_builtin_log_detection", false);
             var rules = languagePolicyJson.get("rules");
             if (null != rules) {
                 JsonArray ary = rules.getAsJsonArray();
                 for (int i = 0, l = ary.size(); i < l; ++i) {
                     JsonObject rule = ary.get(i).getAsJsonObject();
-                    int type = GsonHelper.getAsInt(rule, "type", 0);
+                    int type = GsonHelper.asInt(rule, "type", 0);
                     LoggerRule loggerRule = new LoggerRule();
                     loggerRule.type = LoggerRuleType.ofValue(type);
                     JsonArray patternAry = rule.getAsJsonArray("pattern");

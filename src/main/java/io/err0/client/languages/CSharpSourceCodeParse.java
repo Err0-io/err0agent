@@ -20,7 +20,6 @@ import com.google.gson.JsonArray;
 import io.err0.client.Main;
 import io.err0.client.core.*;
 
-import java.util.ArrayList;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -248,7 +247,7 @@ public class CSharpSourceCodeParse extends SourceCodeParse {
                             } else {
                                 JsonArray lineArray = getNLinesOfContext(token.startLineNumber, 0, Main.CHAR_RADIUS);
                                 if (null != lineArray && lineArray.size() > 0) {
-                                    lineOfCode = GsonHelper.getAsString(lineArray.get(0).getAsJsonObject(), "c", null);
+                                    lineOfCode = GsonHelper.asString(lineArray.get(0).getAsJsonObject(), "c", null);
                                 }
                             }
                             token.classification = languageCodePolicy.classify(lineOfCode, stringLiteral);
