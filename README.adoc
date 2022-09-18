@@ -18,6 +18,10 @@ An account on the err0.io platform is required to use the err0agent.
 
 The err0agent is the agent that will parse the code, detect logs, errors and exceptions statement and apply the corresponding Management Policy, notably by inserting error codes. The agent is open-source as we wouldn't ourselves run anything in our CI/CD pipeline that we couldn't check.
 
+== Which programming languages are supported by err0?
+
+The err0agent supports: c, java, python, php, go.
+
 == Using err0agent
 
 We have made two scripts `./err0-insert.sh` and `./err0-check.sh` to run the agent with docker against this code base.
