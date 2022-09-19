@@ -39,11 +39,17 @@ public class ErrorCodeFormatter {
     {
         final String sErrorCode = new StringBuilder().append(errorCode).toString();
         sb.append(policy.getErrorPrefix()).append('-');
-        final int pad_to_n = policy.getErrorPadToN();
-        if (pad_to_n > 0) {
-            for (int i = sErrorCode.length(); i < pad_to_n; ++i)
-                sb.append('0');
+        if (errorCode <= -1) {
+            sb.append("UNDEFINED");
+        } else if (errorCode == 0)  {
+            sb.append("???");
+        } else {
+            final int pad_to_n = policy.getErrorPadToN();
+            if (pad_to_n > 0) {
+                for (int i = sErrorCode.length(); i < pad_to_n; ++i)
+                    sb.append('0');
+            }
+            sb.append(sErrorCode);
         }
-        sb.append(sErrorCode);
     }
 }
