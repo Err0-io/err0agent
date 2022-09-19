@@ -715,12 +715,12 @@ public class Main {
 
             @Override
             public void pass2AssignNewErrorNumber(TokenStateItem item) {
-                item.token.errorOrdinal = 0;
+                item.token.errorOrdinal = apiProvider.nextErrorNumber(policy);
             }
 
             @Override
             public void pass3AssignNewErrorNumber(Token currentToken) {
-                currentToken.errorOrdinal = 0;
+                currentToken.errorOrdinal = apiProvider.nextErrorNumber(policy);
             }
 
             @Override
