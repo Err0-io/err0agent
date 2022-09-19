@@ -700,10 +700,11 @@ public class Main {
             }
         };
 
-        return analyseWholeProject(apiProvider, globalState, policy, driver, run_uuid, logic, statisticsGatherer);
+        return analyseWholeProject(apiProvider, globalState, policy, driver, run_uuid, logic, statisticsGatherer, false);
     }
 
     public static boolean runAnalyse(final ApiProvider apiProvider, final GlobalState globalState, final ProjectPolicy policy, final ResultDriver driver, final UUID run_uuid, final StatisticsGatherer statisticsGatherer) {
+
         final AnalyseLogic logic = new AnalyseLogic() {
 
             boolean wouldChangeAFile = false;
@@ -715,12 +716,12 @@ public class Main {
 
             @Override
             public void pass2AssignNewErrorNumber(TokenStateItem item) {
-                item.token.errorOrdinal = apiProvider.nextErrorNumber(policy);
+                item.token.errorOrdinal = 0;
             }
 
             @Override
             public void pass3AssignNewErrorNumber(Token currentToken) {
-                currentToken.errorOrdinal = apiProvider.nextErrorNumber(policy);
+                currentToken.errorOrdinal = 0;
             }
 
             @Override
@@ -753,12 +754,12 @@ public class Main {
             }
         };
 
-        return analyseWholeProject(apiProvider, globalState, policy, driver, run_uuid, logic, statisticsGatherer);
+        return analyseWholeProject(apiProvider, globalState, policy, driver, run_uuid, logic, statisticsGatherer, true);
     }
 
     private static Pattern reWhitespace = Pattern.compile("^\\s*$");
 
-    private static boolean analyseWholeProject(final ApiProvider apiProvider, final GlobalState globalState, final ProjectPolicy policy, final ResultDriver driver, final UUID run_uuid, final AnalyseLogic logic, final StatisticsGatherer statisticsGatherer) {
+    private static boolean analyseWholeProject(final ApiProvider apiProvider, final GlobalState globalState, final ProjectPolicy policy, final ResultDriver driver, final UUID run_uuid, final AnalyseLogic logic, final StatisticsGatherer statisticsGatherer, boolean doNotAssignNewNumbers) {
         final String fileNamesInOrder[] = new String[globalState.files.size()];
         globalState.files.keySet().toArray(fileNamesInOrder);
         Arrays.sort(fileNamesInOrder);
@@ -1161,8 +1162,10 @@ public class Main {
                             statisticsGatherer.existingErrorOrdinals.add(currentToken.errorOrdinal);
                             existingByType.add(currentToken.errorOrdinal);
                         } else {
-                            statisticsGatherer.newErrorOrdinals.add(currentToken.errorOrdinal);
-                            newByType.add(currentToken.errorOrdinal);
+                            if (! doNotAssignNewNumbers) {
+                                statisticsGatherer.newErrorOrdinals.add(currentToken.errorOrdinal);
+                                newByType.add(currentToken.errorOrdinal);
+                            }
                         }
 
                         // Actually, now, insert the error code...
@@ -1219,8 +1222,15 @@ public class Main {
                             System.out.println(callStack);
                         }
 
-                        forBulkInsert.add(new ApiProvider.ForInsert(errorCode, currentToken.errorOrdinal, currentToken.metaData, insertType));
-                        // was: apiProvider.deprecatedInsertMetaData(policy, run_uuid, errorCode, policy.getErrorPrefix(), currentToken.errorOrdinal, currentToken.metaData);
+                        if (doNotAssignNewNumbers) {
+                            if (currentToken.errorOrdinal > 0) {
+                                forBulkInsert.add(new ApiProvider.ForInsert(errorCode, currentToken.errorOrdinal, currentToken.metaData, insertType));
+                                // was: apiProvider.deprecatedInsertMetaData(policy, run_uuid, errorCode, policy.getErrorPrefix(), currentToken.errorOrdinal, currentToken.metaData);
+                            }
+                        } else {
+                            forBulkInsert.add(new ApiProvider.ForInsert(errorCode, currentToken.errorOrdinal, currentToken.metaData, insertType));
+                            // was: apiProvider.deprecatedInsertMetaData(policy, run_uuid, errorCode, policy.getErrorPrefix(), currentToken.errorOrdinal, currentToken.metaData);
+                        }
                     };
 
                     if (currentToken.errorOrdinal < 1) {
@@ -1232,7 +1242,8 @@ public class Main {
             }
         }
 
-        apiProvider.cacheErrorNumberBatch(policy, forNewErrorNumbers.size());
+        if (! doNotAssignNewNumbers)
+            apiProvider.cacheErrorNumberBatch(policy, forNewErrorNumbers.size());
 
         forNewErrorNumbers.forEach(tok -> tok.errorCodeConsumer.accept(null));
         forUpdatingErrorNumbers.forEach(tok -> tok.errorCodeConsumer.accept(null));
