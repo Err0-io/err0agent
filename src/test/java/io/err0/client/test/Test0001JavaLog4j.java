@@ -126,7 +126,7 @@ public class Test0001JavaLog4j {
 
             previousState = apiProvider.getState();
 
-            assertEquals(6, previousState.metaDataStorage.size());
+            assertEquals(5, previousState.metaDataStorage.size());
         }
     }
 }
