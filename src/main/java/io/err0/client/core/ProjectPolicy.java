@@ -92,15 +92,15 @@ public class ProjectPolicy {
             JsonObject ruleJson = rules.get(i).getAsJsonObject();
             ExceptionRule rule = new ExceptionRule();
             rule.name = GsonHelper.asString(ruleJson, "name", "");
-            rule.selectorAnd = GsonHelper.asBoolean(ruleJson, "selectorAnd", false);
+            rule.selectorAnd = GsonHelper.asBoolean(ruleJson, "selector_and", false);
             JsonArray selectorAry = ruleJson.get("selectors").getAsJsonArray();
             for (int j=0, m=selectorAry.size(); j<m; ++j) {
                 JsonObject selectorJson = selectorAry.get(j).getAsJsonObject();
                 ExceptionRuleSelection selection = new ExceptionRuleSelection(
                         ExceptionRuleSelectorEnum.forValue(GsonHelper.asInt(selectorJson, "selector", -1)),
-                        getStringOrNull(selectorJson, "selectorValue"),
+                        getStringOrNull(selectorJson, "selector_value"),
                         ExceptionRuleCheckEnum.forValue(GsonHelper.asInt(selectorJson, "check", -1)),
-                        getStringOrNull(selectorJson, "checkValue")
+                        getStringOrNull(selectorJson, "check_value")
                 );
                 if (selection.selector != ExceptionRuleSelectorEnum.NO_SELECTOR) {
                     rule.selectors.add(selection);
@@ -111,7 +111,7 @@ public class ProjectPolicy {
                 JsonObject operationJson = operationAry.get(j).getAsJsonObject();
                 ExceptionRuleOperation operation = new ExceptionRuleOperation(
                         ExceptionRuleOperationEnum.forValue(GsonHelper.asInt(operationJson, "operation", -1)),
-                        getStringOrNull(operationJson, "operationValue")
+                        getStringOrNull(operationJson, "operation_value")
                 );
                 if (operation.operation != ExceptionRuleOperationEnum.NO_OPERATION) {
                     rule.operations.add(operation);
@@ -122,7 +122,7 @@ public class ProjectPolicy {
                 JsonObject actionJson = actionAry.get(j).getAsJsonObject();
                 ExceptionRuleAction action = new ExceptionRuleAction(
                         ExceptionRuleActionEnum.forValue(GsonHelper.asInt(actionJson, "action", -1)),
-                        getStringOrNull(actionJson, "actionValue")
+                        getStringOrNull(actionJson, "action_value")
                 );
                 if (action.action != ExceptionRuleActionEnum.NO_ACTION) {
                     rule.actions.add(action);

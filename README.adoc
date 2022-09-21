@@ -1,22 +1,40 @@
+== What is err0?
+
+err0 is a software observability foundation. 
+
+Observability means to understand the internal state or condition of a system based only on knowledge of its external outputs.
+The more observable a system is, the quicker you can navigate it and more accurately you can identified the problem back to its root cause.
+
+Err0 is a game-changing solution which seamlessly transforms the observability level of any software.
+With Err0, errors and exceptions are: uniquely identified (numbered), tracked, managed through the entire life-cycle of the software, and can be dynamically enriched.
+
+See https://www.err0.io/
+
+== What is required to test or use err0?
+
+An account on the err0.io platform is required to use the err0agent.
+
+== What is the err0agent?
+
+The err0agent is the agent that will parse the code, detect logs, errors and exceptions statement and apply the corresponding Management Policy, notably by inserting error codes. The agent is open-source as we wouldn't ourselves run anything in our CI/CD pipeline that we couldn't check.
+
+== Which programming languages are supported by err0?
+
+The err0agent supports: c, java, python, php, go.
+
 == Using err0agent
 
-We have made two scripts `./err0-insert.sh` and `./err0-check.sh` to run
-the agent with docker against this code base.
+We have made two scripts `./err0-insert.sh` and `./err0-check.sh` to run the agent with docker against this code base.
 
 You will need to modify these scripts in order to be able to use the agent.
 
-`err0-insert.sh` should be used on a clean checkout, to add error codes into
-your project.  After your project will be changed.  Review the diff, build
-and then commit these error codes to your git repository.
+`err0-insert.sh` should be used on a clean checkout, to add error codes into your project.  After your project will be changed.  Review the diff, build and then commit these error codes to your git repository.
 
-`err0-check.sh` should be run during the build phase, to check for missing
-error codes.  If it finds one, it aborts; otherwise the script returns success.
+`err0-check.sh` should be run during the build phase, to check for missing error codes.  If it finds one, it aborts; otherwise the script returns success.
 
-They need a token (don't check this in!) and to be able to mount your git
-project.
+They need a token (don't check this in!) and to be able to mount your git project.
 
-See also our `.github/workflows/build.yml` to see how to run `./err0-check.sh` in
-the CI/CD pipeline; including storing the token value in a repository secret.
+See also our `.github/workflows/build.yml` to see how to run `./err0-check.sh` in the CI/CD pipeline; including storing the token value in a repository secret.
 
 == Building
 
