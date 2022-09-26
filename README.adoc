@@ -36,16 +36,3 @@ They need a token (don't check this in!) and to be able to mount your git projec
 
 See also our `.github/workflows/build.yml` to see how to run `./err0-check.sh` in the CI/CD pipeline; including storing the token value in a repository secret.
 
-== Building
-
-Make sure you're running err0server and that it is working...
-
-Make sure that `open-source-bundle` is checked out in the same parent directory as err0agent (e.g. it is ../open-source-bundle ...)
-
-== Run the test cases
-
-```
-err0proto $ ./gradlew clean runShadow
-```
-
-See what's to run in `build.gradle.kts` - the arguments are at the end of the build.gradle.kts file.
