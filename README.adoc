@@ -20,7 +20,7 @@ The err0agent is the agent that will parse the code, detect logs, errors and exc
 
 == Which programming languages are supported by err0?
 
-The err0agent supports: c, java, python, php, go.
+The err0agent supports: java, javascript, c#, python, php, go, typescript.
 
 == Using err0agent
 
