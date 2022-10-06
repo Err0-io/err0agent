@@ -42,10 +42,11 @@ public class ProjectPolicy {
         final JsonObject policyJson = GsonHelper.asJsonObject(applicationData, "policy", new JsonObject());
         this.error_prefix = GsonHelper.asString(policyJson, "error_prefix", null);
         //this.error_template = GsonHelper.getAsString(policyJson, "error_template", null);
+        this.has_error_pad_to_n = policyJson.has("error_pad_to_n") && !policyJson.get("error_pad_to_n").isJsonNull();
         this.error_pad_to_n = GsonHelper.asInt(policyJson, "error_pad_to_n", -1);
-        this.has_context = policyJson.has("context");
+        this.has_context = policyJson.has("context") && !policyJson.get("context").isJsonNull();
         this.context = GsonHelper.asBoolean(policyJson, "context", false);
-        this.has_context_n_lines = policyJson.has("context_n_lines");
+        this.has_context_n_lines = policyJson.has("context_n_lines") && !policyJson.get("context_n_lines").isJsonNull();
         this.context_n_lines = GsonHelper.asInt(policyJson, "context_n_lines", 0);
         this.renumber_on_next_run = GsonHelper.asBoolean(applicationData, "renumber_on_next_run", false);
         final JsonObject sourcesJson = GsonHelper.asJsonObject(applicationData, "sources", new JsonObject());
@@ -149,7 +150,7 @@ public class ProjectPolicy {
     final String prj_code;
     final UUID prj_uuid;
     final String error_prefix;
-    //final String error_template;
+    final boolean has_error_pad_to_n;
     final int error_pad_to_n;
     final boolean has_context;
     final boolean context;
@@ -196,7 +197,7 @@ public class ProjectPolicy {
     }
 
     public int getErrorPadToN() {
-        if (realmPolicy.policy_editable_by_prj && error_pad_to_n >= 0) {
+        if (realmPolicy.policy_editable_by_prj && has_error_pad_to_n && error_pad_to_n >= 0) {
             return error_pad_to_n;
         } else if (realmPolicy.error_pad_to_n >= 0) {
             return realmPolicy.error_pad_to_n;
