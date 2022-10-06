@@ -602,11 +602,11 @@ public class Main {
                             final FileCoding fileCoding = new FileCoding(p);
                             globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, CSharpSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
                             System.out.println("Parsed: " + newFile);
-                        } else if (javascriptAllowed && newFileLower.endsWith(".js") && !newFileLower.endsWith(".min.js")) {
+                        } else if (javascriptAllowed && ((newFileLower.endsWith(".js") && !newFileLower.endsWith(".min.js")) || newFileLower.endsWith(".jsx"))) {
                             final FileCoding fileCoding = new FileCoding(p);
                             globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, JavascriptSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
                             System.out.println("Parsed: " + newFile);
-                        } else if (typescriptAllowed && newFileLower.endsWith(".ts")) {
+                        } else if (typescriptAllowed && ((newFileLower.endsWith(".ts") || newFileLower.endsWith(".tsx")))) {
                             final FileCoding fileCoding = new FileCoding(p);
                             globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, TypescriptSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
                             System.out.println("Parsed: " + newFile);
