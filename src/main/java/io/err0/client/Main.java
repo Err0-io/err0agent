@@ -1215,7 +1215,9 @@ public class Main {
                         final String errorCode = policy.getErrorCodeFormatter().formatErrorCodeOnly(currentToken.errorOrdinal);
                         // update database with this information
                         if (currentToken.getChanged()) {
-                            System.out.println(stateItem.localToCheckoutUnchanged + "[AGENT-000059] :\t" + currentToken.startLineNumber + "\t" + errorCode + "\t" + (null == currentToken.prev ? "" : currentToken.prev.classification));
+                            System.out.println(
+                                    "[AGENT-000059]" + "\t" +
+                                    stateItem.localToCheckoutUnchanged + ":\t" + currentToken.startLineNumber + "\t" + errorCode + "\t" + (null == currentToken.prev ? "" : currentToken.prev.classification));
                             //if (null != comments && !"".equals(comments)) {
                             //    System.out.println(comments);
                             //}
