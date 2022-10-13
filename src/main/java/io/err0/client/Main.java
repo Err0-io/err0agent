@@ -289,7 +289,7 @@ public class Main {
                             arRealmPolicy.set(new RealmPolicy(responseJson.get("realm").getAsJsonObject()));
                             arApplicationPolicy.set(new ProjectPolicy(arRealmPolicy.get(), responseJson.get("app").getAsJsonObject()));
                         } else {
-                            throw new RuntimeException(responseJson.toString());
+                            RestApiProvider.JsonFormattedExceptionHelper.formatToStderrAndFail(responseJson);
                         }
                     });
 

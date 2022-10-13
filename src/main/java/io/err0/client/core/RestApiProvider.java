@@ -57,10 +57,23 @@ public class RestApiProvider implements ApiProvider {
         }
     }
 
+    public static class JsonFormattedExceptionHelper {
+        public static void formatToStderrAndFail(JsonObject json) {
+            if (GsonHelper.asBoolean(json, "success", false)) {
+                System.err.println("[AGENT-000064] Logic error, this response is successful.");
+            } else if (GsonHelper.asBoolean(json, "fault", false)) {
+                System.err.println("[AGENT-000065] Server indicates unhandled exception: " + GsonHelper.asString(json, "fault_message", ""));
+            } else {
+                System.err.println("[AGENT-000066] Server error code " + GsonHelper.asInt(json, "error_code", 0));
+            }
+            System.exit(-1);
+        }
+    }
+
     protected static class Parser {
         protected static JsonObject parse(final HttpGet request, final ClassicHttpResponse response) {
             if (response.getCode() != 200) {
-                throw new ParserException("[AGENT-000029] HTTP status code " + response.getCode(), request.getRequestUri());
+                throw new ParserException("[AGENT-000029] HTTP status code " + response.getCode() + " " + response.getReasonPhrase(), request.getRequestUri());
             }
             String jsonAsString = null;
             try {
@@ -79,7 +92,7 @@ public class RestApiProvider implements ApiProvider {
 
         protected static JsonObject parse(final HttpPost request, final ClassicHttpResponse response) {
             if (response.getCode() != 200) {
-                throw new ParserException("[AGENT-000032] HTTP status code " + response.getCode(), request.getRequestUri());
+                throw new ParserException("[AGENT-000032] HTTP status code " + response.getCode() + " " + response.getReasonPhrase(), request.getRequestUri());
             }
             String jsonAsString = null;
             try {
@@ -134,8 +147,7 @@ public class RestApiProvider implements ApiProvider {
                 if (GsonHelper.asBoolean(json, "success", false)) {
                     // ignore :-)
                 } else {
-                    // FIXME - proper error/fault reports...
-                    throw new RuntimeException(json.toString());
+                    JsonFormattedExceptionHelper.formatToStderrAndFail(json);
                 }
                 return null;
             });
@@ -170,6 +182,8 @@ public class RestApiProvider implements ApiProvider {
                     for (int i = 0, l = a.size(); i < l; ++i)
                         validErrorNumbers.add(a.get(i).getAsLong());
                     return true;
+                } else {
+                    JsonFormattedExceptionHelper.formatToStderrAndFail(json);
                 }
                 return false;
             });
@@ -205,8 +219,7 @@ public class RestApiProvider implements ApiProvider {
                 if (GsonHelper.asBoolean(json, "success", false) && json.get("ok_to_renumber").getAsBoolean()) {
                     result.set(true);
                 } else {
-                    // FIXME - proper error/fault reports...
-                    throw new RuntimeException(json.toString());
+                    JsonFormattedExceptionHelper.formatToStderrAndFail(json);
                 }
                 return null;
             });
@@ -252,8 +265,8 @@ public class RestApiProvider implements ApiProvider {
                     }
                     return eo;
                 } else {
-                    // FIXME - proper error/fault reports...
-                    throw new RuntimeException(json.toString());
+                    JsonFormattedExceptionHelper.formatToStderrAndFail(json);
+                    return null;
                 }
             });
         }
@@ -291,8 +304,8 @@ public class RestApiProvider implements ApiProvider {
                 if (GsonHelper.asBoolean(json, "success", false)) {
                     return true;
                 } else {
-                    // FIXME - proper error/fault reports...
-                    throw new RuntimeException(json.toString());
+                    JsonFormattedExceptionHelper.formatToStderrAndFail(json);
+                    return false;
                 }
             });
         }
@@ -328,8 +341,8 @@ public class RestApiProvider implements ApiProvider {
                 if (GsonHelper.asBoolean(json, "success", false)) {
                     return UUID.fromString(GsonHelper.asString(json, "run_uuid", ""));
                 } else {
-                    // FIXME - proper error/fault reports...
-                    throw new RuntimeException(json.toString());
+                    JsonFormattedExceptionHelper.formatToStderrAndFail(json);
+                    return null;
                 }
             });
         }
@@ -359,8 +372,8 @@ public class RestApiProvider implements ApiProvider {
                 if (GsonHelper.asBoolean(json, "success", false)) {
                     return true;
                 } else {
-                    // FIXME - proper error/fault reports...
-                    throw new RuntimeException(json.toString());
+                    JsonFormattedExceptionHelper.formatToStderrAndFail(json);
+                    return false;
                 }
             });
         }
@@ -393,8 +406,7 @@ public class RestApiProvider implements ApiProvider {
                         globalState.previousRunSignatures.put(error_ordinal, new Signature(metadata));
                     }
                 } else {
-                    // FIXME - proper error/fault reports...
-                    throw new RuntimeException(json.toString());
+                    JsonFormattedExceptionHelper.formatToStderrAndFail(json);
                 }
                 return null;
             });
@@ -424,8 +436,8 @@ public class RestApiProvider implements ApiProvider {
                 if (GsonHelper.asBoolean(json, "success", false)) {
                     return null;
                 } else {
-                    // FIXME - proper error/fault reports...
-                    throw new RuntimeException(json.toString());
+                    JsonFormattedExceptionHelper.formatToStderrAndFail(json);
+                    return null;
                 }
             });
         }
