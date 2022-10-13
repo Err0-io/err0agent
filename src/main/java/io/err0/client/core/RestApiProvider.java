@@ -23,6 +23,7 @@ import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 
 import java.io.IOException;
@@ -30,16 +31,70 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 public class RestApiProvider implements ApiProvider {
-
     public RestApiProvider(final String tokenPath) throws IOException {
         httpClient = HttpClients.createDefault();
 
-        tokenJson = JsonParser.parseString(Files.readString(Path.of(tokenPath))).getAsJsonObject();
+        try {
+            tokenJson = JsonParser.parseString(Files.readString(Path.of(tokenPath))).getAsJsonObject();
+        }
+        catch (RuntimeException exception) {
+            throw new ParserException("[AGENT-000028] Invalid token.json", "file: " + tokenPath, exception);
+        }
+    }
+
+    protected static class ParserException extends RuntimeException {
+        protected ParserException(final String message, final String source) {
+            super(message + " " + source);
+        }
+        protected ParserException(final String message, final String source, Throwable throwable) {
+            super(message + " " + source, throwable);
+        }
+    }
+
+    protected static class Parser {
+        protected static JsonObject parse(final HttpGet request, final ClassicHttpResponse response) {
+            if (response.getCode() != 200) {
+                throw new ParserException("[AGENT-000029] HTTP status code " + response.getCode(), request.getRequestUri());
+            }
+            String jsonAsString = null;
+            try {
+                jsonAsString = new String(response.getEntity().getContent().readAllBytes(), StandardCharsets.UTF_8);
+            }
+            catch (Throwable throwable) {
+                throw new ParserException("[AGENT-000030] Error reading response or invalid UTF-8 encoding", request.getRequestUri(), throwable);
+            }
+            try {
+                return JsonParser.parseString(jsonAsString).getAsJsonObject();
+            }
+            catch (Throwable throwable) {
+                throw new ParserException("[AGENT-000031] Invalid response from API", request.getRequestUri(), throwable);
+            }
+        }
+
+        protected static JsonObject parse(final HttpPost request, final ClassicHttpResponse response) {
+            if (response.getCode() != 200) {
+                throw new ParserException("[AGENT-000032] HTTP status code " + response.getCode(), request.getRequestUri());
+            }
+            String jsonAsString = null;
+            try {
+                jsonAsString = new String(response.getEntity().getContent().readAllBytes(), StandardCharsets.UTF_8);
+            }
+            catch (Throwable throwable) {
+                throw new ParserException("[AGENT-000033] Error reading response or invalid UTF-8 encoding", request.getRequestUri(), throwable);
+            }
+            try {
+                return JsonParser.parseString(jsonAsString).getAsJsonObject();
+            }
+            catch (Throwable throwable) {
+                throw new ParserException("[AGENT-000034] Invalid response from API", request.getRequestUri(), throwable);
+            }
+        }
     }
 
     private CloseableHttpClient httpClient = null;
@@ -54,7 +109,7 @@ public class RestApiProvider implements ApiProvider {
             request.addHeader("Authorization", "token " + GsonHelper.asString(tokenJson, "token_value", "-"));
 
             httpClient.execute(request, response -> {
-                onResult.accept(JsonParser.parseString(new String(response.getEntity().getContent().readAllBytes(), StandardCharsets.UTF_8)).getAsJsonObject());
+                onResult.accept(Parser.parse(request, response));
                 return null;
             });
 
@@ -75,13 +130,12 @@ public class RestApiProvider implements ApiProvider {
             request.setEntity(stringEntity);
 
             httpClient.execute(request, response -> {
-                String jsonAsString = new String(response.getEntity().getContent().readAllBytes(), StandardCharsets.UTF_8);
-                JsonObject json = JsonParser.parseString(jsonAsString).getAsJsonObject();
+                JsonObject json = Parser.parse(request, response);
                 if (GsonHelper.asBoolean(json, "success", false)) {
                     // ignore :-)
                 } else {
                     // FIXME - proper error/fault reports...
-                    throw new RuntimeException(jsonAsString);
+                    throw new RuntimeException(json.toString());
                 }
                 return null;
             });
@@ -110,9 +164,9 @@ public class RestApiProvider implements ApiProvider {
             request.addHeader("Authorization", "token " + GsonHelper.asString(tokenJson, "token_value", "-"));
 
             httpClient.execute(request, response -> {
-                JsonObject o = JsonParser.parseString(new String(response.getEntity().getContent().readAllBytes(), StandardCharsets.UTF_8)).getAsJsonObject();
-                if (GsonHelper.asBoolean(o, "success", false)) {
-                    JsonArray a = o.get("valid").getAsJsonArray();
+                JsonObject json = Parser.parse(request, response);
+                if (GsonHelper.asBoolean(json, "success", false)) {
+                    JsonArray a = json.get("valid").getAsJsonArray();
                     for (int i = 0, l = a.size(); i < l; ++i)
                         validErrorNumbers.add(a.get(i).getAsLong());
                     return true;
@@ -147,13 +201,12 @@ public class RestApiProvider implements ApiProvider {
             request.setEntity(stringEntity);
 
             httpClient.execute(request, response -> {
-                String jsonAsString = new String(response.getEntity().getContent().readAllBytes(), StandardCharsets.UTF_8);
-                JsonObject json = JsonParser.parseString(jsonAsString).getAsJsonObject();
+                JsonObject json = Parser.parse(request, response);
                 if (GsonHelper.asBoolean(json, "success", false) && json.get("ok_to_renumber").getAsBoolean()) {
                     result.set(true);
                 } else {
                     // FIXME - proper error/fault reports...
-                    throw new RuntimeException(jsonAsString);
+                    throw new RuntimeException(json.toString());
                 }
                 return null;
             });
@@ -190,8 +243,7 @@ public class RestApiProvider implements ApiProvider {
             request.setEntity(stringEntity);
 
             cache = httpClient.execute(request, response -> {
-                String jsonAsString = new String(response.getEntity().getContent().readAllBytes(), StandardCharsets.UTF_8);
-                JsonObject json = JsonParser.parseString(jsonAsString).getAsJsonObject();
+                JsonObject json = Parser.parse(request, response);
                 if (GsonHelper.asBoolean(json, "success", false)) {
                     JsonArray error_ordinals = json.get("error_ordinals").getAsJsonArray();
                     LinkedList<Long> eo = new LinkedList<>();
@@ -201,7 +253,7 @@ public class RestApiProvider implements ApiProvider {
                     return eo;
                 } else {
                     // FIXME - proper error/fault reports...
-                    throw new RuntimeException(jsonAsString);
+                    throw new RuntimeException(json.toString());
                 }
             });
         }
@@ -235,13 +287,12 @@ public class RestApiProvider implements ApiProvider {
             request.setEntity(stringEntity);
 
             httpClient.execute(request, response -> {
-                String jsonAsString = new String(response.getEntity().getContent().readAllBytes(), StandardCharsets.UTF_8);
-                JsonObject json = JsonParser.parseString(jsonAsString).getAsJsonObject();
+                JsonObject json = Parser.parse(request, response);
                 if (GsonHelper.asBoolean(json, "success", false)) {
                     return true;
                 } else {
                     // FIXME - proper error/fault reports...
-                    throw new RuntimeException(jsonAsString);
+                    throw new RuntimeException(json.toString());
                 }
             });
         }
@@ -273,13 +324,12 @@ public class RestApiProvider implements ApiProvider {
             request.setEntity(stringEntity);
 
             return httpClient.execute(request, response -> {
-                String jsonAsString = new String(response.getEntity().getContent().readAllBytes(), StandardCharsets.UTF_8);
-                JsonObject json = JsonParser.parseString(jsonAsString).getAsJsonObject();
+                JsonObject json = Parser.parse(request, response);
                 if (GsonHelper.asBoolean(json, "success", false)) {
                     return UUID.fromString(GsonHelper.asString(json, "run_uuid", ""));
                 } else {
                     // FIXME - proper error/fault reports...
-                    throw new RuntimeException(jsonAsString);
+                    throw new RuntimeException(json.toString());
                 }
             });
         }
@@ -305,13 +355,12 @@ public class RestApiProvider implements ApiProvider {
             request.setEntity(stringEntity);
 
             httpClient.execute(request, response -> {
-                String jsonAsString = new String(response.getEntity().getContent().readAllBytes(), StandardCharsets.UTF_8);
-                JsonObject json = JsonParser.parseString(jsonAsString).getAsJsonObject();
+                JsonObject json = Parser.parse(request, response);
                 if (GsonHelper.asBoolean(json, "success", false)) {
                     return true;
                 } else {
                     // FIXME - proper error/fault reports...
-                    throw new RuntimeException(jsonAsString);
+                    throw new RuntimeException(json.toString());
                 }
             });
         }
@@ -334,8 +383,7 @@ public class RestApiProvider implements ApiProvider {
             request.addHeader("Authorization", "token " + GsonHelper.asString(tokenJson, "token_value", "-"));
 
             httpClient.execute(request, response -> {
-                String jsonAsString = new String(response.getEntity().getContent().readAllBytes(), StandardCharsets.UTF_8);
-                JsonObject json = JsonParser.parseString(jsonAsString).getAsJsonObject();
+                JsonObject json = Parser.parse(request, response);
                 if (GsonHelper.asBoolean(json, "success", false)) {
                     JsonArray error_codes = json.get("error_codes").getAsJsonArray();
                     for (int i = 0, l = error_codes.size(); i < l; ++i) {
@@ -346,7 +394,7 @@ public class RestApiProvider implements ApiProvider {
                     }
                 } else {
                     // FIXME - proper error/fault reports...
-                    throw new RuntimeException(jsonAsString);
+                    throw new RuntimeException(json.toString());
                 }
                 return null;
             });
@@ -372,13 +420,12 @@ public class RestApiProvider implements ApiProvider {
             request.setEntity(stringEntity);
 
             httpClient.execute(request, response -> {
-                String jsonAsString = new String(response.getEntity().getContent().readAllBytes(), StandardCharsets.UTF_8);
-                JsonObject json = JsonParser.parseString(jsonAsString).getAsJsonObject();
+                JsonObject json = Parser.parse(request, response);
                 if (GsonHelper.asBoolean(json, "success", false)) {
                     return null;
                 } else {
                     // FIXME - proper error/fault reports...
-                    throw new RuntimeException(jsonAsString);
+                    throw new RuntimeException(json.toString());
                 }
             });
         }
