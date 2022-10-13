@@ -86,6 +86,7 @@ public class RestApiProvider implements ApiProvider {
                 return JsonParser.parseString(jsonAsString).getAsJsonObject();
             }
             catch (Throwable throwable) {
+                System.err.println("[AGENT-000067] Invalid JSON:\n" + jsonAsString);
                 throw new ParserException("[AGENT-000031] Invalid response from API", request.getRequestUri(), throwable);
             }
         }
@@ -105,6 +106,7 @@ public class RestApiProvider implements ApiProvider {
                 return JsonParser.parseString(jsonAsString).getAsJsonObject();
             }
             catch (Throwable throwable) {
+                System.err.println("[AGENT-000068] Invalid JSON:\n" + jsonAsString);
                 throw new ParserException("[AGENT-000034] Invalid response from API", request.getRequestUri(), throwable);
             }
         }
