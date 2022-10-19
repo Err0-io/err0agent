@@ -31,7 +31,7 @@ public class FileResultDriver implements ResultDriver {
             }
             try {
                 Files.writeString(Path.of(path), output.toString(), fileCharset);
-                System.out.println("Written: " + path);
+                System.out.println("[AGENT-000060] Written: " + path);
             }
             catch (IOException iex) {
                 iex.printStackTrace();

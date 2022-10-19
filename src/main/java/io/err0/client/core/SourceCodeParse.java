@@ -59,11 +59,11 @@ public abstract class SourceCodeParse {
 
     public final JsonArray getNLinesOfContext(final int lineNumber, final int nLines, final int charRadius) {
         if (nLines < 0) {
-            System.err.println("Invalid number of lines of context = " + nLines);
+            System.err.println("[AGENT-000061] Invalid number of lines of context = " + nLines);
             System.exit(-1);
         }
         if (charRadius < 0) {
-            System.err.println("Invalid number of chars of context = " + charRadius);
+            System.err.println("[AGENT-000062] Invalid number of chars of context = " + charRadius);
             System.exit(-1);
         }
         int startLineNumber = lineNumber - nLines;

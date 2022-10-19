@@ -261,11 +261,11 @@ public class Main {
             for (int i = 0, l = args.length; i < l; ++i) {
                 String arg = args[i];
                 if ("--help".equals(arg)) {
-                    System.out.println("Usage");
-                    System.out.println("<command> --token path-to-token.json --insert /path/to/git/repo");
-                    System.out.println(" insert error codes into the source code");
-                    System.out.println("<command> --token path-to-token.json --analyse --check /path/to/git/repo");
-                    System.out.println(" analyse error codes in the project and return failure if some need to change");
+                    System.out.println("[AGENT-000035] Usage");
+                    System.out.println("[AGENT-000036] <command> --token path-to-token.json --insert /path/to/git/repo");
+                    System.out.println("[AGENT-000037] insert error codes into the source code");
+                    System.out.println("[AGENT-000038] <command> --token path-to-token.json --analyse --check /path/to/git/repo");
+                    System.out.println("[AGENT-000039] analyse error codes in the project and return failure if some need to change");
                 }
                 else if ("--token".equals(arg)) {
 
@@ -289,7 +289,7 @@ public class Main {
                             arRealmPolicy.set(new RealmPolicy(responseJson.get("realm").getAsJsonObject()));
                             arApplicationPolicy.set(new ProjectPolicy(arRealmPolicy.get(), responseJson.get("app").getAsJsonObject()));
                         } else {
-                            throw new RuntimeException(responseJson.toString());
+                            RestApiProvider.JsonFormattedExceptionHelper.formatToStderrAndFail(responseJson);
                         }
                     });
 
@@ -331,7 +331,7 @@ public class Main {
                     JsonObject runGitMetadata = new JsonObject();
                     final GitMetadata gitMetadata = populateGitMetadata(checkoutDir, appGitMetadata, runGitMetadata);
                     if (gitMetadata.detachedHead) {
-                        System.err.println("Detached HEAD in the git repository.");
+                        System.err.println("[AGENT-000040] Detached HEAD in the git repository.");
                         System.exit(-1);
                     }
 
@@ -414,12 +414,12 @@ public class Main {
                     }
 
                     if (null == current_branch && gitMetadata.detachedHead) {
-                        System.err.println("Detached HEAD in the git repository; current branch must be specified by --branch.");
+                        System.err.println("[AGENT-000041] Detached HEAD in the git repository; current branch must be specified by --branch.");
                         System.exit(-1);
                     }
                     if (! dirty) {
                         if (!gitMetadata.statusIsClean) {
-                            System.err.println("--analyse requires a clean git checkout.");
+                            System.err.println("[AGENT-000042] --analyse requires a clean git checkout.");
                             System.exit(-1);
                         }
                     }
@@ -447,10 +447,10 @@ public class Main {
 
                     if (wouldChangeAFile) {
                         if (check) {
-                            System.err.println("Please run --insert to add missing error codes and retry.");
+                            System.err.println("[AGENT-000043] Please run --insert to add missing error codes and retry.");
                             System.exit(-1);
                         } else {
-                            System.out.println("Some error codes are missing.");
+                            System.out.println("[AGENT-000044] Some error codes are missing.");
                         }
                     }
 
@@ -469,7 +469,7 @@ public class Main {
             }
         }
         catch (Throwable t) {
-            System.err.println("Fatal error: " + t.toString());
+            System.err.println("[AGENT-000045] Fatal error: " + t.toString());
             t.printStackTrace(System.err);
             System.exit(-1);
         }
@@ -538,7 +538,7 @@ public class Main {
 
         path = Paths.get(path).toAbsolutePath().toString();
 
-        System.out.println("Scanning " + path);
+        System.out.println("[AGENT-000046] Scanning " + path);
 
         if (! path.endsWith("/")) {
             path = path + "/";
@@ -587,7 +587,7 @@ public class Main {
                     }
                     if (! Files.isDirectory(p)) {
                         if (!newFile.startsWith(finalPath)) {
-                            System.err.println("Oops! [" + newFile + "] does not start with [" + finalPath + "]");
+                            System.err.println("[AGENT-000047] Oops! [" + newFile + "] does not start with [" + finalPath + "]");
                             System.exit(-1);
                         }
                         final String localToCheckoutUnchanged = newFile.substring(lFinalPath);
@@ -597,31 +597,31 @@ public class Main {
                         if (javaAllowed && newFileLower.endsWith(".java")) {
                             final FileCoding fileCoding = new FileCoding(p);
                             globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, JavaSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
-                            System.out.println("Parsed: " + newFile);
+                            System.out.println("[AGENT-000048] Parsed: " + newFile);
                         } else if (cSharpAllowed && newFileLower.endsWith(".cs") && !newFileLower.endsWith(".designer.cs") && !newFileLower.endsWith(".generated.cs")) {
                             final FileCoding fileCoding = new FileCoding(p);
                             globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, CSharpSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
-                            System.out.println("Parsed: " + newFile);
+                            System.out.println("[AGENT-000049] Parsed: " + newFile);
                         } else if (javascriptAllowed && ((newFileLower.endsWith(".js") && !newFileLower.endsWith(".min.js")) || newFileLower.endsWith(".jsx"))) {
                             final FileCoding fileCoding = new FileCoding(p);
                             globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, JavascriptSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
-                            System.out.println("Parsed: " + newFile);
+                            System.out.println("[AGENT-000050] Parsed: " + newFile);
                         } else if (typescriptAllowed && ((newFileLower.endsWith(".ts") || newFileLower.endsWith(".tsx")))) {
                             final FileCoding fileCoding = new FileCoding(p);
                             globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, TypescriptSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
-                            System.out.println("Parsed: " + newFile);
+                            System.out.println("[AGENT-000051] Parsed: " + newFile);
                         } else if (phpAllowed && (newFileLower.endsWith(".php") || newFileLower.endsWith(".phtml"))) {
                             final FileCoding fileCoding = new FileCoding(p);
                             globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, PhpSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
-                            System.out.println("Parsed: " + newFile);
+                            System.out.println("[AGENT-000052] Parsed: " + newFile);
                         } else if (goAllowed && newFileLower.endsWith(".go")) {
                             final FileCoding fileCoding = new FileCoding(p);
                             globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, GolangSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
-                            System.out.println("Parsed: " + newFile);
+                            System.out.println("[AGENT-000053] Parsed: " + newFile);
                         } else if (pythonAllowed && newFileLower.endsWith(".py")) {
                             final FileCoding fileCoding = new FileCoding(p);
                             globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, PythonSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
-                            System.out.println("Parsed: " + newFile);
+                            System.out.println("[AGENT-000054] Parsed: " + newFile);
                         }
                     }
                 });
@@ -729,7 +729,7 @@ public class Main {
                 if (!wouldChangeAFile) {
                     wouldChangeAFile = true;
                 }
-                System.out.println("Analyse would reformat a code in " + stateItem.localToCheckoutUnchanged + " line " + currentToken.startLineNumber);
+                System.out.println("[AGENT-000055] Analyse would reformat a code in " + stateItem.localToCheckoutUnchanged + " line " + currentToken.startLineNumber);
             }
 
             @Override
@@ -739,7 +739,7 @@ public class Main {
                     wouldChangeAFile = true;
                 }
                 if (stateItem.getChanged()) {
-                    System.out.println("Analyse would change " + stateItem.localToCheckoutUnchanged);
+                    System.out.println("[AGENT-000056] Analyse would change " + stateItem.localToCheckoutUnchanged);
                 }
             }
 
@@ -1009,10 +1009,10 @@ public class Main {
                                                             metaData.addProperty("severity", operation.operationValue);
                                                             break;
                                                         case SET_CODE_COMMENT:
-                                                            System.err.println("Ignoring set code comment");
+                                                            System.err.println("[AGENT-000057] Ignoring set code comment");
                                                             break;
                                                         case SET_AS_SUBNUMBER_OF_PREVIOUS_ERROR:
-                                                            System.err.println("Ignoring set as subnumber of previous error");
+                                                            System.err.println("[AGENT-000058] Ignoring set as subnumber of previous error");
                                                             break;
                                                         case SET_HTTP_STATUS:
                                                             metaData.addProperty("http_status", Integer.valueOf(operation.operationValue));
@@ -1215,7 +1215,9 @@ public class Main {
                         final String errorCode = policy.getErrorCodeFormatter().formatErrorCodeOnly(currentToken.errorOrdinal);
                         // update database with this information
                         if (currentToken.getChanged()) {
-                            System.out.println(stateItem.localToCheckoutUnchanged + ":\t" + currentToken.startLineNumber + "\t" + errorCode + "\t" + (null == currentToken.prev ? "" : currentToken.prev.classification));
+                            System.out.println(
+                                    "[AGENT-000059]" + "\t" +
+                                    stateItem.localToCheckoutUnchanged + ":\t" + currentToken.startLineNumber + "\t" + errorCode + "\t" + (null == currentToken.prev ? "" : currentToken.prev.classification));
                             //if (null != comments && !"".equals(comments)) {
                             //    System.out.println(comments);
                             //}
