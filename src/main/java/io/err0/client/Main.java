@@ -627,7 +627,8 @@ public class Main {
                 });
             }
             catch (IOException e) {
-                throw new RuntimeException(e);
+                System.err.println("[AGENT-000069] While recursing: " + startPoint);
+                e.printStackTrace(System.err);
             }
 
         });
