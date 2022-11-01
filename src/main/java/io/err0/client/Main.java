@@ -1100,8 +1100,12 @@ public class Main {
                             logic.pass2ResolveDuplicateErrorNumber(item, errorOrdinal); // item.token.errorOrdinal = errorOrdinal;
 
                             final int width = item.token.getStringQuoteWidth();
-                            final String start = item.token.sourceNoErrorCode.substring(0, width);
+                            String start = item.token.sourceNoErrorCode.substring(0, width);
                             final String remainder = item.token.sourceNoErrorCode.substring(width).stripLeading();
+                            final String whitespace = item.token.sourceNoErrorCode.substring(width, (item.token.sourceNoErrorCode.length() - remainder.length()));
+                            if (width > 1) {
+                                start = start + whitespace;
+                            }
                             item.token.source = start + "[" + policy.getErrorCodeFormatter().formatErrorCode(item.token.errorOrdinal) + (remainder.length() == 0 || remainder.equals(start) ? "]" : "] ") + remainder;
                         }
                     } else {
@@ -1110,8 +1114,12 @@ public class Main {
                         item.token.errorCodeConsumer = (ignore1) -> {
                             logic.pass2AssignNewErrorNumber(item); // item.token.errorOrdinal = apiProvider.nextErrorNumber();
                             final int width = item.token.getStringQuoteWidth();
-                            final String start = item.token.sourceNoErrorCode.substring(0, width);
+                            String start = item.token.sourceNoErrorCode.substring(0, width);
                             final String remainder = item.token.sourceNoErrorCode.substring(width).stripLeading();
+                            final String whitespace = item.token.sourceNoErrorCode.substring(width, (item.token.sourceNoErrorCode.length() - remainder.length()));
+                            if (width > 1) {
+                                start = start + whitespace;
+                            }
                             item.token.source = start + "[" + policy.getErrorCodeFormatter().formatErrorCode(item.token.errorOrdinal) + (remainder.length() == 0 || remainder.equals(start) ? "]" : "] ") + remainder;
                         };
                     }
@@ -1174,13 +1182,21 @@ public class Main {
                             // log match
                             //currentToken.errorOrdinal = apiProvider.nextErrorNumber();
                             final int width = currentToken.getStringQuoteWidth();
-                            final String start = currentToken.sourceNoErrorCode.substring(0, width);
+                            String start = currentToken.sourceNoErrorCode.substring(0, width);
                             final String remainder = currentToken.sourceNoErrorCode.substring(width).stripLeading();
+                            final String whitespace = currentToken.sourceNoErrorCode.substring(width, (currentToken.sourceNoErrorCode.length() - remainder.length()));
+                            if (width > 1) {
+                                start = start + whitespace;
+                            }
                             currentToken.source = start + "[" + policy.getErrorCodeFormatter().formatErrorCode(currentToken.errorOrdinal) + (remainder.length() == 0 || remainder.equals(start) ? "]" : "] ") + remainder;
                         } else {
                             final int width = currentToken.getStringQuoteWidth();
-                            final String start = currentToken.sourceNoErrorCode.substring(0, width);
+                            String start = currentToken.sourceNoErrorCode.substring(0, width);
                             final String remainder = currentToken.sourceNoErrorCode.substring(width).stripLeading();
+                            final String whitespace = currentToken.sourceNoErrorCode.substring(width, (currentToken.sourceNoErrorCode.length() - remainder.length()));
+                            if (width > 1) {
+                                start = start + whitespace;
+                            }
                             final String formatted = start + "[" + policy.getErrorCodeFormatter().formatErrorCode(currentToken.errorOrdinal) + (remainder.length() == 0 || remainder.equals(start) ? "]" : "] ") + remainder;
                             if (!formatted.equals(currentToken.initialSource)) {
                                 currentToken.source = formatted;

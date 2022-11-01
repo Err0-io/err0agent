@@ -100,11 +100,21 @@ public class JavaSourceCodeParse extends SourceCodeParse {
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == '\"') {
                         parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.QUOT_LITERAL;
-                        currentToken.sourceCode.append(ch);
-                        currentToken.depth = depth;
-                        currentToken.startLineNumber = lineNumber;
+                        if (i < l - 2 && chars[i+1] == '\"' && chars[i+2] == '\"') {
+                            currentToken = new Token(n++, currentToken);
+                            currentToken.type = TokenClassification.QUOT3_LITERAL;
+                            currentToken.sourceCode.append(ch);
+                            currentToken.sourceCode.append(chars[++i]);
+                            currentToken.sourceCode.append(chars[++i]);
+                            currentToken.depth = depth;
+                            currentToken.startLineNumber = lineNumber;
+                        } else {
+                            currentToken = new Token(n++, currentToken);
+                            currentToken.type = TokenClassification.QUOT_LITERAL;
+                            currentToken.sourceCode.append(ch);
+                            currentToken.depth = depth;
+                            currentToken.startLineNumber = lineNumber;
+                        }
                     } else if (i < l - 1 && ch == '/') {
                         final char ch2 = chars[i+1];
                         if (ch2 == '*') {
@@ -195,6 +205,24 @@ public class JavaSourceCodeParse extends SourceCodeParse {
                         currentToken.sourceCode.append(ch);
                     }
                     break;
+                case QUOT3_LITERAL:
+                    if (ch == '\"') {
+                        if (i < l-2 && chars[i+1] == '\"' && chars[i+2] == '\"') {
+                            currentToken.sourceCode.append(ch);
+                            currentToken.sourceCode.append(chars[++i]);
+                            currentToken.sourceCode.append(chars[++i]);
+                            parse.tokenList.add(currentToken.finish(lineNumber));
+                            currentToken = new Token(n++, currentToken);
+                            currentToken.type = TokenClassification.SOURCE_CODE;
+                            currentToken.depth = depth;
+                            currentToken.startLineNumber = lineNumber;
+                        } else {
+                            currentToken.sourceCode.append(ch);
+                        }
+                    } else {
+                        currentToken.sourceCode.append(ch);
+                    }
+                    break;
             }
         }
         parse.tokenList.add(currentToken.finish(lineNumber));
@@ -203,7 +231,7 @@ public class JavaSourceCodeParse extends SourceCodeParse {
 
     @Override
     public boolean couldContainErrorNumber(Token token) {
-        return token.type == TokenClassification.QUOT_LITERAL;
+        return token.type == TokenClassification.QUOT_LITERAL || token.type == TokenClassification.QUOT3_LITERAL;
     }
 
     @Override
@@ -234,11 +262,35 @@ public class JavaSourceCodeParse extends SourceCodeParse {
                     }
                 }
                 break;
+                case QUOT3_LITERAL:
+                {
+                    // 1) Strip '[ERR-nnnnnn] ' from string literals for re-injection
+                    Matcher matcherErrorNumber = policy.getReErrorNumber_java_textblocks().matcher(token.source);
+                    if (matcherErrorNumber.find()) {
+                        token.classification = Token.Classification.ERROR_NUMBER;
+                        long errorOrdinal = Long.parseLong(matcherErrorNumber.group(2));
+                        if (apiProvider.validErrorNumber(policy, errorOrdinal)) {
+                            if (globalState.store(errorOrdinal, stateItem, token)) {
+                                token.keepErrorCode = true;
+                                token.errorOrdinal = errorOrdinal;
+                                token.sourceNoErrorCode = matcherErrorNumber.group(1) + token.source.substring(matcherErrorNumber.end());
+                            } else {
+                                token.sourceNoErrorCode = token.source = matcherErrorNumber.group(1) + token.source.substring(matcherErrorNumber.end());
+                            }
+                        } else {
+                            token.sourceNoErrorCode = token.source = matcherErrorNumber.group(1) + token.source.substring(matcherErrorNumber.end());
+                        }
+                    } else {
+                        token.classification = Token.Classification.POTENTIAL_ERROR_NUMBER;
+                        token.sourceNoErrorCode = token.source;
+                    }
+                }
+                break;
                 case SOURCE_CODE:
                 {
                     token.classification = Token.Classification.NOT_FULLY_CLASSIFIED;
                     Token next = token.next();
-                    if (next != null && (next.type == TokenClassification.QUOT_LITERAL)) {
+                    if (next != null && (next.type == TokenClassification.QUOT_LITERAL || next.type == TokenClassification.QUOT3_LITERAL)) {
                         // rule 0 - this code must be followed by a string literal
                         if (null != languageCodePolicy && languageCodePolicy.rules.size() > 0) {
                             // classify according to rules.
