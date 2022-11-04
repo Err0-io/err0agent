@@ -28,10 +28,15 @@ public class A {
             logger.warn("[E-2] warn level");
             logger.error("[E-3] error level");
 
-            // this is always fatal
-            logger.fatal("[E-4] fatal level");
+            logger.error("""
+                         [E-4] Multi-line string.
+                         Line 2.
+                         """);
 
-            throw new RuntimeException("[E-5] This is an exception");
+            // this is always fatal
+            logger.fatal("[E-5] fatal level");
+
+            throw new RuntimeException("[E-6] This is an exception");
 
             throw new RuntimeException("This is an exception without an error code.")
         }
