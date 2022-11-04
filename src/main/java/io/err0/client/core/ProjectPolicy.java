@@ -258,6 +258,15 @@ public class ProjectPolicy {
         return reErrorNumber_java;
     }
 
+    // Java pattern for finding our error number, multi-line strings.
+    private Pattern reErrorNumber_java_textblocks = null;
+    public Pattern getReErrorNumber_java_textblocks() {
+        if (null == reErrorNumber_java_textblocks) {
+            reErrorNumber_java_textblocks = Pattern.compile("^\"\"\"(\\s*)\\[" + getErrorPrefix() + "-(\\d+)\\]\\s*");
+        }
+        return reErrorNumber_java_textblocks;
+    }
+
     // PHP pattern for finding our error number.
     private Pattern reErrorNumber_php = null;
     public Pattern getReErrorNumber_php() {

@@ -27,6 +27,11 @@ public class A {
             logger.warn("warn level");
             logger.error("error level");
 
+            logger.error("""
+                         Multi-line string.
+                         Line 2.
+                         """);
+
             // this is always fatal
             logger.fatal("fatal level");
 
