@@ -273,12 +273,12 @@ public class JavaSourceCodeParse extends SourceCodeParse {
                             if (globalState.store(errorOrdinal, stateItem, token)) {
                                 token.keepErrorCode = true;
                                 token.errorOrdinal = errorOrdinal;
-                                token.sourceNoErrorCode = matcherErrorNumber.group(1) + token.source.substring(matcherErrorNumber.end());
+                                token.sourceNoErrorCode = "\"\"\"" + matcherErrorNumber.group(1) + token.source.substring(matcherErrorNumber.end());
                             } else {
-                                token.sourceNoErrorCode = token.source = matcherErrorNumber.group(1) + token.source.substring(matcherErrorNumber.end());
+                                token.sourceNoErrorCode = token.source = "\"\"\"" + matcherErrorNumber.group(1) + token.source.substring(matcherErrorNumber.end());
                             }
                         } else {
-                            token.sourceNoErrorCode = token.source = matcherErrorNumber.group(1) + token.source.substring(matcherErrorNumber.end());
+                            token.sourceNoErrorCode = token.source = "\"\"\"" + matcherErrorNumber.group(1) + token.source.substring(matcherErrorNumber.end());
                         }
                     } else {
                         token.classification = Token.Classification.POTENTIAL_ERROR_NUMBER;

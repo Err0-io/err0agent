@@ -97,7 +97,7 @@ public class Test0001JavaLog4j {
 
             previousState = apiProvider.getState();
 
-            assertEquals(5, previousState.metaDataStorage.size());
+            assertEquals(6, previousState.metaDataStorage.size());
         }
 
         // pass #3 - scan and report (changes)
@@ -126,7 +126,7 @@ public class Test0001JavaLog4j {
 
             previousState = apiProvider.getState();
 
-            assertEquals(5, previousState.metaDataStorage.size());
+            assertEquals(6, previousState.metaDataStorage.size());
         }
     }
 }
