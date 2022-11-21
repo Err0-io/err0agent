@@ -39,6 +39,8 @@ public class PhpSourceCodeParse extends SourceCodeParse {
                 reLogger = Pattern.compile("(^|\\s|\\\\|\\$|->)(error_log|" + policy.easyModeObjectPattern() + "(\\\\|::|->)" + policy.easyModeMethodPattern() + ")\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE);
                 break;
         }
+
+        reLoggerLevel = Pattern.compile("(\\\\|::|->)(" + policy.easyModeMethodPattern() + ")\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE);
     }
 
     private static Pattern reMethodPerhaps = Pattern.compile("\\)\\s*$");
@@ -48,6 +50,7 @@ public class PhpSourceCodeParse extends SourceCodeParse {
     private static Pattern reMethodIgnore = Pattern.compile("(\\s+|^\\s*)(catch|if|do|while|switch|for)\\s+", Pattern.MULTILINE);
     //private static Pattern reErrorNumber = Pattern.compile("^(\'|\")\\[ERR-(\\d+)\\]\\s+");
     private Pattern reLogger = null;
+    private Pattern reLoggerLevel = null;
     private static Pattern reException = Pattern.compile("throw\\s+new\\s+([^\\s\\(]*)\\s*\\(\\s*$");
     private static int reException_group_class = 1;
 
@@ -284,8 +287,11 @@ public class PhpSourceCodeParse extends SourceCodeParse {
                         Matcher matcherLogger = reLogger.matcher(token.source);
                         if (matcherLogger.find()) {
                             token.classification = Token.Classification.LOG_OUTPUT;
-                            // TODO: extract canonical log level meta data
-                            // only one level in php error_log
+                            // extract canonical log level meta data
+                            Matcher matcherLoggerLevel = reLoggerLevel.matcher(token.source);
+                            if (matcherLoggerLevel.find()) {
+                                token.loggerLevel = matcherLoggerLevel.group(2);
+                            }
                         }
                     }
 

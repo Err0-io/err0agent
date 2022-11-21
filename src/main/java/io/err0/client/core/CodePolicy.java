@@ -80,8 +80,6 @@ public class CodePolicy {
     public LanguageCodePolicy adv_ts;
 
     public String easyModeObjectPattern() {
-        if (mode != CodePolicyMode.EASY_CONFIGURATION && mode != CodePolicyMode.ADVANCED_CONFIGURATION)
-            throw new RuntimeException("[AGENT-000010] System error, easy and advanced configuration only.");
         JsonElement el = codePolicyJson.get("easy_mode_logger_object_naming_pattern");
         if (null == el) {
             // defaults:
@@ -92,8 +90,6 @@ public class CodePolicy {
     }
 
     public String easyModeMethodPattern() {
-        if (mode != CodePolicyMode.EASY_CONFIGURATION && mode != CodePolicyMode.ADVANCED_CONFIGURATION)
-            throw new RuntimeException("[AGENT-000011] System error, easy and advanced configuration only.");
         JsonElement el = codePolicyJson.get("easy_mode_logger_method_naming_pattern");
         if (null == el) {
             // defaults:

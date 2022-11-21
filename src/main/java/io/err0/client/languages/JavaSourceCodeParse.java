@@ -41,6 +41,9 @@ public class JavaSourceCodeParse extends SourceCodeParse {
                 reFluentSlf4jConfirm = Pattern.compile("^\\s*" + policy.easyModeObjectPattern() + "\\.at" + policy.easyModeMethodPattern() + "\\(\\)\\.", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
                 break;
         }
+
+        reLoggerLevel = Pattern.compile("\\.(" + policy.easyModeMethodPattern() + ")\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE); // group #1 is the level
+        reFluentSlf4jLevel = Pattern.compile("\\.at(" + policy.easyModeMethodPattern() + ")\\(\\)\\.", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE); // group #1 is the level
     }
 
     private static Pattern reMethod = Pattern.compile("\\s*(([^){};]+?)\\([^)]*?\\)(\\s+throws\\s+[^;{(]+?)?)\\s*$");
@@ -49,8 +52,10 @@ public class JavaSourceCodeParse extends SourceCodeParse {
     private static Pattern reMethodIgnore = Pattern.compile("(\\s+|^\\s*)(catch|if|do|while|switch|for)\\s+", Pattern.MULTILINE);
     //private static Pattern reErrorNumber = Pattern.compile("^\"\\[ERR-(\\d+)\\]\\s+");
     private Pattern reLogger = null;
+    private Pattern reLoggerLevel = null;
     private static Pattern reFluentSlf4j = Pattern.compile("\\.log\\s*\\(\\s*$");
     private Pattern reFluentSlf4jConfirm = null;
+    private Pattern reFluentSlf4jLevel = null;
     private static Pattern reException = Pattern.compile("throw\\s+new\\s+([^\\s\\(]*)\\s*\\(\\s*$");
     private static int reException_group_class = 1;
 
@@ -315,7 +320,11 @@ public class JavaSourceCodeParse extends SourceCodeParse {
                         Matcher matcherLogger = reLogger.matcher(token.source);
                         if (matcherLogger.find()) {
                             token.classification = Token.Classification.LOG_OUTPUT;
-                            // TODO: extract canonical log level meta data
+                            // extract canonical log level meta data
+                            Matcher matcherLoggerLevel = reLoggerLevel.matcher(token.source);
+                            if (matcherLoggerLevel.find()) {
+                                token.loggerLevel = matcherLoggerLevel.group(1);
+                            }
                         } else {
                             boolean sl4fjMatch = false;
                             Matcher matcherFluentSlf4j = reFluentSlf4j.matcher(token.source);
@@ -324,7 +333,11 @@ public class JavaSourceCodeParse extends SourceCodeParse {
                                 if (reFluentSlf4jConfirm.matcher(scanBackwards).find()) {
                                     sl4fjMatch = true;
                                     token.classification = Token.Classification.LOG_OUTPUT;
-                                    // TODO: extract canonical log level meta data
+                                    // extract canonical log level meta data
+                                    Matcher matcherLoggerLevel = reFluentSlf4jLevel.matcher(token.source);
+                                    if (matcherLoggerLevel.find()) {
+                                        token.loggerLevel = matcherLoggerLevel.group(1);
+                                    }
                                 }
                             }
                         }

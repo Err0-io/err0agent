@@ -926,6 +926,9 @@ public class Main {
                             if (null != lastToken.exceptionClass) {
                                 metaData.addProperty("exception_class", lastToken.exceptionClass);
                             }
+                            if (null != lastToken.loggerLevel) {
+                                metaData.addProperty("logger_level", lastToken.loggerLevel);
+                            }
                             metaData.add("methods", methodsArray);
                             metaData.add("comments", commentsArray);
                             metaData.addProperty("filename", stateItem.localToCheckoutUnchanged);

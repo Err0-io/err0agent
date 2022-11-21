@@ -38,6 +38,8 @@ public class TypescriptSourceCodeParse extends SourceCodeParse {
                 reLogger = Pattern.compile("(^|\\s+)(" + policy.easyModeObjectPattern() + "|console|window\\.console)\\." + policy.easyModeMethodPattern() + "\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
                 break;
         }
+
+        reLoggerLevel = Pattern.compile("\\.(" + policy.easyModeMethodPattern() + ")\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
     }
 
     private static Pattern reMethod = Pattern.compile("\\s*(([^){};]+?)\\([^)]*?\\)(:[^;{(]+?)?)\\s*$");
@@ -46,6 +48,7 @@ public class TypescriptSourceCodeParse extends SourceCodeParse {
     private static Pattern reMethodIgnore = Pattern.compile("(\\s+|^\\s*)(catch|if|do|while|switch|for)\\s+", Pattern.MULTILINE);
     //private static Pattern reErrorNumber = Pattern.compile("^(`|'|\")\\[ERR-(\\d+)\\]\\s+");
     private Pattern reLogger = null;
+    private Pattern reLoggerLevel = null;
     private static Pattern reException = Pattern.compile("throw\\s+(new\\s+)?([^\\s(]*)\\s*\\(\\s*$");
     private static int reException_group_class = 2;
     
@@ -283,7 +286,11 @@ public class TypescriptSourceCodeParse extends SourceCodeParse {
                         Matcher matcherLogger = reLogger.matcher(token.source);
                         if (matcherLogger.find()) {
                             token.classification = Token.Classification.LOG_OUTPUT;
-                            // TODO: extract canonical log level meta data
+                            // extract canonical log level meta data
+                            Matcher matcherLoggerLevel = reLoggerLevel.matcher(token.source);
+                            if (matcherLoggerLevel.find()) {
+                                token.loggerLevel = matcherLoggerLevel.group(1);
+                            }
                         }
                     }
 

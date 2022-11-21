@@ -38,6 +38,8 @@ public class CSharpSourceCodeParse extends SourceCodeParse {
                 reLogger = Pattern.compile("(^|\\s+)" + policy.easyModeObjectPattern() + "\\." + policy.easyModeMethodPattern() + "(<[^>]+>)?\\s*\\([^\")]*\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
                 break;
         }
+
+        reLoggerLevel = Pattern.compile("\\.(" + policy.easyModeMethodPattern() + ")(<[^>]+>)?\\s*\\([^\")]*\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
     }
 
     private static Pattern reMethodPerhaps = Pattern.compile("\\)\\s*$");
@@ -47,6 +49,7 @@ public class CSharpSourceCodeParse extends SourceCodeParse {
     private static Pattern reMethodIgnore = Pattern.compile("(\\s+|^\\s*)(catch|if|do|while|switch|for)\\s+", Pattern.MULTILINE);
     //private static Pattern reErrorNumber = Pattern.compile("^\"\\[ERR-(\\d+)\\]\\s+");
     private Pattern reLogger = null;
+    private Pattern reLoggerLevel = null;
     private static Pattern reException = Pattern.compile("throw\\s+new\\s+([^\\s(]*)\\s*\\(\\s*$");
     private static int reException_group_class = 1;
     private static Pattern rePreprocessor = Pattern.compile("^(\\s*#([^#\r\n]+))", Pattern.MULTILINE);
@@ -260,7 +263,11 @@ public class CSharpSourceCodeParse extends SourceCodeParse {
                         Matcher matcherLogger = reLogger.matcher(token.source);
                         if (matcherLogger.find()) {
                             token.classification = Token.Classification.LOG_OUTPUT;
-                            // TODO: extract canonical log level meta data
+                            // extract canonical log level meta data
+                            Matcher matcherLoggerLevel = reLoggerLevel.matcher(token.source);
+                            if (matcherLoggerLevel.find()) {
+                                token.loggerLevel = matcherLoggerLevel.group(1);
+                            }
                         }
                     }
 
