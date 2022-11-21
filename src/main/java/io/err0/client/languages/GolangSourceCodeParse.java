@@ -37,7 +37,8 @@ public class GolangSourceCodeParse extends SourceCodeParse {
                 break;
         }
 
-        reLoggerLevel = Pattern.compile("\\.(" + policy.easyModeMethodPattern() + ")f?\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+        final String pattern = policy.mode == CodePolicy.CodePolicyMode.DEFAULTS ? "(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)" : policy.easyModeMethodPattern();
+        reLoggerLevel = Pattern.compile("\\.(" + pattern + ")f?\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
     }
 
     private static Pattern reMethod = Pattern.compile("(^|\\s+)func\\s+(.*)?$", Pattern.MULTILINE);
