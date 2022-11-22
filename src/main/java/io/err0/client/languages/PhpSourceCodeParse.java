@@ -308,6 +308,57 @@ public class PhpSourceCodeParse extends SourceCodeParse {
                     }
 
                     if (token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) token.classification = Token.Classification.LOG_OUTPUT;
+
+                    // message categorisation, dynamic
+                    if (token.classification == Token.Classification.EXCEPTION_THROW || token.classification == Token.Classification.LOG_OUTPUT) {
+                        if (null != token.next()) {
+                            // note token current is a type of string literal.
+                            boolean staticLiteral = true;
+                            Token current = token.next();
+                            StringBuilder output = new StringBuilder();
+                            int bracketDepth = 1; // we are already one bracket into the expression.
+                            do {
+                                final String sourceCode = null != current.sourceNoErrorCode ? current.sourceNoErrorCode : current.source;
+                                switch (current.type) {
+                                    case SOURCE_CODE:
+                                        boolean dynamic = false;
+                                        final char chars[] = sourceCode.toCharArray();
+                                        for (int i = 0, l = chars.length; i < l; ++i) {
+                                            final char ch = chars[i];
+                                            if (ch == ')') {
+                                                if (--bracketDepth < 1) {
+                                                    break;
+                                                }
+                                            } else if (ch == '(') {
+                                                ++bracketDepth;
+                                            }
+                                            output.append(ch);
+                                            if (!(Character.isWhitespace(ch) || ch == '.')) { // string concatenation
+                                                dynamic = true;
+                                            }
+                                        }
+                                        if (dynamic) {
+                                            staticLiteral = false;
+                                        }
+                                        break;
+                                    case COMMENT_BLOCK:
+                                    case CONTENT:
+                                    case COMMENT_LINE:
+                                        break;
+                                    default:
+                                        output.append(sourceCode);
+                                        break;
+                                }
+                                if (bracketDepth < 1) {
+                                    break;
+                                }
+                            }
+                            while (null != (current = current.next()));
+
+                            token.staticLiteral = staticLiteral;
+                            token.messageExpression = output.toString();
+                        }
+                    }
                 }
                 break;
                 default:
