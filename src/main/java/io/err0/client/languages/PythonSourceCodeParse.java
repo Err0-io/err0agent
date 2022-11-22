@@ -30,17 +30,17 @@ public class PythonSourceCodeParse extends SourceCodeParse {
         super(Language.PYTHON, policy, policy.adv_python);
         switch (policy.mode) {
             case DEFAULTS:
-                reLogger = Pattern.compile("(^|\\s+)(m?_?)*log(ger)?\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+                reLogger = Pattern.compile("(^|\\s+)(m?_?)*log(ger)?\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)\\s*\\(\\s*f?$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
                 break;
 
             case EASY_CONFIGURATION:
             case ADVANCED_CONFIGURATION:
-                reLogger = Pattern.compile("(^|\\s+)" + policy.easyModeObjectPattern() + "\\." + policy.easyModeMethodPattern() + "\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+                reLogger = Pattern.compile("(^|\\s+)" + policy.easyModeObjectPattern() + "\\." + policy.easyModeMethodPattern() + "\\s*\\(\\s*f?$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
                 break;
         }
 
         final String pattern = policy.mode == CodePolicy.CodePolicyMode.DEFAULTS ? "(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)" : policy.easyModeMethodPattern();
-        reLoggerLevel = Pattern.compile("\\.(" + pattern + ")\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE); // group #1 is the level
+        reLoggerLevel = Pattern.compile("\\.(" + pattern + ")\\s*\\(\\s*f?$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE); // group #1 is the level
     }
 
     private static Pattern reMethod = Pattern.compile("^(\\s*)(def|class|if|for|while|except)\\s+.*$");
@@ -342,6 +342,66 @@ public class PythonSourceCodeParse extends SourceCodeParse {
                     }
 
                     if (token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) token.classification = Token.Classification.LOG_OUTPUT;
+
+                    // message categorisation, dynamic
+                    if (token.classification == Token.Classification.EXCEPTION_THROW || token.classification == Token.Classification.LOG_OUTPUT) {
+                        if (null != token.next()) {
+                            // note token current is a type of string literal.
+                            boolean staticLiteral = true;
+                            boolean fLiteral = false;
+                            Token current = token.next();
+                            StringBuilder output = new StringBuilder();
+                            int bracketDepth = 1; // we are already one bracket into the expression.
+                            if (token.source.endsWith("f")) {
+                                fLiteral = true;
+                            }
+                            do {
+                                final String sourceCode = null != current.sourceNoErrorCode ? current.sourceNoErrorCode : current.source;
+                                switch (current.type) {
+                                    case SOURCE_CODE:
+                                        boolean dynamic = false;
+                                        final char chars[] = sourceCode.toCharArray();
+                                        for (int i = 0, l = chars.length; i < l; ++i) {
+                                            final char ch = chars[i];
+                                            if (ch == ')') {
+                                                if (--bracketDepth < 1) {
+                                                    break;
+                                                }
+                                            } else if (ch == '(') {
+                                                ++bracketDepth;
+                                            }
+                                            output.append(ch);
+                                            if (!(Character.isWhitespace(ch) || ch == '+')) { // string concatenation
+                                                dynamic = true;
+                                            }
+                                        }
+                                        if (dynamic) {
+                                            staticLiteral = false;
+                                        }
+                                        break;
+                                    case COMMENT_BLOCK:
+                                    case CONTENT:
+                                    case COMMENT_LINE:
+                                        break;
+                                    default:
+                                        if (fLiteral && token.next() == current) {
+                                            if (sourceCode.indexOf('{') >= 0) {
+                                                staticLiteral = false;
+                                            }
+                                        }
+                                        output.append(sourceCode);
+                                        break;
+                                }
+                                if (bracketDepth < 1) {
+                                    break;
+                                }
+                            }
+                            while (null != (current = current.next()));
+
+                            token.staticLiteral = staticLiteral;
+                            token.messageExpression = output.toString();
+                        }
+                    }
                 }
                 break;
                 default:
