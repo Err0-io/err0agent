@@ -133,6 +133,13 @@ tasks.withType<JavaExec> {
     "--token", "../open-source-bundle/dev-localhost/err0-open-source-software-moodle-fcc1f565-0ff0-11ec-b8c2-a63d063ada96.json", "--insert", "../open-source-bundle/moodle", // very tidy php lms for universities
     "--token", "../open-source-bundle/dev-localhost/err0-open-source-software-magneto-2-f9bf8ad4-0ff0-11ec-b8c2-a63d063ada96.json", "--insert", "../open-source-bundle/magento2", // php e-commerce
     "--token", "../open-source-bundle/dev-localhost/err0-open-source-software-umbraco-0387f7a8-0ff1-11ec-b8c2-a63d063ada96.json", "--insert", "../open-source-bundle/Umbraco-CMS", // c#
+    "--token", "../open-source-bundle/dev-localhost/err0-open-source-software-drupal-c153bfac-9005-11ec-9269-f219fdfef40a.json", "--insert", "../open-source-bundle/drupal", // php
+    "--token", "../open-source-bundle/dev-localhost/err0-open-source-software-tomcat-c5cc286d-9005-11ec-9269-f219fdfef40a.json", "--insert", "../open-source-bundle/tomcat", // java
+    "--token", "../open-source-bundle/dev-localhost/err0-open-source-software-wordpress-c982eede-9005-11ec-9269-f219fdfef40a.json", "--insert", "../open-source-bundle/WordPress", // php
+    "--token", "../open-source-bundle/dev-localhost/err0-open-source-software-ratpack-96a0adb0-9195-11ec-9b74-f67018ac8828.json", "--insert", "../open-source-bundle/ratpack", // java
+    "--token", "../open-source-bundle/dev-localhost/err0-open-source-software-strapi-fda7a5e2-9195-11ec-9b74-f67018ac8828.json", "--insert", "../open-source-bundle/strapi", // javascript
+    "--token", "../open-source-bundle/dev-localhost/err0-cerbos-test-cf03016a-600f-11ed-bfcd-305a3ac84b71.json", "--insert", "../open-source-bundle/cerbos", // go
+    "--token", "../open-source-bundle/dev-localhost/err0-mender-test-a5474660-6401-11ed-92e0-4401bb8de3b3.json", "--insert", "../open-source-bundle/mender", // go
     // pass #2 -- analyse source code, ignoring dirty checkout.
     "--token", "../open-source-bundle/dev-localhost/err0-open-source-software-spring-framework-918d1448-3731-11ec-9e2d-46a00e0b2797.json", "--analyse", "--dirty", "../open-source-bundle/spring-framework", // java
     "--token", "../open-source-bundle/dev-localhost/err0-open-source-software-django-74df2c06-19f4-11ec-8253-56f6e5f49a04.json", "--analyse", "--dirty", "../open-source-bundle/django", // python
@@ -143,5 +150,11 @@ tasks.withType<JavaExec> {
     "--token", "../open-source-bundle/dev-localhost/err0-open-source-software-moodle-fcc1f565-0ff0-11ec-b8c2-a63d063ada96.json", "--analyse", "--dirty", "../open-source-bundle/moodle", // very tidy php lms for universities
     "--token", "../open-source-bundle/dev-localhost/err0-open-source-software-magneto-2-f9bf8ad4-0ff0-11ec-b8c2-a63d063ada96.json", "--analyse", "--dirty", "../open-source-bundle/magento2", // php e-commerce
     "--token", "../open-source-bundle/dev-localhost/err0-open-source-software-umbraco-0387f7a8-0ff1-11ec-b8c2-a63d063ada96.json", "--analyse", "--dirty", "../open-source-bundle/Umbraco-CMS", // c#
+    "--token", "../open-source-bundle/dev-localhost/err0-open-source-software-drupal-c153bfac-9005-11ec-9269-f219fdfef40a.json", "--analyse", "--dirty", "../open-source-bundle/drupal", // php
+    "--token", "../open-source-bundle/dev-localhost/err0-open-source-software-tomcat-c5cc286d-9005-11ec-9269-f219fdfef40a.json", "--analyse", "--dirty", "../open-source-bundle/tomcat", // java
+    "--token", "../open-source-bundle/dev-localhost/err0-open-source-software-wordpress-c982eede-9005-11ec-9269-f219fdfef40a.json", "--analyse", "--dirty", "../open-source-bundle/WordPress", // php
+    "--token", "../open-source-bundle/dev-localhost/err0-open-source-software-ratpack-96a0adb0-9195-11ec-9b74-f67018ac8828.json", "--analyse", "--dirty", "../open-source-bundle/ratpack", // java
+    "--token", "../open-source-bundle/dev-localhost/err0-open-source-software-strapi-fda7a5e2-9195-11ec-9b74-f67018ac8828.json", "--analyse", "--dirty", "../open-source-bundle/strapi", // javascript
+    "--token", "../open-source-bundle/dev-localhost/err0-cerbos-test-cf03016a-600f-11ed-bfcd-305a3ac84b71.json", "--analyse", "--dirty", "../open-source-bundle/cerbos", // go
   )
 }
