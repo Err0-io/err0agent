@@ -156,5 +156,7 @@ tasks.withType<JavaExec> {
     "--token", "../open-source-bundle/dev-localhost/err0-open-source-software-ratpack-96a0adb0-9195-11ec-9b74-f67018ac8828.json", "--analyse", "--dirty", "../open-source-bundle/ratpack", // java
     "--token", "../open-source-bundle/dev-localhost/err0-open-source-software-strapi-fda7a5e2-9195-11ec-9b74-f67018ac8828.json", "--analyse", "--dirty", "../open-source-bundle/strapi", // javascript
     "--token", "../open-source-bundle/dev-localhost/err0-cerbos-test-cf03016a-600f-11ed-bfcd-305a3ac84b71.json", "--analyse", "--dirty", "../open-source-bundle/cerbos", // go
+    "--token", "../open-source-bundle/dev-localhost/err0-mender-test-a5474660-6401-11ed-92e0-4401bb8de3b3.json", "--analyse", "--dirty", "../open-source-bundle/mender", // go
+
   )
 }
