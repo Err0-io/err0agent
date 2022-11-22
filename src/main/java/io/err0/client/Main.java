@@ -929,6 +929,12 @@ public class Main {
                             if (null != lastToken.loggerLevel) {
                                 metaData.addProperty("logger_level", lastToken.loggerLevel);
                             }
+                            if (null != lastToken.staticLiteral) {
+                                metaData.addProperty("static_literal", lastToken.staticLiteral);
+                            }
+                            if (null != lastToken.messageExpression) {
+                                metaData.addProperty("message_expression", lastToken.messageExpression);
+                            }
                             metaData.add("methods", methodsArray);
                             metaData.add("comments", commentsArray);
                             metaData.addProperty("filename", stateItem.localToCheckoutUnchanged);
