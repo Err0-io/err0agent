@@ -935,6 +935,9 @@ public class Main {
                             if (null != lastToken.messageExpression) {
                                 metaData.addProperty("message_expression", lastToken.messageExpression);
                             }
+                            if (null != lastToken.cleanedMessageExpression) {
+                                metaData.addProperty("cleaned_message", lastToken.cleanedMessageExpression);
+                            }
                             metaData.add("methods", methodsArray);
                             metaData.add("comments", commentsArray);
                             metaData.addProperty("filename", stateItem.localToCheckoutUnchanged);

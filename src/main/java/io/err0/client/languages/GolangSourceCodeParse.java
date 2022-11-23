@@ -309,6 +309,7 @@ public class GolangSourceCodeParse extends SourceCodeParse {
                             // note token current is a type of string literal.
                             boolean staticLiteral = true;
                             Token current = token.next();
+                            StringBuilder cleaned = new StringBuilder();
                             StringBuilder output = new StringBuilder();
                             int bracketDepth = 1; // we are already one bracket into the expression.
                             do {
@@ -326,6 +327,7 @@ public class GolangSourceCodeParse extends SourceCodeParse {
                                             } else if (ch == '(') {
                                                 ++bracketDepth;
                                             }
+                                            if (!Character.isWhitespace(ch)) cleaned.append(ch);
                                             output.append(ch);
                                             if (!(Character.isWhitespace(ch) || ch == '+')) { // string concatenation
                                                 dynamic = true;
@@ -340,6 +342,7 @@ public class GolangSourceCodeParse extends SourceCodeParse {
                                     case COMMENT_LINE:
                                         break;
                                     default:
+                                        cleaned.append(sourceCode);
                                         output.append(sourceCode);
                                         break;
                                 }
@@ -350,6 +353,7 @@ public class GolangSourceCodeParse extends SourceCodeParse {
                             while (null != (current = current.next()));
 
                             token.staticLiteral = staticLiteral;
+                            token.cleanedMessageExpression = cleaned.toString();
                             token.messageExpression = output.toString();
                         }
                     }

@@ -118,6 +118,7 @@ public class Token {
 
     public Boolean staticLiteral = null;
     public String messageExpression = null;
+    public String cleanedMessageExpression = null;
 
     public boolean getChanged() { return ! (this.initialSource.hashCode() == this.source.hashCode() && this.initialSource.equals(this.source)); }
 }

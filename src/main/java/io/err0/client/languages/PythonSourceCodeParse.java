@@ -350,6 +350,7 @@ public class PythonSourceCodeParse extends SourceCodeParse {
                             boolean staticLiteral = true;
                             boolean fLiteral = false;
                             Token current = token.next();
+                            StringBuilder cleaned = new StringBuilder();
                             StringBuilder output = new StringBuilder();
                             int bracketDepth = 1; // we are already one bracket into the expression.
                             if (token.source.endsWith("f")) {
@@ -370,6 +371,7 @@ public class PythonSourceCodeParse extends SourceCodeParse {
                                             } else if (ch == '(') {
                                                 ++bracketDepth;
                                             }
+                                            if (!Character.isWhitespace(ch)) cleaned.append(ch);
                                             output.append(ch);
                                             if (!(Character.isWhitespace(ch) || ch == '+')) { // string concatenation
                                                 dynamic = true;
@@ -389,6 +391,7 @@ public class PythonSourceCodeParse extends SourceCodeParse {
                                                 staticLiteral = false;
                                             }
                                         }
+                                        cleaned.append(sourceCode);
                                         output.append(sourceCode);
                                         break;
                                 }
@@ -399,6 +402,7 @@ public class PythonSourceCodeParse extends SourceCodeParse {
                             while (null != (current = current.next()));
 
                             token.staticLiteral = staticLiteral;
+                            token.cleanedMessageExpression = cleaned.toString();
                             token.messageExpression = output.toString();
                         }
                     }
