@@ -54,6 +54,7 @@ public class PhpSourceCodeParse extends SourceCodeParse {
     private Pattern reLoggerLevel = null;
     private static Pattern reException = Pattern.compile("throw\\s+new\\s+([^\\s\\(]*)\\s*\\(\\s*$");
     private static int reException_group_class = 1;
+    private static Pattern reVariableInString = Pattern.compile("(?<!\\\\)\\$\\S+", Pattern.CASE_INSENSITIVE);
 
     public static PhpSourceCodeParse lex(final CodePolicy policy, final String sourceCode) {
         int n = 0;
@@ -348,6 +349,11 @@ public class PhpSourceCodeParse extends SourceCodeParse {
                                     case COMMENT_LINE:
                                         break;
                                     default:
+                                        if (current.type == TokenClassification.QUOT_LITERAL) {
+                                            if (reVariableInString.matcher(sourceCode).find()) {
+                                                staticLiteral = false;
+                                            }
+                                        }
                                         cleaned.append(sourceCode);
                                         output.append(sourceCode);
                                         break;
