@@ -17,6 +17,7 @@ limitations under the License.
 package io.err0.client.core;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
@@ -62,7 +63,7 @@ public class LanguageCodePolicy {
         if (null != languagePolicyJson) {
             this.disable_language = GsonHelper.asBoolean(languagePolicyJson, "disable_language", false);
             this.disable_builtin_log_detection = GsonHelper.asBoolean(languagePolicyJson, "disable_builtin_log_detection", false);
-            var rules = languagePolicyJson.get("rules");
+            JsonElement rules = languagePolicyJson.get("rules");
             if (null != rules) {
                 JsonArray ary = rules.getAsJsonArray();
                 for (int i = 0, l = ary.size(); i < l; ++i) {
