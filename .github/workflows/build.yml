@@ -3,6 +3,7 @@ name: err0agent build pipeline
 on:
   push:
     branches: [ "develop", "master" ]
+    tags: '*'
   pull_request:
     branches: [ "develop", "master" ]
 
