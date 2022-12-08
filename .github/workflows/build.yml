@@ -73,6 +73,13 @@ jobs:
         path: |
           build/libs/err0agent-java_1_8-fat.jar
           build/libs/err0agent-java_1_8-fat.jar.sha256
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files:
+          - build/libs/err0agent-java_1_8-fat.jar
+          - build/libs/err0agent-java_1_8-fat.jar.sha256
 
   package-develop:
   
