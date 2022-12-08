@@ -80,6 +80,8 @@ java {
 
 tasks.withType<ShadowJar> {
   archiveClassifier.set("fat")
+  archiveFileName.set("${project.name}-java_1_8-fat.jar")
+
   //manifest {
   //  attributes(mapOf("Main-Verticle" to mainVerticleName))
   //}
