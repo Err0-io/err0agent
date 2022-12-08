@@ -13,7 +13,7 @@ permissions:
 jobs:
 
   err0-secret:
-    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master'
+    if: startsWith(github.ref, 'refs/heads/')
 
     runs-on: ubuntu-latest
 
@@ -34,7 +34,7 @@ jobs:
           tokens/err0agent.json
 
   err0:
-    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master'
+    if: startsWith(github.ref, 'refs/heads/')
   
     runs-on: ubuntu-latest
     container: err0io/agent:latest
@@ -52,7 +52,7 @@ jobs:
     - run: err0.sh --token tokens/err0agent.json --analyse --check .
 
   build-branches:
-    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master'
+    if: startsWith(github.ref, 'refs/heads/')
 
     runs-on: ubuntu-latest
     needs: err0
