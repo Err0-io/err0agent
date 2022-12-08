@@ -74,12 +74,14 @@ dependencies {
 }
 
 java {
-  sourceCompatibility = JavaVersion.VERSION_11
-  targetCompatibility = JavaVersion.VERSION_11
+  sourceCompatibility = JavaVersion.VERSION_1_8
+  targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 tasks.withType<ShadowJar> {
   archiveClassifier.set("fat")
+  archiveFileName.set("${project.name}-java_1_8-fat.jar")
+
   //manifest {
   //  attributes(mapOf("Main-Verticle" to mainVerticleName))
   //}
