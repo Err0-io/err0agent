@@ -63,12 +63,16 @@ jobs:
       uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
       with:
         arguments: build
+    - name: Create checksums
+      run: |
+       sha256sum build/libs/err0agent-java_1_8-fat.jar > build/libs/err0agent-java_1_8-fat.jar.sha256
     - name: Archive production artifacts
       uses: actions/upload-artifact@v3
       with:
         name: err0agent-fat-jar
         path: |
-          build/libs/err0agent-*-fat.jar
+          build/libs/err0agent-java_1_8-fat.jar
+          build/libs/err0agent-java_1_8-fat.jar.sha256
 
   package-develop:
   
