@@ -24,9 +24,16 @@ The err0agent supports: java, javascript, c#, python, php, go, typescript.
 
 == Using err0agent
 
-We have made two scripts `./err0-insert.sh` and `./err0-check.sh` to run the agent with docker against this code base.
+=== With your err0.io account
 
-You will need to modify these scripts in order to be able to use the agent.
+1. Login to your account
+2. Make sure you have created a Numbering Policy and a Project
+3. Go to project details, in the sidebar, add an Agent API token
+4. Click on the robot icon to see details on how to use the agent locally
+
+There are two scripts you will need top add to your project folder, `./err0-insert.sh` and `./err0-check.sh`, these are used to run the agent with docker against the enclosing code base.
+
+You will need to add execution permission to these scripts.
 
 `err0-insert.sh` should be used on a clean checkout, to add error codes into your project.  After your project will be changed.  Review the diff, build and then commit these error codes to your git repository.
 
@@ -36,3 +43,6 @@ They need a token (don't check this in!) and to be able to mount your git projec
 
 See also our `.github/workflows/build.yml` to see how to run `./err0-check.sh` in the CI/CD pipeline; including storing the token value in a repository secret.
 
+=== Standalone
+
+Coming soon...
