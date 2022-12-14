@@ -923,10 +923,10 @@ public class Main {
                             //final String errorCode = policy.getErrorCodeFormatter().formatErrorCodeOnly(currentToken.errorOrdinal);
 
                             metaData.addProperty("type", lastToken.classification.toString());
-                            if (null != lastToken.exceptionClass) {
+                            if (lastToken.classification == Token.Classification.EXCEPTION_THROW && null != lastToken.exceptionClass) {
                                 metaData.addProperty("exception_class", lastToken.exceptionClass);
                             }
-                            if (null != lastToken.loggerLevel) {
+                            if (lastToken.classification == Token.Classification.LOG_OUTPUT && null != lastToken.loggerLevel) {
                                 metaData.addProperty("logger_level", lastToken.loggerLevel);
                             }
                             if (null != lastToken.staticLiteral) {

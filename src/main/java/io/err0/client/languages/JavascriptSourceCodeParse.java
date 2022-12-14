@@ -276,7 +276,9 @@ public class JavascriptSourceCodeParse extends SourceCodeParse {
                                     lineOfCode = GsonHelper.asString(lineArray.get(0).getAsJsonObject(), "c", null);
                                 }
                             }
-                            token.classification = languageCodePolicy.classify(lineOfCode, stringLiteral);
+                            final LanguageCodePolicy.ClassificationResult classificationResult = languageCodePolicy.classify(lineOfCode, stringLiteral);
+                            token.classification = classificationResult.classification;
+                            token.loggerLevel = classificationResult.loggerLevel;
                         }
                     } else {
                         token.classification = Token.Classification.NO_MATCH;
