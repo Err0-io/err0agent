@@ -486,12 +486,9 @@ public class Main {
                         System.exit(-1);
                     }
 
-                } else if ("--unit-test-provider".equals(arg)) {
-                    if (apiProvider != null) {
-                        apiProvider.close();
-                        apiProvider = null;
-                    }
-                    apiProvider = new UnitTestApiProvider();
+                } else {
+                    System.err.println("[AGENT-000070] Unknown argument: " + arg);
+                    System.exit(-1);
                 }
             }
         }
