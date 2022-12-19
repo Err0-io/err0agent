@@ -267,6 +267,33 @@ public class Main {
                     System.out.println("[AGENT-000038] <command> --token path-to-token.json --analyse --check /path/to/git/repo");
                     System.out.println("[AGENT-000039] analyse error codes in the project and return failure if some need to change");
                 }
+                else if ("--offline".equals(arg)) {
+                    // a new API provider per token
+                    if (apiProvider != null) {
+                        apiProvider.close();
+                        apiProvider = null;
+                    }
+                    projectPolicy = null;
+                    realmPolicy = null;
+
+                    apiProvider = new UnitTestApiProvider();
+
+                    JsonObject realmJson = new JsonObject();
+                    JsonObject policy = new JsonObject();
+                    policy.addProperty("error_prefix", "ERR");
+                    realmJson.add("policy", policy);
+                    JsonObject realm = new JsonObject();
+                    realm.addProperty("pk", UUID.randomUUID().toString());
+                    realm.add("data", realmJson);
+
+                    JsonObject projectJson = new JsonObject();
+                    JsonObject project = new JsonObject();
+                    project.addProperty("pk", UUID.randomUUID().toString());
+                    project.add("data", projectJson);
+
+                    realmPolicy = new RealmPolicy(realm);
+                    projectPolicy = new ProjectPolicy(realmPolicy, project);
+                }
                 else if ("--token".equals(arg)) {
 
                     // a new API provider per token
