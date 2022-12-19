@@ -256,6 +256,8 @@ public class Main {
         RealmPolicy realmPolicy = null;
         ProjectPolicy projectPolicy = null;
 
+        boolean metricsReport = false;
+
         try {
 
             for (int i = 0, l = args.length; i < l; ++i) {
@@ -267,6 +269,9 @@ public class Main {
                     System.out.println("[AGENT-000038] <command> --token path-to-token.json --analyse --check /path/to/git/repo");
                     System.out.println("[AGENT-000039] analyse error codes in the project and return failure if some need to change");
                 }
+                else if ("--metrics".equals(arg)) {
+                    metricsReport = true;
+                }
                 else if ("--offline".equals(arg)) {
                     // a new API provider per token
                     if (apiProvider != null) {
@@ -276,7 +281,7 @@ public class Main {
                     projectPolicy = null;
                     realmPolicy = null;
 
-                    apiProvider = new UnitTestApiProvider();
+                    apiProvider = new OfflineApiProvider();
 
                     JsonObject realmJson = new JsonObject();
                     JsonObject policy = new JsonObject();
@@ -404,7 +409,7 @@ public class Main {
                         System.exit(-1);
                     }
 
-                } if ("--report".equals(arg) || "--analyse".equals(arg) || "--analyze".equals(arg)) {
+                } else if ("--report".equals(arg) || "--analyse".equals(arg) || "--analyze".equals(arg)) {
                     if (null == realmPolicy) throw new Exception("[AGENT-000004] Must specify realm policy using --realm before specifying report dir");
                     if (null == projectPolicy) throw new Exception("[AGENT-000005] Must specify application policy using --app before specifying report dir");
                     String reportDir = args[++i];
@@ -487,7 +492,7 @@ public class Main {
                     }
 
                 } else {
-                    System.err.println("[AGENT-000070] Unknown argument: " + arg);
+                    System.err.println("[AGENT-000070] Unknown argument: [" + arg + "]");
                     System.exit(-1);
                 }
             }
