@@ -397,7 +397,7 @@ public class Main {
                         runGitMetadata.add("git_tags", new JsonArray());
                     }
 
-                    apiProvider.updateRun(projectPolicy, run_uuid, runGitMetadata, statisticsGatherer.toRunMetadata());
+                    apiProvider.updateRun(projectPolicy, run_uuid, runGitMetadata, statisticsGatherer.toRunMetadata(true));
 
                     if (null != statisticsGatherer.throwable) {
                         System.err.println(statisticsGatherer.throwable.getMessage());
@@ -466,7 +466,7 @@ public class Main {
                         statisticsGatherer.throwable = t;
                     }
 
-                    apiProvider.updateRun(projectPolicy, run_uuid, runGitMetadata, statisticsGatherer.toRunMetadata());
+                    apiProvider.updateRun(projectPolicy, run_uuid, runGitMetadata, statisticsGatherer.toRunMetadata(! wouldChangeAFile));
 
                     if (! wouldChangeAFile) {
                         apiProvider.finaliseRun(projectPolicy, run_uuid);

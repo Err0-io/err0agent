@@ -44,7 +44,7 @@ public class StatisticsGatherer {
 
     public Throwable throwable = null;
 
-    public final JsonObject toRunMetadata() {
+    public final JsonObject toRunMetadata(boolean exitSuccess) {
         final java.util.Date end = new Date();
 
         JsonObject runMetadata = new JsonObject();
@@ -115,7 +115,7 @@ public class StatisticsGatherer {
             runMetadata.addProperty("exit_status", "failure");
             runMetadata.addProperty("exit_error_message", throwable.getMessage());
         } else {
-            runMetadata.addProperty("exit_status", "success");
+            runMetadata.addProperty("exit_status", exitSuccess ? "success" : "failure");
         }
 
         return runMetadata;
