@@ -403,7 +403,7 @@ public class Main {
                     }
 
                     JsonObject runMetadata = statisticsGatherer.toRunMetadata(true);
-                    System.out.println("Statistics:\n" + runMetadata.toString());
+                    //System.out.println("Statistics:\n" + runMetadata.toString());
                     apiProvider.updateRun(projectPolicy, run_uuid, runGitMetadata, runMetadata);
 
                     if (null != statisticsGatherer.throwable) {
@@ -474,7 +474,7 @@ public class Main {
                     }
 
                     JsonObject runMetadata = statisticsGatherer.toRunMetadata(! wouldChangeAFile);
-                    System.out.println("Statistics:\n" + runMetadata.toString());
+                    //System.out.println("Statistics:\n" + runMetadata.toString());
                     apiProvider.updateRun(projectPolicy, run_uuid, runGitMetadata, runMetadata);
 
                     if (! wouldChangeAFile) {
