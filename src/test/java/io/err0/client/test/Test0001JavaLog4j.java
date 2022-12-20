@@ -23,11 +23,10 @@ import io.err0.client.core.GlobalState;
 import io.err0.client.Main;
 import io.err0.client.core.ResultDriver;
 import io.err0.client.core.StatisticsGatherer;
+import io.err0.client.core.Utils;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 public class Test0001JavaLog4j {
     @Test
