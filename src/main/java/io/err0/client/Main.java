@@ -402,7 +402,9 @@ public class Main {
                         runGitMetadata.add("git_tags", new JsonArray());
                     }
 
-                    apiProvider.updateRun(projectPolicy, run_uuid, runGitMetadata, statisticsGatherer.toRunMetadata(true));
+                    JsonObject runMetadata = statisticsGatherer.toRunMetadata(true);
+                    System.out.println("Statistics:\n" + runMetadata.toString());
+                    apiProvider.updateRun(projectPolicy, run_uuid, runGitMetadata, runMetadata);
 
                     if (null != statisticsGatherer.throwable) {
                         System.err.println(statisticsGatherer.throwable.getMessage());
@@ -471,7 +473,9 @@ public class Main {
                         statisticsGatherer.throwable = t;
                     }
 
-                    apiProvider.updateRun(projectPolicy, run_uuid, runGitMetadata, statisticsGatherer.toRunMetadata(! wouldChangeAFile));
+                    JsonObject runMetadata = statisticsGatherer.toRunMetadata(! wouldChangeAFile);
+                    System.out.println("Statistics:\n" + runMetadata.toString());
+                    apiProvider.updateRun(projectPolicy, run_uuid, runGitMetadata, runMetadata);
 
                     if (! wouldChangeAFile) {
                         apiProvider.finaliseRun(projectPolicy, run_uuid);
@@ -1336,6 +1340,13 @@ public class Main {
             statisticsGatherer.errorsPerFile.put(filename, n_errors.longValue());
             statisticsGatherer.linesPerFile.put(filename, n_lines);
         }
+
+        // store results in the statistics gatherer...
+        statisticsGatherer.clearResults();
+        forBulkInsert.forEach(forInsert -> {
+            statisticsGatherer.storeResult(forInsert);
+        });
+        statisticsGatherer.processResults();
 
         final long BATCH_SIZE = 100;
         ArrayList<ApiProvider.ForInsert> batch = new ArrayList<>();
