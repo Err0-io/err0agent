@@ -707,7 +707,7 @@ public class Main {
                         } else if (cCppAllowed && (newFileLower.endsWith(".c") || newFileLower.endsWith(".h") || newFileLower.endsWith(".cc") || newFileLower.endsWith(".cpp") || newFileLower.endsWith(".hpp"))) {
                             final FileCoding fileCoding = new FileCoding(p);
                             globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, CCPPSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
-                            System.out.println("Parsed: " + newFile);
+                            System.out.println("[AGENT-000071] Parsed: " + newFile);
                         }
                     }
                 });
