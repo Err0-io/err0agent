@@ -62,6 +62,8 @@ public class CodePolicy {
                 this.adv_python = null == e ? new LanguageCodePolicy(new JsonObject()) : new LanguageCodePolicy(e.getAsJsonObject());
                 e = codePolicyJson.get("adv_ts");
                 this.adv_ts = null == e ? new LanguageCodePolicy(new JsonObject()) : new LanguageCodePolicy(e.getAsJsonObject());
+                e = codePolicyJson.get("adv_ccpp");
+                this.adv_ccpp = null == e ? new LanguageCodePolicy(new JsonObject()) : new LanguageCodePolicy(e.getAsJsonObject());
                 break;
             default:
                 throw new RuntimeException("[AGENT-000009] Unknown mode");
@@ -78,6 +80,7 @@ public class CodePolicy {
     public LanguageCodePolicy adv_php;
     public LanguageCodePolicy adv_python;
     public LanguageCodePolicy adv_ts;
+    public LanguageCodePolicy adv_ccpp;
 
     public String easyModeObjectPattern() {
         JsonElement el = codePolicyJson.get("easy_mode_logger_object_naming_pattern");

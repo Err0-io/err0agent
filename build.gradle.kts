@@ -126,6 +126,8 @@ tasks.withType<JavaExec> {
   // Check-out the open-source-bundle project at the same parent level as this project:
   args = listOf(
     // pass #1 -- insert error codes (or re-insert error codes).
+    "--token", "../open-source-bundle/dev-localhost/err0-postfix-20221220-5cd5d49b-806b-11ed-b59e-4401bb8de3b3.json", "--insert", "../open-source-bundle/postfix", // C
+    "--token", "../open-source-bundle/dev-localhost/err0-bitcoin-20221220-6dcc7b5c-806b-11ed-b59e-4401bb8de3b3.json", "--insert", "../open-source-bundle/bitcoin", // C++
     "--token", "../open-source-bundle/dev-localhost/err0-spring-framework-20221207-7772c640-763f-11ed-8b95-4401bb8de3b3.json", "--insert", "../open-source-bundle/spring-framework", // java
     "--token", "../open-source-bundle/dev-localhost/err0-django-20221207-3c39a436-763f-11ed-8b95-4401bb8de3b3.json", "--insert", "../open-source-bundle/django", // python
     "--token", "../open-source-bundle/dev-localhost/err0-kubernetes-20221207-4fc303c9-763f-11ed-8b95-4401bb8de3b3.json", "--insert", "../open-source-bundle/kubernetes", // go
@@ -143,6 +145,8 @@ tasks.withType<JavaExec> {
     "--token", "../open-source-bundle/dev-localhost/err0-cerbos-20221207-33d4bf05-763f-11ed-8b95-4401bb8de3b3.json", "--insert", "../open-source-bundle/cerbos", // go
     "--token", "../open-source-bundle/dev-localhost/err0-mender-20221207-5b47787b-763f-11ed-8b95-4401bb8de3b3.json", "--insert", "../open-source-bundle/mender", // go
     // pass #2 -- analyse source code, ignoring dirty checkout.
+    "--token", "../open-source-bundle/dev-localhost/err0-postfix-20221220-5cd5d49b-806b-11ed-b59e-4401bb8de3b3.json", "--analyse", "--dirty", "../open-source-bundle/postfix", // C
+    "--token", "../open-source-bundle/dev-localhost/err0-bitcoin-20221220-6dcc7b5c-806b-11ed-b59e-4401bb8de3b3.json", "--analyse", "--dirty", "../open-source-bundle/bitcoin", // C++
     "--token", "../open-source-bundle/dev-localhost/err0-spring-framework-20221207-7772c640-763f-11ed-8b95-4401bb8de3b3.json", "--analyse", "--dirty", "../open-source-bundle/spring-framework", // java
     "--token", "../open-source-bundle/dev-localhost/err0-django-20221207-3c39a436-763f-11ed-8b95-4401bb8de3b3.json", "--analyse", "--dirty", "../open-source-bundle/django", // python
     "--token", "../open-source-bundle/dev-localhost/err0-kubernetes-20221207-4fc303c9-763f-11ed-8b95-4401bb8de3b3.json", "--analyse", "--dirty", "../open-source-bundle/kubernetes", // go
