@@ -138,7 +138,7 @@ public class UnitTestApiProvider implements ApiProvider {
     public void writeResultsTo(final String targetPath) {
         resultStorage.forEach((filename, result) -> {
             try {
-                Files.writeString(Path.of(targetPath + "/" + filename), result.sourceCode);
+                Utils.writeString(Utils.pathOf(targetPath + "/" + filename), result.sourceCode);
             }
             catch (IOException e) {
                 throw new RuntimeException(e);

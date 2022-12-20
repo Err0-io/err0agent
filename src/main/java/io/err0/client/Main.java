@@ -47,6 +47,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -60,6 +61,7 @@ public class Main {
     public final static boolean USE_NEAREST_CODE_FOR_LINE_OF_CODE = true;
     public final static int CHAR_RADIUS = 4*1024;
     private static Pattern reGitdir = Pattern.compile("^gitdir: (.*?)$", Pattern.MULTILINE);
+    private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
 
     static class GitMetadata {
         GitMetadata(final String gitHash, final boolean statusIsClean, final boolean detachedHead) {
@@ -90,12 +92,12 @@ public class Main {
         appGitMetadata.add("tag_branches", tag_branches);
          */
 
-        Path gitpath = Path.of(checkoutDir + "/.git");
+        Path gitpath = Utils.pathOf(checkoutDir + "/.git");
         if (Files.isRegularFile(gitpath)) {
-            final String contents = Files.readString(gitpath);
+            final String contents = Utils.readString(gitpath);
             Matcher matcher = reGitdir.matcher(contents);
             if (matcher.find()) {
-                gitpath = Path.of(checkoutDir + "/" + matcher.group(1));
+                gitpath = Utils.pathOf(checkoutDir + "/" + matcher.group(1));
             }
         }
 
@@ -257,6 +259,7 @@ public class Main {
         ProjectPolicy projectPolicy = null;
 
         boolean metricsReport = false;
+        boolean errorCodeData = false;
 
         try {
 
@@ -271,6 +274,9 @@ public class Main {
                 }
                 else if ("--metrics".equals(arg)) {
                     metricsReport = true;
+                }
+                else if ("--error-codes".equals(arg)) {
+                    errorCodeData = true;
                 }
                 else if ("--offline".equals(arg)) {
                     // a new API provider per token
@@ -406,6 +412,27 @@ public class Main {
                     //System.out.println("Statistics:\n" + runMetadata.toString());
                     apiProvider.updateRun(projectPolicy, run_uuid, runGitMetadata, runMetadata);
 
+                    if (metricsReport || errorCodeData) {
+                        Date date = new Date();
+                        final String dateString = dateFormat.format(date);
+                        if (metricsReport) {
+                            String filename = "err0-metrics-" + dateString + ".json";
+                            Files.write(Utils.pathOf(filename), runMetadata.toString().getBytes(StandardCharsets.UTF_8));
+                        }
+                        if (errorCodeData) {
+                            String filename = "err0-data-" + dateString + ".json";
+                            JsonArray errorCodes = new JsonArray();
+                            statisticsGatherer.results.forEach(forInsert -> {
+                                JsonObject insert = new JsonObject();
+                                insert.addProperty("error_code", forInsert.errorCode);
+                                insert.addProperty("error_ordinal", forInsert.errorOrdinal);
+                                insert.add("metadata", forInsert.metaData);
+                                errorCodes.add(insert);
+                            });
+                            Files.write(Utils.pathOf(filename), errorCodes.toString().getBytes(StandardCharsets.UTF_8));
+                        }
+                    }
+
                     if (null != statisticsGatherer.throwable) {
                         System.err.println(statisticsGatherer.throwable.getMessage());
                         System.exit(-1);
@@ -479,6 +506,27 @@ public class Main {
 
                     if (! wouldChangeAFile) {
                         apiProvider.finaliseRun(projectPolicy, run_uuid);
+                    }
+
+                    if (metricsReport || errorCodeData) {
+                        Date date = new Date();
+                        final String dateString = dateFormat.format(date);
+                        if (metricsReport) {
+                            String filename = "err0-metrics-" + dateString + ".json";
+                            Files.write(Utils.pathOf(filename), runMetadata.toString().getBytes(StandardCharsets.UTF_8));
+                        }
+                        if (errorCodeData) {
+                            String filename = "err0-data-" + dateString + ".json";
+                            JsonArray errorCodes = new JsonArray();
+                            statisticsGatherer.results.forEach(forInsert -> {
+                                JsonObject insert = new JsonObject();
+                                insert.addProperty("error_code", forInsert.errorCode);
+                                insert.addProperty("error_ordinal", forInsert.errorOrdinal);
+                                insert.add("metadata", forInsert.metaData);
+                                errorCodes.add(insert);
+                            });
+                            Files.write(Utils.pathOf(filename), errorCodes.toString().getBytes(StandardCharsets.UTF_8));
+                        }
                     }
 
                     if (wouldChangeAFile) {
@@ -675,12 +723,12 @@ public class Main {
             String c = null;
             Charset cs = null;
             try {
-                c = Files.readString(path, StandardCharsets.UTF_8);
+                c = Utils.readString(path, StandardCharsets.UTF_8);
                 cs = StandardCharsets.UTF_8;
             }
             catch (IOException e1) {
                 try {
-                    c = Files.readString(path, StandardCharsets.ISO_8859_1);
+                    c = Utils.readString(path, StandardCharsets.ISO_8859_1);
                     cs = StandardCharsets.ISO_8859_1;
                 }
                 catch (IOException e2) {
@@ -1146,7 +1194,7 @@ public class Main {
 
                             final int width = item.token.getStringQuoteWidth();
                             String start = item.token.sourceNoErrorCode.substring(0, width);
-                            final String remainder = item.token.sourceNoErrorCode.substring(width).stripLeading();
+                            final String remainder = Utils.stripLeading(item.token.sourceNoErrorCode.substring(width));
                             final String whitespace = item.token.sourceNoErrorCode.substring(width, (item.token.sourceNoErrorCode.length() - remainder.length()));
                             if (width > 1) {
                                 start = start + whitespace;
@@ -1160,7 +1208,7 @@ public class Main {
                             logic.pass2AssignNewErrorNumber(item); // item.token.errorOrdinal = apiProvider.nextErrorNumber();
                             final int width = item.token.getStringQuoteWidth();
                             String start = item.token.sourceNoErrorCode.substring(0, width);
-                            final String remainder = item.token.sourceNoErrorCode.substring(width).stripLeading();
+                            final String remainder = Utils.stripLeading(item.token.sourceNoErrorCode.substring(width));
                             final String whitespace = item.token.sourceNoErrorCode.substring(width, (item.token.sourceNoErrorCode.length() - remainder.length()));
                             if (width > 1) {
                                 start = start + whitespace;
@@ -1228,7 +1276,7 @@ public class Main {
                             //currentToken.errorOrdinal = apiProvider.nextErrorNumber();
                             final int width = currentToken.getStringQuoteWidth();
                             String start = currentToken.sourceNoErrorCode.substring(0, width);
-                            final String remainder = currentToken.sourceNoErrorCode.substring(width).stripLeading();
+                            final String remainder = Utils.stripLeading(currentToken.sourceNoErrorCode.substring(width));
                             final String whitespace = currentToken.sourceNoErrorCode.substring(width, (currentToken.sourceNoErrorCode.length() - remainder.length()));
                             if (width > 1) {
                                 start = start + whitespace;
@@ -1237,7 +1285,7 @@ public class Main {
                         } else {
                             final int width = currentToken.getStringQuoteWidth();
                             String start = currentToken.sourceNoErrorCode.substring(0, width);
-                            final String remainder = currentToken.sourceNoErrorCode.substring(width).stripLeading();
+                            final String remainder = Utils.stripLeading(currentToken.sourceNoErrorCode.substring(width));
                             final String whitespace = currentToken.sourceNoErrorCode.substring(width, (currentToken.sourceNoErrorCode.length() - remainder.length()));
                             if (width > 1) {
                                 start = start + whitespace;

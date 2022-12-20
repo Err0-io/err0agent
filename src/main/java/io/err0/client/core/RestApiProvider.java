@@ -27,6 +27,7 @@ import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -41,7 +42,7 @@ public class RestApiProvider implements ApiProvider {
         httpClient = HttpClients.createDefault();
 
         try {
-            tokenJson = JsonParser.parseString(Files.readString(Path.of(tokenPath))).getAsJsonObject();
+            tokenJson = JsonParser.parseString(Utils.readString(Utils.pathOf(tokenPath))).getAsJsonObject();
         }
         catch (RuntimeException exception) {
             throw new ParserException("[AGENT-000028] Invalid token.json", "file: " + tokenPath, exception);
@@ -77,7 +78,7 @@ public class RestApiProvider implements ApiProvider {
             }
             String jsonAsString = null;
             try {
-                jsonAsString = new String(response.getEntity().getContent().readAllBytes(), StandardCharsets.UTF_8);
+                jsonAsString = new String(Utils.readAllBytes(response.getEntity().getContent()), StandardCharsets.UTF_8);
             }
             catch (Throwable throwable) {
                 throw new ParserException("[AGENT-000030] Error reading response or invalid UTF-8 encoding", request.getRequestUri(), throwable);
@@ -97,7 +98,7 @@ public class RestApiProvider implements ApiProvider {
             }
             String jsonAsString = null;
             try {
-                jsonAsString = new String(response.getEntity().getContent().readAllBytes(), StandardCharsets.UTF_8);
+                jsonAsString = new String(Utils.readAllBytes(response.getEntity().getContent()), StandardCharsets.UTF_8);
             }
             catch (Throwable throwable) {
                 throw new ParserException("[AGENT-000033] Error reading response or invalid UTF-8 encoding", request.getRequestUri(), throwable);
@@ -386,7 +387,12 @@ public class RestApiProvider implements ApiProvider {
 
     public static String q(String value) {
         if (null == value) return "";
-        return URLEncoder.encode(value, StandardCharsets.UTF_8);
+        try {
+            return URLEncoder.encode(value, "UTF-8");
+        }
+        catch (UnsupportedEncodingException uee) {
+            throw new RuntimeException(uee);
+        }
     }
 
     @Override

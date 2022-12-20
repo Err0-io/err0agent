@@ -55,7 +55,7 @@ public class Test0005CSharpLog4Net {
 
         apiProvider.resultStorage.forEach((filename, result) -> {
            try {
-               final String expectedSourceCode = Files.readString(Path.of(assertDir + "/" + filename));
+               final String expectedSourceCode = Utils.readString(Utils.pathOf(assertDir + "/" + filename));
                assertEquals(expectedSourceCode, result.sourceCode, filename);
            }
            catch (IOException e) {
