@@ -47,7 +47,7 @@ public class RustSourceCodeParse extends SourceCodeParse {
     //private static Pattern reErrorNumber = Pattern.compile("^(`|'|\")\\[ERR-(\\d+)\\]\\s+");
     private Pattern reLogger = null;
     private Pattern reLoggerLevel = null;
-    private static Pattern reException = Pattern.compile("(fmt\\.Errorf|errors\\.New)\\s*\\(\\s*$");
+    private static Pattern reException = Pattern.compile("(panic)!\\s*\\(\\s*$");
 
     public static RustSourceCodeParse lex(final CodePolicy policy, final String sourceCode) {
         int n = 0;
