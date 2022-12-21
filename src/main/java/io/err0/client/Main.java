@@ -655,6 +655,7 @@ public class Main {
             final boolean goAllowed = codePolicy.mode != CodePolicy.CodePolicyMode.ADVANCED_CONFIGURATION || (null == codePolicy.adv_golang || !codePolicy.adv_golang.disable_language);
             final boolean pythonAllowed = codePolicy.mode != CodePolicy.CodePolicyMode.ADVANCED_CONFIGURATION || (null == codePolicy.adv_python || !codePolicy.adv_python.disable_language);
             final boolean cCppAllowed = codePolicy.mode != CodePolicy.CodePolicyMode.ADVANCED_CONFIGURATION || (null == codePolicy.adv_ccpp || !codePolicy.adv_ccpp.disable_language);
+            final boolean rustAllowed = codePolicy.mode != CodePolicy.CodePolicyMode.ADVANCED_CONFIGURATION || (null == codePolicy.adv_rust || !codePolicy.adv_rust.disable_language);
 
             try (Stream<Path> paths = Files.walk(Paths.get(startPoint)))
             {
@@ -708,6 +709,10 @@ public class Main {
                             final FileCoding fileCoding = new FileCoding(p);
                             globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, CCPPSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
                             System.out.println("[AGENT-000071] Parsed: " + newFile);
+                        } else if (rustAllowed && newFileLower.endsWith(".rs")) {
+                            final FileCoding fileCoding = new FileCoding(p);
+                            globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, RustSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
+                            System.out.println("[AGENT-000072] Parsed: " + newFile);
                         }
                     }
                 });

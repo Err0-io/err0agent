@@ -20,45 +20,38 @@ import com.google.gson.JsonArray;
 import io.err0.client.Main;
 import io.err0.client.core.*;
 
-import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class CCPPSourceCodeParse extends SourceCodeParse {
+public class RustSourceCodeParse extends SourceCodeParse {
 
-    public CCPPSourceCodeParse(final CodePolicy policy) {
-        super(Language.C_CPP, policy, policy.adv_ccpp);
+    public RustSourceCodeParse(final CodePolicy policy) {
+        super(Language.RUST, policy, policy.adv_rust);
         switch (policy.mode) {
             case DEFAULTS:
-                reLogger = Pattern.compile("(^|\\s+)(m?_?)*log(ger)?(\\.|->)(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)(<[^>]+>)?\\s*\\([^\")]*\\s*(\\$?@)?$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+                reLogger = Pattern.compile("(^|\\s+)(m?_?)*log(ger)?(\\.|::)(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)!?\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
                 break;
 
             case EASY_CONFIGURATION:
             case ADVANCED_CONFIGURATION:
-                reLogger = Pattern.compile("(^|\\s+)" + policy.easyModeObjectPattern() + "(\\.|->)" + policy.easyModeMethodPattern() + "(<[^>]+>)?\\s*\\([^\")]*\\s*(\\$?@)?$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+                reLogger = Pattern.compile("(^|\\s+)" + policy.easyModeObjectPattern() + "(\\.|::)" + policy.easyModeMethodPattern() + "!?\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
                 break;
         }
 
         final String pattern = policy.mode == CodePolicy.CodePolicyMode.DEFAULTS ? "(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)" : policy.easyModeMethodPattern();
-        reLoggerLevel = Pattern.compile("(\\.|->)(" + pattern + ")(<[^>]+>)?\\s*\\([^\")]*\\s*(\\$?@)?$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+        reLoggerLevel = Pattern.compile("(\\.|::)(" + pattern + ")!?\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
     }
 
-    private static Pattern reMethodPerhaps = Pattern.compile("\\)\\s*$");
-    private static Pattern reMethod = Pattern.compile("\\s*(([^{};]+?)\\([^)]*?\\)(\\s+throws\\s+[^;{(]+?)?)\\s*$");
-    private static Pattern reClass = Pattern.compile("\\s*(([^){\\[\\]};]+?)\\s+class\\s+(\\S+)[^;{(]+?)\\s*$");
-    private static Pattern reMethodIgnore = Pattern.compile("(\\s+|^\\s*)(catch|if|do|while|switch|for)\\s+", Pattern.MULTILINE);
-    //private static Pattern reErrorNumber = Pattern.compile("^\"\\[ERR-(\\d+)\\]\\s+");
-    private Pattern reBuiltInLogger = Pattern.compile("\\s*(v?syslog)\\s*\\(.*$");
-    private Pattern reBuiltInLoggerLevel = Pattern.compile("LOG_(EMERG|ALERT|CRIT|ERR|WARNING|NOTICE|INFO|DEBUG)");
+    private static Pattern reMethod = Pattern.compile("(^|\\s+)(pub\\s+)?fn\\s+(.*)?$", Pattern.MULTILINE);
+    private static Pattern reMethodIgnore = Pattern.compile("(\\s+|^\\s*)(for|if|else|loop|match|while)\\s+", Pattern.MULTILINE);
+    //private static Pattern reErrorNumber = Pattern.compile("^(`|'|\")\\[ERR-(\\d+)\\]\\s+");
     private Pattern reLogger = null;
     private Pattern reLoggerLevel = null;
-    private static Pattern reException = Pattern.compile("throw\\s+([^\\s(]*)\\s*\\(\\s*$");
-    private static int reException_group_class = 1;
-    private static Pattern rePreprocessor = Pattern.compile("^(\\s*#([^#\r\n]+))", Pattern.MULTILINE);
+    private static Pattern reException = Pattern.compile("(fmt\\.Errorf|errors\\.New)\\s*\\(\\s*$");
 
-    public static CCPPSourceCodeParse lex(final CodePolicy policy, final String sourceCode) {
+    public static RustSourceCodeParse lex(final CodePolicy policy, final String sourceCode) {
         int n = 0;
-        CCPPSourceCodeParse parse = new CCPPSourceCodeParse(policy);
+        RustSourceCodeParse parse = new RustSourceCodeParse(policy);
         Token currentToken = new Token(n++, null);
         currentToken.type = TokenClassification.SOURCE_CODE;
         int lineNumber = 1;
@@ -73,12 +66,17 @@ public class CCPPSourceCodeParse extends SourceCodeParse {
             switch (currentToken.type) {
                 case SOURCE_CODE:
                     if (ch == '{') {
-                        parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
-                        currentToken.sourceCode.append(ch);
-                        currentToken.depth = depth + 1;
-                        currentToken.startLineNumber = lineNumber;
+                        if (i < l-1 && chars[i+1] == '}') {
+                            currentToken.sourceCode.append(ch);
+                            currentToken.sourceCode.append(chars[++i]);
+                        } else {
+                            parse.tokenList.add(currentToken.finish(lineNumber));
+                            currentToken = new Token(n++, currentToken);
+                            currentToken.type = TokenClassification.SOURCE_CODE;
+                            currentToken.sourceCode.append(ch);
+                            currentToken.depth = depth + 1;
+                            currentToken.startLineNumber = lineNumber;
+                        }
                     } else if (ch == '}') {
                         currentToken.sourceCode.append(ch);
                         parse.tokenList.add(currentToken.finish(lineNumber));
@@ -215,10 +213,10 @@ public class CCPPSourceCodeParse extends SourceCodeParse {
                 case QUOT_LITERAL:
                 {
                     // 1) Strip '[ERR-nnnnnn] ' from string literals for re-injection
-                    Matcher matcherErrorNumber = policy.getReErrorNumber_ccpp().matcher(token.source);
+                    Matcher matcherErrorNumber = policy.getReErrorNumber_rust().matcher(token.source);
                     if (matcherErrorNumber.find()) {
                         token.classification = Token.Classification.ERROR_NUMBER;
-                        long errorOrdinal = Long.parseLong(matcherErrorNumber.group(1));
+                        long errorOrdinal = Long.parseLong(matcherErrorNumber.group(2));
                         if (apiProvider.validErrorNumber(policy, errorOrdinal)) {
                             if (globalState.store(errorOrdinal, stateItem, token)) {
                                 token.keepErrorCode = true;
@@ -240,7 +238,7 @@ public class CCPPSourceCodeParse extends SourceCodeParse {
                 {
                     token.classification = Token.Classification.NOT_FULLY_CLASSIFIED;
                     Token next = token.next();
-                    if (next != null && (next.type == TokenClassification.QUOT_LITERAL)) {
+                    if (next != null && (next.type == TokenClassification.QUOT_LITERAL || next.type == TokenClassification.APOS_LITERAL || next.type == TokenClassification.BACKTICK_LITERAL)) {
                         // rule 0 - this code must be followed by a string literal
                         if (null != languageCodePolicy && languageCodePolicy.rules.size() > 0) {
                             // classify according to rules.
@@ -270,16 +268,7 @@ public class CCPPSourceCodeParse extends SourceCodeParse {
                             // extract canonical log level meta data
                             Matcher matcherLoggerLevel = reLoggerLevel.matcher(token.source);
                             if (matcherLoggerLevel.find()) {
-                                token.loggerLevel = matcherLoggerLevel.group(1);
-                            }
-                        } else {
-                            Matcher matcherBuiltIn = reBuiltInLogger.matcher(token.source);
-                            if (matcherBuiltIn.find()) {
-                                token.classification = Token.Classification.LOG_OUTPUT;
-                                Matcher matcherBuiltInLoggerLevel = reBuiltInLoggerLevel.matcher(token.source);
-                                if (matcherBuiltInLoggerLevel.find()) {
-                                    token.loggerLevel = matcherBuiltInLoggerLevel.group(1);
-                                }
+                                token.loggerLevel = matcherLoggerLevel.group(2);
                             }
                         }
                     }
@@ -289,7 +278,8 @@ public class CCPPSourceCodeParse extends SourceCodeParse {
                         Matcher matcherException = reException.matcher(token.source);
                         if (matcherException.find()) {
                             token.classification = Token.Classification.EXCEPTION_THROW;
-                            token.exceptionClass = matcherException.group(reException_group_class);
+                            // TODO: extract exception classname meta data
+                            // not sure about this parser whether we can get this information
                         }
                     }
 
@@ -334,11 +324,6 @@ public class CCPPSourceCodeParse extends SourceCodeParse {
                                     case COMMENT_LINE:
                                         break;
                                     default:
-                                        if (token.next() == current) {
-                                            if (sourceCode.indexOf('%') >= 0) {
-                                                staticLiteral = false;
-                                            }
-                                        }
                                         cleaned.append(sourceCode);
                                         output.append(sourceCode);
                                         break;
@@ -362,84 +347,19 @@ public class CCPPSourceCodeParse extends SourceCodeParse {
         }
     }
 
-    private String codeWithAnnotations(int n, int startIndex, String code) {
-        // Go backwards from matcherMethod.start(1) through previous blocks
-        boolean useBackwardsCode = false;
-        boolean abort = false;
-        StringBuilder backwardsCode = new StringBuilder();
-        Stack<Character> stack = new Stack<>();
-        for (int i = n, j = startIndex; !abort && i > 0; j = tokenList.get(--i).source.length() - 1) {
-            Token currentToken = tokenList.get(i);
-            if (currentToken.type == TokenClassification.COMMENT_BLOCK || currentToken.type == TokenClassification.COMMENT_LINE || currentToken.type == TokenClassification.CONTENT)
-                continue;
-            for (; !abort && j >= 0; --j) {
-                char ch = currentToken.source.charAt(j);
-                if (currentToken.type == TokenClassification.SOURCE_CODE) {
-                    if (stack.empty()) {
-                        if (/*ch == ',' || */ch == ';' || ch == '{' || ch == '(' || ch == '}') {
-                            abort = true;
-                            break;
-                        } else if (ch == ']' || ch == ')') {
-                            stack.push(ch);
-                            useBackwardsCode = true;
-                        }
-                        backwardsCode.append(ch);
-                    } else {
-                        if (ch == ')' || ch == '}' || ch == ']') {
-                            stack.push(ch);
-                        } else if (ch == '(' || ch == '{' || ch == '[') {
-                            stack.pop();
-                        }
-                        backwardsCode.append(ch);
-                    }
-                } else {
-                    backwardsCode.append(ch);
-                }
-            }
-        }
-
-        if (useBackwardsCode) {
-            backwardsCode.reverse();
-            backwardsCode.append(code);
-            code = backwardsCode.toString();
-        }
-
-        return code;
-    }
-
     @Override
     public void classifyForCallStack(Token token) {
         if (token.classification == Token.Classification.NOT_CLASSIFIED_YET || token.classification == Token.Classification.NOT_FULLY_CLASSIFIED) {
             if (token.type == TokenClassification.SOURCE_CODE) {
-                boolean foundMethod = false;
-                Matcher matcherMethodPerhaps = reMethodPerhaps.matcher(token.source);
-                if (matcherMethodPerhaps.find()) {
-                    String codeBlock = codeWithAnnotations(token.n, matcherMethodPerhaps.end() - 1, "");
-                    Matcher matcherMethod = reMethod.matcher(codeBlock);
-                    if (matcherMethod.find()) {
-                        String code = matcherMethod.group(1);
-
-                        Matcher mPreprocessor = rePreprocessor.matcher(code);
-                        while (mPreprocessor.find()) { // maybe it's #endregion \r\n #region foo \r\n your code...
-                            code = code.substring(mPreprocessor.end());
-                            mPreprocessor = rePreprocessor.matcher(code);
-                        }
-
-                        //if (reMethodIgnore.matcher(code).find())
-                        //    continue;
-                        token.classification = Token.Classification.METHOD_SIGNATURE;
-                        token.extractedCode = code;
-                        foundMethod = true;
-                    }
-                }
-                if (!foundMethod) {
-                    Matcher matcherClass = reClass.matcher(token.source);
-                    if (matcherClass.find()) {
-                        token.classification = Token.Classification.CLASS_SIGNATURE;
-                        token.extractedCode = codeWithAnnotations(token.n, matcherClass.start(1) - 1, matcherClass.group(1));
-                    } else {
-                        token.classification = Token.Classification.NO_MATCH;
-                    }
+                Matcher matcherMethod = reMethod.matcher(token.source);
+                if (matcherMethod.find()) {
+                    final String code = matcherMethod.group();
+                    //if (reMethodIgnore.matcher(code).find())
+                    //    continue;
+                    token.classification = Token.Classification.METHOD_SIGNATURE;
+                    token.extractedCode = code;
+                } else {
+                    token.classification = Token.Classification.NO_MATCH;
                 }
             } else {
                 token.classification = Token.Classification.NO_MATCH;
