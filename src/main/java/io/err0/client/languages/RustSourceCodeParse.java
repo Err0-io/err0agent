@@ -324,6 +324,13 @@ public class RustSourceCodeParse extends SourceCodeParse {
                                     case COMMENT_LINE:
                                         break;
                                     default:
+                                        if (token.next() == current) {
+                                            long l = sourceCode.indexOf('{');
+                                            long m = sourceCode.indexOf('}');
+                                            if (l >= 0 && m >= 0) {
+                                                staticLiteral = false;
+                                            }
+                                        }
                                         cleaned.append(sourceCode);
                                         output.append(sourceCode);
                                         break;
