@@ -24,7 +24,7 @@ plugins {
 }
 
 group = "io.err0"
-version = "1.0.3-SNAPSHOT"
+version = "1.3.1-SNAPSHOT"
 
 repositories {
   mavenCentral()
@@ -96,32 +96,6 @@ tasks.withType<Test> {
 }
 
 tasks.withType<JavaExec> {
-
-  // Check-out bts projects...
-
-  /*
-  args = listOf(
-    "--token", "../ccc/api-masterdata-devel/err0-ccc-api-masterdata-ee9bfddb-94b3-11ec-8263-ae3b21a6cd73.json", "--insert", "../ccc/api-masterdata-devel/",
-  )
-  
-   */
-
-  /*
-  args = listOf(
-    "--token", "../fp/futurepay-portal/err0-futurepay-portal-1f8d9570-90b7-11ec-b6db-1613dacd7971.json", "--insert", "../fp/futurepay-portal/",
-    "--token", "../fp/futurepay-checkout-backend/err0-futurepay-checkout-backend-1ac49bae-90b7-11ec-b6db-1613dacd7971.json", "--insert", "../fp/futurepay-checkout-backend/",
-    "--token", "../fp/futurepay-credit-api/err0-futurepay-credit-service-1d26f5af-90b7-11ec-b6db-1613dacd7971.json", "--insert", "../fp/futurepay-credit-api/"
-  )
-
-  */
-
-  /*
-  // Check-out bts projects...
-  args = listOf(
-    "--token", "tokens/err0-bts-internal-projects-bts-platform-8ae046e8-8f12-11ec-b3b7-de7ff53b7565.json", "--insert", "../bts_internship_2019_be_app"
-  )
-
-   */
 
   // Check-out the open-source-bundle project at the same parent level as this project:
   args = listOf(
