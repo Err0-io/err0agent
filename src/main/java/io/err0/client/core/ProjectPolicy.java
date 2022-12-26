@@ -240,6 +240,15 @@ public class ProjectPolicy {
         return reErrorNumber_cs;
     }
 
+    // C/C++ pattern for finding our error number.
+    private Pattern reErrorNumber_ccpp = null;
+    public Pattern getReErrorNumber_ccpp() {
+        if (null == reErrorNumber_ccpp) {
+            reErrorNumber_ccpp = Pattern.compile("^\"\\[" + getErrorPrefix() + "-(\\d+)\\]\\s*");
+        }
+        return reErrorNumber_ccpp;
+    }
+
     // GO pattern for finding our error number.
     private Pattern reErrorNumber_go = null;
     public Pattern getReErrorNumber_go() {
@@ -247,6 +256,15 @@ public class ProjectPolicy {
             reErrorNumber_go = Pattern.compile("^(`|'|\")\\[" + getErrorPrefix() + "-(\\d+)\\]\\s*");
         }
         return reErrorNumber_go;
+    }
+
+    // Rust pattern for finding our error number.
+    private Pattern reErrorNumber_rust = null;
+    public Pattern getReErrorNumber_rust() {
+        if (null == reErrorNumber_rust) {
+            reErrorNumber_rust = Pattern.compile("^(\")\\[" + getErrorPrefix() + "-(\\d+)\\]\\s*");
+        }
+        return reErrorNumber_rust;
     }
 
     // Java pattern for finding our error number.

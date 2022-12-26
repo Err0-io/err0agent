@@ -30,7 +30,7 @@ public class FileResultDriver implements ResultDriver {
                 output.append(parse.tokenList.get(j).source);
             }
             try {
-                Files.writeString(Path.of(path), output.toString(), fileCharset);
+                Utils.writeString(Utils.pathOf(path), output.toString(), fileCharset);
                 System.out.println("[AGENT-000060] Written: " + path);
             }
             catch (IOException iex) {

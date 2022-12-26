@@ -56,6 +56,7 @@ public class LanguageCodePolicy {
     public static class LoggerRule {
         LoggerRuleType type = LoggerRuleType.LINE_SHOULD_MATCH;
         ArrayList<Pattern> pattern = new ArrayList<>();
+        String level = null;
     }
 
     public LanguageCodePolicy(final JsonObject languagePolicyJson)
@@ -78,6 +79,7 @@ public class LanguageCodePolicy {
                             loggerRule.pattern.add(Pattern.compile(pattern, Pattern.CASE_INSENSITIVE | Pattern.MULTILINE));
                         }
                     }
+                    loggerRule.level = rule.has("level") && !rule.get("level").isJsonNull() ? rule.get("level").getAsString() : null;
                     if (loggerRule.pattern.size() > 0) {
                         this.rules.add(loggerRule);
                     }
@@ -90,42 +92,57 @@ public class LanguageCodePolicy {
     public boolean disable_builtin_log_detection = false;
     public ArrayList<LoggerRule> rules = new ArrayList<>();
 
-    public Token.Classification classify(String lineOfCode, String stringLiteral) {
+    public static class ClassificationResult {
+        public ClassificationResult(Token.Classification classification, String loggerLevel) {
+            this.classification = classification;
+            this.loggerLevel = loggerLevel;
+        }
+        public Token.Classification classification;
+        public String loggerLevel;
+    }
+
+    public ClassificationResult classify(String lineOfCode, String stringLiteral) {
         Token.Classification classification = Token.Classification.NOT_FULLY_CLASSIFIED;
+        String loggerLevel = null;
         for (LoggerRule rule : rules) {
             switch (rule.type) {
                 case LINE_SHOULD_MATCH:
                     if (null == lineOfCode) continue;
                     for (Pattern p : rule.pattern) {
-                        if (p.matcher(lineOfCode).find())
+                        if (p.matcher(lineOfCode).find()) {
                             classification = Token.Classification.LOG_OUTPUT;
+                            loggerLevel = rule.level;
+                        }
                     }
                     break;
                 case LINE_MUST_NOT_MATCH:
                     if (null == lineOfCode) continue;
                     for (Pattern p : rule.pattern) {
                         if (p.matcher(lineOfCode).find())
-                            return Token.Classification.NOT_LOG_OUTPUT;
+                            return new ClassificationResult(Token.Classification.NOT_LOG_OUTPUT, null);
                     }
                     break;
                 case LITERAL_SHOULD_MATCH:
                     if (null == stringLiteral) continue;
                     for (Pattern p : rule.pattern) {
-                        if (p.matcher(stringLiteral).find())
+                        if (p.matcher(stringLiteral).find()) {
                             classification = Token.Classification.MAYBE_LOG_OR_EXCEPTION;
+                            loggerLevel = rule.level;
+                        }
                     }
                     break;
                 case LITERAL_MUST_NOT_MATCH:
                     if (null == stringLiteral) continue;
                     for (Pattern p : rule.pattern) {
-                        if (p.matcher(stringLiteral).find())
-                            return Token.Classification.NOT_LOG_OUTPUT;
+                        if (p.matcher(stringLiteral).find()) {
+                            return new ClassificationResult(Token.Classification.NOT_LOG_OUTPUT, null);
+                        }
                     }
                     break;
                 default:
                     throw new RuntimeException("[AGENT-000019] Unexpected logger rule type " + rule.type.name());
             }
         }
-        return classification;
+        return new ClassificationResult(classification, loggerLevel);
     }
 }

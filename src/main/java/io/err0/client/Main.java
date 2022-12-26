@@ -47,6 +47,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -60,6 +61,7 @@ public class Main {
     public final static boolean USE_NEAREST_CODE_FOR_LINE_OF_CODE = true;
     public final static int CHAR_RADIUS = 4*1024;
     private static Pattern reGitdir = Pattern.compile("^gitdir: (.*?)$", Pattern.MULTILINE);
+    private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
 
     static class GitMetadata {
         GitMetadata(final String gitHash, final boolean statusIsClean, final boolean detachedHead) {
@@ -90,12 +92,12 @@ public class Main {
         appGitMetadata.add("tag_branches", tag_branches);
          */
 
-        Path gitpath = Path.of(checkoutDir + "/.git");
+        Path gitpath = Utils.pathOf(checkoutDir + "/.git");
         if (Files.isRegularFile(gitpath)) {
-            final String contents = Files.readString(gitpath);
+            final String contents = Utils.readString(gitpath);
             Matcher matcher = reGitdir.matcher(contents);
             if (matcher.find()) {
-                gitpath = Path.of(checkoutDir + "/" + matcher.group(1));
+                gitpath = Utils.pathOf(checkoutDir + "/" + matcher.group(1));
             }
         }
 
@@ -256,6 +258,9 @@ public class Main {
         RealmPolicy realmPolicy = null;
         ProjectPolicy projectPolicy = null;
 
+        boolean metricsReport = false;
+        boolean errorCodeData = false;
+
         try {
 
             for (int i = 0, l = args.length; i < l; ++i) {
@@ -266,6 +271,39 @@ public class Main {
                     System.out.println("[AGENT-000037] insert error codes into the source code");
                     System.out.println("[AGENT-000038] <command> --token path-to-token.json --analyse --check /path/to/git/repo");
                     System.out.println("[AGENT-000039] analyse error codes in the project and return failure if some need to change");
+                }
+                else if ("--metrics".equals(arg)) {
+                    metricsReport = true;
+                }
+                else if ("--error-codes".equals(arg)) {
+                    errorCodeData = true;
+                }
+                else if ("--offline".equals(arg)) {
+                    // a new API provider per token
+                    if (apiProvider != null) {
+                        apiProvider.close();
+                        apiProvider = null;
+                    }
+                    projectPolicy = null;
+                    realmPolicy = null;
+
+                    apiProvider = new OfflineApiProvider();
+
+                    JsonObject realmJson = new JsonObject();
+                    JsonObject policy = new JsonObject();
+                    policy.addProperty("error_prefix", "ERR");
+                    realmJson.add("policy", policy);
+                    JsonObject realm = new JsonObject();
+                    realm.addProperty("pk", UUID.randomUUID().toString());
+                    realm.add("data", realmJson);
+
+                    JsonObject projectJson = new JsonObject();
+                    JsonObject project = new JsonObject();
+                    project.addProperty("pk", UUID.randomUUID().toString());
+                    project.add("data", projectJson);
+
+                    realmPolicy = new RealmPolicy(realm);
+                    projectPolicy = new ProjectPolicy(realmPolicy, project);
                 }
                 else if ("--token".equals(arg)) {
 
@@ -370,14 +408,37 @@ public class Main {
                         runGitMetadata.add("git_tags", new JsonArray());
                     }
 
-                    apiProvider.updateRun(projectPolicy, run_uuid, runGitMetadata, statisticsGatherer.toRunMetadata());
+                    JsonObject runMetadata = statisticsGatherer.toRunMetadata(true);
+                    //System.out.println("Statistics:\n" + runMetadata.toString());
+                    apiProvider.updateRun(projectPolicy, run_uuid, runGitMetadata, runMetadata);
+
+                    if (metricsReport || errorCodeData) {
+                        Date date = new Date();
+                        final String dateString = dateFormat.format(date);
+                        if (metricsReport) {
+                            String filename = "err0-metrics-" + dateString + ".json";
+                            Files.write(Utils.pathOf(filename), runMetadata.toString().getBytes(StandardCharsets.UTF_8));
+                        }
+                        if (errorCodeData) {
+                            String filename = "err0-data-" + dateString + ".json";
+                            JsonArray errorCodes = new JsonArray();
+                            statisticsGatherer.results.forEach(forInsert -> {
+                                JsonObject insert = new JsonObject();
+                                insert.addProperty("error_code", forInsert.errorCode);
+                                insert.addProperty("error_ordinal", forInsert.errorOrdinal);
+                                insert.add("metadata", forInsert.metaData);
+                                errorCodes.add(insert);
+                            });
+                            Files.write(Utils.pathOf(filename), errorCodes.toString().getBytes(StandardCharsets.UTF_8));
+                        }
+                    }
 
                     if (null != statisticsGatherer.throwable) {
                         System.err.println(statisticsGatherer.throwable.getMessage());
                         System.exit(-1);
                     }
 
-                } if ("--report".equals(arg) || "--analyse".equals(arg) || "--analyze".equals(arg)) {
+                } else if ("--report".equals(arg) || "--analyse".equals(arg) || "--analyze".equals(arg)) {
                     if (null == realmPolicy) throw new Exception("[AGENT-000004] Must specify realm policy using --realm before specifying report dir");
                     if (null == projectPolicy) throw new Exception("[AGENT-000005] Must specify application policy using --app before specifying report dir");
                     String reportDir = args[++i];
@@ -439,10 +500,33 @@ public class Main {
                         statisticsGatherer.throwable = t;
                     }
 
-                    apiProvider.updateRun(projectPolicy, run_uuid, runGitMetadata, statisticsGatherer.toRunMetadata());
+                    JsonObject runMetadata = statisticsGatherer.toRunMetadata(! wouldChangeAFile);
+                    //System.out.println("Statistics:\n" + runMetadata.toString());
+                    apiProvider.updateRun(projectPolicy, run_uuid, runGitMetadata, runMetadata);
 
                     if (! wouldChangeAFile) {
                         apiProvider.finaliseRun(projectPolicy, run_uuid);
+                    }
+
+                    if (metricsReport || errorCodeData) {
+                        Date date = new Date();
+                        final String dateString = dateFormat.format(date);
+                        if (metricsReport) {
+                            String filename = "err0-metrics-" + dateString + ".json";
+                            Files.write(Utils.pathOf(filename), runMetadata.toString().getBytes(StandardCharsets.UTF_8));
+                        }
+                        if (errorCodeData) {
+                            String filename = "err0-data-" + dateString + ".json";
+                            JsonArray errorCodes = new JsonArray();
+                            statisticsGatherer.results.forEach(forInsert -> {
+                                JsonObject insert = new JsonObject();
+                                insert.addProperty("error_code", forInsert.errorCode);
+                                insert.addProperty("error_ordinal", forInsert.errorOrdinal);
+                                insert.add("metadata", forInsert.metaData);
+                                errorCodes.add(insert);
+                            });
+                            Files.write(Utils.pathOf(filename), errorCodes.toString().getBytes(StandardCharsets.UTF_8));
+                        }
                     }
 
                     if (wouldChangeAFile) {
@@ -459,12 +543,9 @@ public class Main {
                         System.exit(-1);
                     }
 
-                } else if ("--unit-test-provider".equals(arg)) {
-                    if (apiProvider != null) {
-                        apiProvider.close();
-                        apiProvider = null;
-                    }
-                    apiProvider = new UnitTestApiProvider();
+                } else {
+                    System.err.println("[AGENT-000070] Unknown argument: [" + arg + "]");
+                    System.exit(-1);
                 }
             }
         }
@@ -573,6 +654,8 @@ public class Main {
             final boolean phpAllowed = codePolicy.mode != CodePolicy.CodePolicyMode.ADVANCED_CONFIGURATION || (null == codePolicy.adv_php || !codePolicy.adv_php.disable_language);
             final boolean goAllowed = codePolicy.mode != CodePolicy.CodePolicyMode.ADVANCED_CONFIGURATION || (null == codePolicy.adv_golang || !codePolicy.adv_golang.disable_language);
             final boolean pythonAllowed = codePolicy.mode != CodePolicy.CodePolicyMode.ADVANCED_CONFIGURATION || (null == codePolicy.adv_python || !codePolicy.adv_python.disable_language);
+            final boolean cCppAllowed = codePolicy.mode != CodePolicy.CodePolicyMode.ADVANCED_CONFIGURATION || (null == codePolicy.adv_ccpp || !codePolicy.adv_ccpp.disable_language);
+            final boolean rustAllowed = codePolicy.mode != CodePolicy.CodePolicyMode.ADVANCED_CONFIGURATION || (null == codePolicy.adv_rust || !codePolicy.adv_rust.disable_language);
 
             try (Stream<Path> paths = Files.walk(Paths.get(startPoint)))
             {
@@ -622,6 +705,14 @@ public class Main {
                             final FileCoding fileCoding = new FileCoding(p);
                             globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, PythonSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
                             System.out.println("[AGENT-000054] Parsed: " + newFile);
+                        } else if (cCppAllowed && (newFileLower.endsWith(".c") || newFileLower.endsWith(".h") || newFileLower.endsWith(".cc") || newFileLower.endsWith(".cpp") || newFileLower.endsWith(".hpp"))) {
+                            final FileCoding fileCoding = new FileCoding(p);
+                            globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, CCPPSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
+                            System.out.println("[AGENT-000071] Parsed: " + newFile);
+                        } else if (rustAllowed && newFileLower.endsWith(".rs")) {
+                            final FileCoding fileCoding = new FileCoding(p);
+                            globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, RustSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
+                            System.out.println("[AGENT-000072] Parsed: " + newFile);
                         }
                     }
                 });
@@ -642,12 +733,12 @@ public class Main {
             String c = null;
             Charset cs = null;
             try {
-                c = Files.readString(path, StandardCharsets.UTF_8);
+                c = Utils.readString(path, StandardCharsets.UTF_8);
                 cs = StandardCharsets.UTF_8;
             }
             catch (IOException e1) {
                 try {
-                    c = Files.readString(path, StandardCharsets.ISO_8859_1);
+                    c = Utils.readString(path, StandardCharsets.ISO_8859_1);
                     cs = StandardCharsets.ISO_8859_1;
                 }
                 catch (IOException e2) {
@@ -923,8 +1014,20 @@ public class Main {
                             //final String errorCode = policy.getErrorCodeFormatter().formatErrorCodeOnly(currentToken.errorOrdinal);
 
                             metaData.addProperty("type", lastToken.classification.toString());
-                            if (null != lastToken.exceptionClass) {
+                            if (lastToken.classification == Token.Classification.EXCEPTION_THROW && null != lastToken.exceptionClass) {
                                 metaData.addProperty("exception_class", lastToken.exceptionClass);
+                            }
+                            if (lastToken.classification == Token.Classification.LOG_OUTPUT && null != lastToken.loggerLevel) {
+                                metaData.addProperty("logger_level", lastToken.loggerLevel);
+                            }
+                            if (null != lastToken.staticLiteral) {
+                                metaData.addProperty("static_literal", lastToken.staticLiteral);
+                            }
+                            if (null != lastToken.messageExpression) {
+                                metaData.addProperty("message_expression", lastToken.messageExpression);
+                            }
+                            if (null != lastToken.cleanedMessageExpression) {
+                                metaData.addProperty("cleaned_message", lastToken.cleanedMessageExpression);
                             }
                             metaData.add("methods", methodsArray);
                             metaData.add("comments", commentsArray);
@@ -1101,7 +1204,7 @@ public class Main {
 
                             final int width = item.token.getStringQuoteWidth();
                             String start = item.token.sourceNoErrorCode.substring(0, width);
-                            final String remainder = item.token.sourceNoErrorCode.substring(width).stripLeading();
+                            final String remainder = Utils.stripLeading(item.token.sourceNoErrorCode.substring(width));
                             final String whitespace = item.token.sourceNoErrorCode.substring(width, (item.token.sourceNoErrorCode.length() - remainder.length()));
                             if (width > 1) {
                                 start = start + whitespace;
@@ -1115,7 +1218,7 @@ public class Main {
                             logic.pass2AssignNewErrorNumber(item); // item.token.errorOrdinal = apiProvider.nextErrorNumber();
                             final int width = item.token.getStringQuoteWidth();
                             String start = item.token.sourceNoErrorCode.substring(0, width);
-                            final String remainder = item.token.sourceNoErrorCode.substring(width).stripLeading();
+                            final String remainder = Utils.stripLeading(item.token.sourceNoErrorCode.substring(width));
                             final String whitespace = item.token.sourceNoErrorCode.substring(width, (item.token.sourceNoErrorCode.length() - remainder.length()));
                             if (width > 1) {
                                 start = start + whitespace;
@@ -1183,7 +1286,7 @@ public class Main {
                             //currentToken.errorOrdinal = apiProvider.nextErrorNumber();
                             final int width = currentToken.getStringQuoteWidth();
                             String start = currentToken.sourceNoErrorCode.substring(0, width);
-                            final String remainder = currentToken.sourceNoErrorCode.substring(width).stripLeading();
+                            final String remainder = Utils.stripLeading(currentToken.sourceNoErrorCode.substring(width));
                             final String whitespace = currentToken.sourceNoErrorCode.substring(width, (currentToken.sourceNoErrorCode.length() - remainder.length()));
                             if (width > 1) {
                                 start = start + whitespace;
@@ -1192,7 +1295,7 @@ public class Main {
                         } else {
                             final int width = currentToken.getStringQuoteWidth();
                             String start = currentToken.sourceNoErrorCode.substring(0, width);
-                            final String remainder = currentToken.sourceNoErrorCode.substring(width).stripLeading();
+                            final String remainder = Utils.stripLeading(currentToken.sourceNoErrorCode.substring(width));
                             final String whitespace = currentToken.sourceNoErrorCode.substring(width, (currentToken.sourceNoErrorCode.length() - remainder.length()));
                             if (width > 1) {
                                 start = start + whitespace;
@@ -1295,6 +1398,13 @@ public class Main {
             statisticsGatherer.errorsPerFile.put(filename, n_errors.longValue());
             statisticsGatherer.linesPerFile.put(filename, n_lines);
         }
+
+        // store results in the statistics gatherer...
+        statisticsGatherer.clearResults();
+        forBulkInsert.forEach(forInsert -> {
+            statisticsGatherer.storeResult(forInsert);
+        });
+        statisticsGatherer.processResults();
 
         final long BATCH_SIZE = 100;
         ArrayList<ApiProvider.ForInsert> batch = new ArrayList<>();

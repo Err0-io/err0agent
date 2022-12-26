@@ -36,12 +36,16 @@ public class GolangSourceCodeParse extends SourceCodeParse {
                 reLogger = Pattern.compile("(^|\\s+)" + policy.easyModeObjectPattern() + "\\." + policy.easyModeMethodPattern() + "f?\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
                 break;
         }
+
+        final String pattern = policy.mode == CodePolicy.CodePolicyMode.DEFAULTS ? "(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)" : policy.easyModeMethodPattern();
+        reLoggerLevel = Pattern.compile("\\.(" + pattern + ")f?\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
     }
 
     private static Pattern reMethod = Pattern.compile("(^|\\s+)func\\s+(.*)?$", Pattern.MULTILINE);
     private static Pattern reMethodIgnore = Pattern.compile("(\\s+|^\\s*)(catch|if|do|while|switch|for)\\s+", Pattern.MULTILINE);
     //private static Pattern reErrorNumber = Pattern.compile("^(`|'|\")\\[ERR-(\\d+)\\]\\s+");
     private Pattern reLogger = null;
+    private Pattern reLoggerLevel = null;
     private static Pattern reException = Pattern.compile("(fmt\\.Errorf|errors\\.New)\\s*\\(\\s*$");
 
     public static GolangSourceCodeParse lex(final CodePolicy policy, final String sourceCode) {
@@ -269,7 +273,9 @@ public class GolangSourceCodeParse extends SourceCodeParse {
                                     lineOfCode = GsonHelper.asString(lineArray.get(0).getAsJsonObject(), "c", null);
                                 }
                             }
-                            token.classification = languageCodePolicy.classify(lineOfCode, stringLiteral);
+                            final LanguageCodePolicy.ClassificationResult classificationResult = languageCodePolicy.classify(lineOfCode, stringLiteral);
+                            token.classification = classificationResult.classification;
+                            token.loggerLevel = classificationResult.loggerLevel;
                         }
                     } else {
                         token.classification = Token.Classification.NO_MATCH;
@@ -279,7 +285,11 @@ public class GolangSourceCodeParse extends SourceCodeParse {
                         Matcher matcherLogger = reLogger.matcher(token.source);
                         if (matcherLogger.find()) {
                             token.classification = Token.Classification.LOG_OUTPUT;
-                            // TODO: extract canonical log level meta data
+                            // extract canonical log level meta data
+                            Matcher matcherLoggerLevel = reLoggerLevel.matcher(token.source);
+                            if (matcherLoggerLevel.find()) {
+                                token.loggerLevel = matcherLoggerLevel.group(1);
+                            }
                         }
                     }
 
@@ -294,6 +304,61 @@ public class GolangSourceCodeParse extends SourceCodeParse {
                     }
 
                     if (token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) token.classification = Token.Classification.LOG_OUTPUT;
+
+                    // message categorisation, dynamic
+                    if (token.classification == Token.Classification.EXCEPTION_THROW || token.classification == Token.Classification.LOG_OUTPUT) {
+                        if (null != token.next()) {
+                            // note token current is a type of string literal.
+                            boolean staticLiteral = true;
+                            Token current = token.next();
+                            StringBuilder cleaned = new StringBuilder();
+                            StringBuilder output = new StringBuilder();
+                            int bracketDepth = 1; // we are already one bracket into the expression.
+                            do {
+                                final String sourceCode = null != current.sourceNoErrorCode ? current.sourceNoErrorCode : current.source;
+                                switch (current.type) {
+                                    case SOURCE_CODE:
+                                        boolean dynamic = false;
+                                        final char chars[] = sourceCode.toCharArray();
+                                        for (int i = 0, l = chars.length; i < l; ++i) {
+                                            final char ch = chars[i];
+                                            if (ch == ')') {
+                                                if (--bracketDepth < 1) {
+                                                    break;
+                                                }
+                                            } else if (ch == '(') {
+                                                ++bracketDepth;
+                                            }
+                                            if (!Character.isWhitespace(ch)) cleaned.append(ch);
+                                            output.append(ch);
+                                            if (!(Character.isWhitespace(ch) || ch == '+')) { // string concatenation
+                                                dynamic = true;
+                                            }
+                                        }
+                                        if (dynamic) {
+                                            staticLiteral = false;
+                                        }
+                                        break;
+                                    case COMMENT_BLOCK:
+                                    case CONTENT:
+                                    case COMMENT_LINE:
+                                        break;
+                                    default:
+                                        cleaned.append(sourceCode);
+                                        output.append(sourceCode);
+                                        break;
+                                }
+                                if (bracketDepth < 1) {
+                                    break;
+                                }
+                            }
+                            while (null != (current = current.next()));
+
+                            token.staticLiteral = staticLiteral;
+                            token.cleanedMessageExpression = cleaned.toString();
+                            token.messageExpression = output.toString();
+                        }
+                    }
                 }
                 break;
                 default:

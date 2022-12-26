@@ -29,6 +29,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
+import io.err0.client.core.Utils;
 
 /**
  * Tests the standard go library "errors.New"
@@ -58,7 +59,7 @@ public class Test0006Golang {
 
         apiProvider.resultStorage.forEach((filename, result) -> {
             try {
-                final String expectedSourceCode = Files.readString(Path.of(assertDir + "/" + filename));
+                final String expectedSourceCode = Utils.readString(Utils.pathOf(assertDir + "/" + filename));
                 assertEquals(expectedSourceCode, result.sourceCode, filename);
             }
             catch (IOException e) {

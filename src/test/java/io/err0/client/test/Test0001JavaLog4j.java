@@ -23,11 +23,10 @@ import io.err0.client.core.GlobalState;
 import io.err0.client.Main;
 import io.err0.client.core.ResultDriver;
 import io.err0.client.core.StatisticsGatherer;
+import io.err0.client.core.Utils;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 public class Test0001JavaLog4j {
     @Test
@@ -59,7 +58,7 @@ public class Test0001JavaLog4j {
 
             apiProvider.resultStorage.forEach((filename, result) -> {
                 try {
-                    final String expectedSourceCode = Files.readString(Path.of(assertDir + "/" + filename));
+                    final String expectedSourceCode = Utils.readString(Utils.pathOf(assertDir + "/" + filename));
                     assertEquals(expectedSourceCode, result.sourceCode, filename);
                 } catch (IOException e) {
                     fail(e);

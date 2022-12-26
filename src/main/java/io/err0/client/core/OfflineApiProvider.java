@@ -14,9 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package io.err0.client.test;
+package io.err0.client.core;
 
-import io.err0.client.core.*;
 import com.google.gson.JsonObject;
 
 import java.io.IOException;
@@ -27,7 +26,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
 
-public class UnitTestApiProvider implements ApiProvider {
+public class OfflineApiProvider implements ApiProvider {
     @Override
     public void close() {
 
@@ -161,7 +160,7 @@ public class UnitTestApiProvider implements ApiProvider {
     }
 
     public static class UnitTestState {
-        private UnitTestState(UnitTestApiProvider provider) {
+        private UnitTestState(OfflineApiProvider provider) {
             this.currentErrorNumber = provider.currentErrorNumber;
             this.metaDataStorage = new HashMap<>();
             provider.metaDataStorage.forEach((errorOrdinal, metaData) -> {

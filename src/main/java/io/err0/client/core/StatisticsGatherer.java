@@ -19,6 +19,7 @@ package io.err0.client.core;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -42,9 +43,86 @@ public class StatisticsGatherer {
     public final HashMap<String, Long> linesPerFile = new HashMap<>();
     public final HashMap<String, Long> errorsPerFile = new HashMap<>();
 
+    public final ArrayList<ApiProvider.ForInsert> results = new ArrayList<>();
+    private final HashMap<String, Long> duplicateCheck = new HashMap<>();
+    private final HashMap<String, Long> logByLogLevel = new HashMap<>();
+    private long n_log_static = 0;
+    private long n_log_dynamic = 0;
+    private long n_exception_static = 0;
+    private long n_exception_dynamic = 0;
+    private long n_log_duplicate  = 0;
+    private long n_exception_duplicate = 0;
+
+    public void clearResults() {
+        results.clear();
+        duplicateCheck.clear();
+        logByLogLevel.clear();
+        n_log_static = 0;
+        n_log_dynamic = 0;
+        n_exception_static = 0;
+        n_exception_dynamic = 0;
+        n_log_duplicate = 0;
+        n_exception_duplicate = 0;
+    }
+
+    public void storeResult(ApiProvider.ForInsert result) {
+        results.add(result);
+
+        final String cleanedMessage = result.metaData.has("cleaned_message") ? result.metaData.get("cleaned_message").getAsString() : null;
+        if (null != cleanedMessage) {
+            duplicateCheck.compute(cleanedMessage, (msg, n) -> {
+                long _n = null != n ? n.longValue() : 0;
+                _n = _n + 1;
+                return _n;
+            });
+        }
+
+        final boolean static_literal = result.metaData.has("static_literal") ? result.metaData.get("static_literal").getAsBoolean() : false;
+        final String type = result.metaData.get("type").getAsString();
+
+        if ("LOG_OUTPUT".equals(type)) {
+            final String logLevel = result.metaData.has("logger_level") ? result.metaData.get("logger_level").getAsString() : null;
+            if (null != logLevel) {
+                logByLogLevel.compute(logLevel, (lvl, n) -> {
+                    long _n = null != n ? n.longValue() : 0;
+                    _n = _n + 1;
+                    return _n;
+                });
+            }
+
+            if (static_literal) {
+                ++n_log_static;
+            } else {
+                ++n_log_dynamic;
+            }
+        }
+        else if ("EXCEPTION_THROW".equals(type)) {
+            if (static_literal) {
+                ++n_exception_static;
+            } else {
+                ++n_exception_dynamic;
+            }
+        }
+    }
+
+    public final void processResults() {
+        results.forEach(result -> {
+            long n = duplicateCheck.get(result.metaData.get("cleaned_message").getAsString()).longValue();
+            final String type = result.metaData.get("type").getAsString();
+
+            if (n > 1) {
+                if ("LOG_OUTPUT".equals(type)) {
+                    ++n_log_duplicate;
+                } else if ("EXCEPTION_THROW".equals(type)) {
+                    ++n_exception_duplicate;
+                }
+            }
+        });
+    }
+
     public Throwable throwable = null;
 
-    public final JsonObject toRunMetadata() {
+    public final JsonObject toRunMetadata(boolean exitSuccess) {
         final java.util.Date end = new Date();
 
         JsonObject runMetadata = new JsonObject();
@@ -115,8 +193,23 @@ public class StatisticsGatherer {
             runMetadata.addProperty("exit_status", "failure");
             runMetadata.addProperty("exit_error_message", throwable.getMessage());
         } else {
-            runMetadata.addProperty("exit_status", "success");
+            runMetadata.addProperty("exit_status", exitSuccess ? "success" : "failure");
         }
+
+        // log-by-log-level
+        JsonObject logByLogLevel = new JsonObject();
+        runMetadata.add("n_log_by_log_level", logByLogLevel);
+        this.logByLogLevel.forEach((level, _n) -> {
+            logByLogLevel.addProperty(level, _n);
+        });
+
+        runMetadata.addProperty("n_log_static", n_log_static);
+        runMetadata.addProperty("n_log_dynamic", n_log_dynamic);
+        runMetadata.addProperty("n_log_duplicate", n_log_duplicate);
+
+        runMetadata.addProperty("n_exception_static", n_exception_static);
+        runMetadata.addProperty("n_exception_dynamic", n_exception_dynamic);
+        runMetadata.addProperty("n_exception_duplicate", n_exception_duplicate);
 
         return runMetadata;
     }

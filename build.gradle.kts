@@ -126,24 +126,45 @@ tasks.withType<JavaExec> {
   // Check-out the open-source-bundle project at the same parent level as this project:
   args = listOf(
     // pass #1 -- insert error codes (or re-insert error codes).
-    "--token", "../open-source-bundle/dev-localhost/err0-open-source-software-spring-framework-918d1448-3731-11ec-9e2d-46a00e0b2797.json", "--insert", "../open-source-bundle/spring-framework", // java
-    "--token", "../open-source-bundle/dev-localhost/err0-open-source-software-django-74df2c06-19f4-11ec-8253-56f6e5f49a04.json", "--insert", "../open-source-bundle/django", // python
-    "--token", "../open-source-bundle/dev-localhost/err0-open-source-software-kubernetes-f26f7103-0ff0-11ec-b8c2-a63d063ada96.json", "--insert", "../open-source-bundle/kubernetes", // go
-    "--token", "../open-source-bundle/dev-localhost/err0-open-source-software-roslyn-01c36447-0ff1-11ec-b8c2-a63d063ada96.json", "--insert", "../open-source-bundle/roslyn", // c#
-    "--token", "../open-source-bundle/dev-localhost/err0-open-source-software-node-bb-000ed676-0ff1-11ec-b8c2-a63d063ada96.json", "--insert", "../open-source-bundle/NodeBB", // node.js
-    "--token", "../open-source-bundle/dev-localhost/err0-open-source-software-zf2-orders-057066b9-0ff1-11ec-b8c2-a63d063ada96.json", "--insert", "../open-source-bundle/zf2-orders", // php + Zend framework
-    "--token", "../open-source-bundle/dev-localhost/err0-open-source-software-moodle-fcc1f565-0ff0-11ec-b8c2-a63d063ada96.json", "--insert", "../open-source-bundle/moodle", // very tidy php lms for universities
-    "--token", "../open-source-bundle/dev-localhost/err0-open-source-software-magneto-2-f9bf8ad4-0ff0-11ec-b8c2-a63d063ada96.json", "--insert", "../open-source-bundle/magento2", // php e-commerce
-    "--token", "../open-source-bundle/dev-localhost/err0-open-source-software-umbraco-0387f7a8-0ff1-11ec-b8c2-a63d063ada96.json", "--insert", "../open-source-bundle/Umbraco-CMS", // c#
+    "--token", "../open-source-bundle/dev-localhost/err0-leptos-20221220-7c62eafd-806b-11ed-b59e-4401bb8de3b3.json", "--insert", "../open-source-bundle/leptos", // Rust
+    "--token", "../open-source-bundle/dev-localhost/err0-postfix-20221220-5cd5d49b-806b-11ed-b59e-4401bb8de3b3.json", "--insert", "../open-source-bundle/postfix", // C
+    "--token", "../open-source-bundle/dev-localhost/err0-bitcoin-20221220-6dcc7b5c-806b-11ed-b59e-4401bb8de3b3.json", "--insert", "../open-source-bundle/bitcoin", // C++
+    "--token", "../open-source-bundle/dev-localhost/err0-spring-framework-20221207-7772c640-763f-11ed-8b95-4401bb8de3b3.json", "--insert", "../open-source-bundle/spring-framework", // java
+    "--token", "../open-source-bundle/dev-localhost/err0-django-20221207-3c39a436-763f-11ed-8b95-4401bb8de3b3.json", "--insert", "../open-source-bundle/django", // python
+    "--token", "../open-source-bundle/dev-localhost/err0-kubernetes-20221207-4fc303c9-763f-11ed-8b95-4401bb8de3b3.json", "--insert", "../open-source-bundle/kubernetes", // go
+    "--token", "../open-source-bundle/dev-localhost/err0-roslyn-20221207-7166770f-763f-11ed-8b95-4401bb8de3b3.json", "--insert", "../open-source-bundle/roslyn", // c#
+    "--token", "../open-source-bundle/dev-localhost/err0-node-bb-20221207-65fd799d-763f-11ed-8b95-4401bb8de3b3.json", "--insert", "../open-source-bundle/NodeBB", // node.js
+    "--token", "../open-source-bundle/dev-localhost/err0-zf2-orders-20221207-9952cd55-763f-11ed-8b95-4401bb8de3b3.json", "--insert", "../open-source-bundle/zf2-orders", // php + Zend framework
+    "--token", "../open-source-bundle/dev-localhost/err0-moodle-20221207-6052f97c-763f-11ed-8b95-4401bb8de3b3.json", "--insert", "../open-source-bundle/moodle", // very tidy php lms for universities
+    "--token", "../open-source-bundle/dev-localhost/err0-magneto-2-20221207-55b2551a-763f-11ed-8b95-4401bb8de3b3.json", "--insert", "../open-source-bundle/magento2", // php e-commerce
+    "--token", "../open-source-bundle/dev-localhost/err0-umbraco-20221207-8dcaaf23-763f-11ed-8b95-4401bb8de3b3.json", "--insert", "../open-source-bundle/Umbraco-CMS", // c#
+    "--token", "../open-source-bundle/dev-localhost/err0-drupal-20221207-41dbe6f7-763f-11ed-8b95-4401bb8de3b3.json", "--insert", "../open-source-bundle/drupal", // php
+    "--token", "../open-source-bundle/dev-localhost/err0-tomcat-20221207-88958612-763f-11ed-8b95-4401bb8de3b3.json", "--insert", "../open-source-bundle/tomcat", // java
+    "--token", "../open-source-bundle/dev-localhost/err0-wordpress-20221207-93b2d484-763f-11ed-8b95-4401bb8de3b3.json", "--insert", "../open-source-bundle/WordPress", // php
+    "--token", "../open-source-bundle/dev-localhost/err0-ratpack-20221207-6ba317be-763f-11ed-8b95-4401bb8de3b3.json", "--insert", "../open-source-bundle/ratpack", // java
+    "--token", "../open-source-bundle/dev-localhost/err0-strapi-20221207-82bf8921-763f-11ed-8b95-4401bb8de3b3.json", "--insert", "../open-source-bundle/strapi", // javascript
+    "--token", "../open-source-bundle/dev-localhost/err0-cerbos-20221207-33d4bf05-763f-11ed-8b95-4401bb8de3b3.json", "--insert", "../open-source-bundle/cerbos", // go
+    "--token", "../open-source-bundle/dev-localhost/err0-mender-20221207-5b47787b-763f-11ed-8b95-4401bb8de3b3.json", "--insert", "../open-source-bundle/mender", // go
     // pass #2 -- analyse source code, ignoring dirty checkout.
-    "--token", "../open-source-bundle/dev-localhost/err0-open-source-software-spring-framework-918d1448-3731-11ec-9e2d-46a00e0b2797.json", "--analyse", "--dirty", "../open-source-bundle/spring-framework", // java
-    "--token", "../open-source-bundle/dev-localhost/err0-open-source-software-django-74df2c06-19f4-11ec-8253-56f6e5f49a04.json", "--analyse", "--dirty", "../open-source-bundle/django", // python
-    "--token", "../open-source-bundle/dev-localhost/err0-open-source-software-kubernetes-f26f7103-0ff0-11ec-b8c2-a63d063ada96.json", "--analyse", "--dirty", "../open-source-bundle/kubernetes", // go
-    "--token", "../open-source-bundle/dev-localhost/err0-open-source-software-roslyn-01c36447-0ff1-11ec-b8c2-a63d063ada96.json", "--analyse", "--dirty", "../open-source-bundle/roslyn", // c#
-    "--token", "../open-source-bundle/dev-localhost/err0-open-source-software-node-bb-000ed676-0ff1-11ec-b8c2-a63d063ada96.json", "--analyse", "--dirty", "../open-source-bundle/NodeBB", // node.js
-    "--token", "../open-source-bundle/dev-localhost/err0-open-source-software-zf2-orders-057066b9-0ff1-11ec-b8c2-a63d063ada96.json", "--analyse", "--dirty", "../open-source-bundle/zf2-orders", // php + Zend framework
-    "--token", "../open-source-bundle/dev-localhost/err0-open-source-software-moodle-fcc1f565-0ff0-11ec-b8c2-a63d063ada96.json", "--analyse", "--dirty", "../open-source-bundle/moodle", // very tidy php lms for universities
-    "--token", "../open-source-bundle/dev-localhost/err0-open-source-software-magneto-2-f9bf8ad4-0ff0-11ec-b8c2-a63d063ada96.json", "--analyse", "--dirty", "../open-source-bundle/magento2", // php e-commerce
-    "--token", "../open-source-bundle/dev-localhost/err0-open-source-software-umbraco-0387f7a8-0ff1-11ec-b8c2-a63d063ada96.json", "--analyse", "--dirty", "../open-source-bundle/Umbraco-CMS", // c#
+    "--token", "../open-source-bundle/dev-localhost/err0-leptos-20221220-7c62eafd-806b-11ed-b59e-4401bb8de3b3.json", "--analyse", "--dirty", "../open-source-bundle/leptos", // Rust
+    "--token", "../open-source-bundle/dev-localhost/err0-postfix-20221220-5cd5d49b-806b-11ed-b59e-4401bb8de3b3.json", "--analyse", "--dirty", "../open-source-bundle/postfix", // C
+    "--token", "../open-source-bundle/dev-localhost/err0-bitcoin-20221220-6dcc7b5c-806b-11ed-b59e-4401bb8de3b3.json", "--analyse", "--dirty", "../open-source-bundle/bitcoin", // C++
+    "--token", "../open-source-bundle/dev-localhost/err0-spring-framework-20221207-7772c640-763f-11ed-8b95-4401bb8de3b3.json", "--analyse", "--dirty", "../open-source-bundle/spring-framework", // java
+    "--token", "../open-source-bundle/dev-localhost/err0-django-20221207-3c39a436-763f-11ed-8b95-4401bb8de3b3.json", "--analyse", "--dirty", "../open-source-bundle/django", // python
+    "--token", "../open-source-bundle/dev-localhost/err0-kubernetes-20221207-4fc303c9-763f-11ed-8b95-4401bb8de3b3.json", "--analyse", "--dirty", "../open-source-bundle/kubernetes", // go
+    "--token", "../open-source-bundle/dev-localhost/err0-roslyn-20221207-7166770f-763f-11ed-8b95-4401bb8de3b3.json", "--analyse", "--dirty", "../open-source-bundle/roslyn", // c#
+    "--token", "../open-source-bundle/dev-localhost/err0-node-bb-20221207-65fd799d-763f-11ed-8b95-4401bb8de3b3.json", "--analyse", "--dirty", "../open-source-bundle/NodeBB", // node.js
+    "--token", "../open-source-bundle/dev-localhost/err0-zf2-orders-20221207-9952cd55-763f-11ed-8b95-4401bb8de3b3.json", "--analyse", "--dirty", "../open-source-bundle/zf2-orders", // php + Zend framework
+    "--token", "../open-source-bundle/dev-localhost/err0-moodle-20221207-6052f97c-763f-11ed-8b95-4401bb8de3b3.json", "--analyse", "--dirty", "../open-source-bundle/moodle", // very tidy php lms for universities
+    "--token", "../open-source-bundle/dev-localhost/err0-magneto-2-20221207-55b2551a-763f-11ed-8b95-4401bb8de3b3.json", "--analyse", "--dirty", "../open-source-bundle/magento2", // php e-commerce
+    "--token", "../open-source-bundle/dev-localhost/err0-umbraco-20221207-8dcaaf23-763f-11ed-8b95-4401bb8de3b3.json", "--analyse", "--dirty", "../open-source-bundle/Umbraco-CMS", // c#
+    "--token", "../open-source-bundle/dev-localhost/err0-drupal-20221207-41dbe6f7-763f-11ed-8b95-4401bb8de3b3.json", "--analyse", "--dirty", "../open-source-bundle/drupal", // php
+    "--token", "../open-source-bundle/dev-localhost/err0-tomcat-20221207-88958612-763f-11ed-8b95-4401bb8de3b3.json", "--analyse", "--dirty", "../open-source-bundle/tomcat", // java
+    "--token", "../open-source-bundle/dev-localhost/err0-wordpress-20221207-93b2d484-763f-11ed-8b95-4401bb8de3b3.json", "--analyse", "--dirty", "../open-source-bundle/WordPress", // php
+    "--token", "../open-source-bundle/dev-localhost/err0-ratpack-20221207-6ba317be-763f-11ed-8b95-4401bb8de3b3.json", "--analyse", "--dirty", "../open-source-bundle/ratpack", // java
+    "--token", "../open-source-bundle/dev-localhost/err0-strapi-20221207-82bf8921-763f-11ed-8b95-4401bb8de3b3.json", "--analyse", "--dirty", "../open-source-bundle/strapi", // javascript
+    "--token", "../open-source-bundle/dev-localhost/err0-cerbos-20221207-33d4bf05-763f-11ed-8b95-4401bb8de3b3.json", "--analyse", "--dirty", "../open-source-bundle/cerbos", // go
+    "--token", "../open-source-bundle/dev-localhost/err0-mender-20221207-5b47787b-763f-11ed-8b95-4401bb8de3b3.json", "--analyse", "--dirty", "../open-source-bundle/mender", // go
+
   )
 }

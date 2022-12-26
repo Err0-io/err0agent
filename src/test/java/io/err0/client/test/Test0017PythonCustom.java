@@ -28,6 +28,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
+import io.err0.client.core.Utils;
 
 public class Test0017PythonCustom {
     @Test
@@ -54,7 +55,7 @@ public class Test0017PythonCustom {
 
         apiProvider.resultStorage.forEach((filename, result) -> {
             try {
-                final String expectedSourceCode = Files.readString(Path.of(assertDir + "/" + filename));
+                final String expectedSourceCode = Utils.readString(Utils.pathOf(assertDir + "/" + filename));
                 assertEquals(expectedSourceCode, result.sourceCode, filename);
             }
             catch (IOException e) {
