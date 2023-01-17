@@ -99,7 +99,7 @@ tasks.withType<Test> {
 }
 
 tasks.withType<JavaExec> {
-
+/*
   // Check-out the open-source-bundle project at the same parent level as this project:
   args = listOf(
     // pass #1 -- insert error codes (or re-insert error codes).
@@ -144,4 +144,7 @@ tasks.withType<JavaExec> {
     "--token", "../open-source-bundle/dev-localhost/err0-mender-20221207-5b47787b-763f-11ed-8b95-4401bb8de3b3.json", "--analyse", "--dirty", "../open-source-bundle/mender", // go
 
   )
+
+ */
+  args = listOf("--help")
 }
