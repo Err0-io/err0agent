@@ -21,10 +21,11 @@ plugins {
   java
   application
   id("com.github.johnrengelman.shadow") version "7.1.2"
+  id("com.github.gmazzo.buildconfig") version "3.0.3"
 }
 
 group = "io.err0"
-version = "1.3.1-SNAPSHOT"
+version = "1.3.1-BETA"
 
 repositories {
   mavenCentral()
@@ -42,6 +43,26 @@ val doOnChange = "${projectDir}/gradlew classes"
 
 application {
   mainClass.set(launcherClassName)
+}
+
+fun versionBanner(): String {
+  val os = org.apache.commons.io.output.ByteArrayOutputStream()
+  project.exec {
+    commandLine = "git rev-parse --short HEAD".split(" ")
+    standardOutput = os
+  }
+  return String(os.toByteArray()).trim()
+}
+
+val buildTime = System.currentTimeMillis()
+
+buildConfig {
+  className("BuildConfig")
+  packageName("io.err0.client")
+  buildConfigField("String", "NAME", "\"io.err0.err0agent\"")
+  buildConfigField("String", "VERSION", provider { "\"${project.version}\"" })
+  buildConfigField("String", "GIT_SHORT_VERSION", "\"" + versionBanner() + "\"")
+  buildConfigField("long", "BUILD_UNIXTIME", "${buildTime}L")
 }
 
 dependencies {
@@ -146,5 +167,5 @@ tasks.withType<JavaExec> {
   )
 
  */
-  args = listOf("--help")
+  args = listOf("--version", "--help")
 }

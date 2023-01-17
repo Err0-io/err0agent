@@ -260,6 +260,7 @@ public class Main {
 
     public static void new_syntax_main(String args[]) {
         Options options = new Options();
+        options.addOption("v", "version", false, "Show the current version of err0agent.");
         options.addOption("h", "help", false, "Print this help message.");
         options.addOption("s", "stand-alone", false, "Run err0agent stand alone, no account required!");
         options.addOption("t", "token-file", true, "Run err0agent with a project token (json) from err0.io.");
@@ -278,9 +279,24 @@ public class Main {
             // parse the command line arguments
             CommandLine line = parser.parse(options, args);
 
+            if (line.hasOption("version")) {
+                StringBuilder message = new StringBuilder();
+message.append("Version: ").append(io.err0.client.BuildConfig.VERSION).append(" revision: ").append(io.err0.client.BuildConfig.GIT_SHORT_VERSION).append(" timestamp: ").append(BuildConfig.BUILD_UNIXTIME).append("\n");
+                System.out.println(message.toString());
+            }
+
             if (line.hasOption("help")) {
                 HelpFormatter helpFormatter = new HelpFormatter();
                 helpFormatter.printHelp("err0agent", options);
+                StringBuilder message = new StringBuilder();
+message.append("\n");
+message.append("You must specify:\n");
+message.append("1 of --stand-alone, or --token-file\n");
+message.append("1 of --insert, or --check\n");
+message.append("--git-dir\n");
+message.append("\n");
+message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
+                System.out.print(message.toString());
                 System.exit(0);
             }
 
