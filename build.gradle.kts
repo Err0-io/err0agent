@@ -60,6 +60,9 @@ dependencies {
   // https://mvnrepository.com/artifact/org.apache.httpcomponents.client5/httpclient5
   implementation("org.apache.httpcomponents.client5:httpclient5:5.1")
 
+  // https://mvnrepository.com/artifact/commons-cli/commons-cli
+  implementation("commons-cli:commons-cli:1.5.0")
+
   // the below are uncommented to allow me to use autocomplete to edit the
   // java unit test cases, please comment these out as the tests don't actually
   // depend on these:

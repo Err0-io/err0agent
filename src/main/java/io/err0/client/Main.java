@@ -251,6 +251,17 @@ public class Main {
     }
 
     public static void main(String args[]) {
+        if (args.length > 1 && ("--offline".equals(args[0]) || "--token".equals(args[0])))
+            legacy_compatibility_main(args);
+        else
+            new_syntax_main(args);
+    }
+
+    public static void new_syntax_main(String args[]) {
+        throw new RuntimeException("For regression testing.");
+    }
+
+    public static void legacy_compatibility_main(String args[]) {
 
         ApiProvider apiProvider = null;
         ResultDriver driver = new FileResultDriver();
