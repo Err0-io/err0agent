@@ -258,7 +258,7 @@ public class Main {
     }
 
     public static void new_syntax_main(String args[]) {
-        throw new RuntimeException("For regression testing.");
+        throw new RuntimeException("[AGENT-000073] For regression testing.");
     }
 
     public static void legacy_compatibility_main(String args[]) {
