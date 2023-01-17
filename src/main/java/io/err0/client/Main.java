@@ -285,12 +285,12 @@ public class Main {
             }
 
             if ((!line.hasOption("stand-alone")) && (!line.hasOption("token-file"))) {
-                System.err.println("Must specify either --stand-alone or --token-file.");
+                System.err.println("[AGENT-000074] Must specify either --stand-alone or --token-file.");
                 System.exit(-1);
             }
 
             if (!line.hasOption("git-dir")) {
-                System.err.println("Must specify --git-dir.");
+                System.err.println("[AGENT-000075] Must specify --git-dir.");
                 System.exit(-1);
             }
 
@@ -361,8 +361,8 @@ public class Main {
 
             if (line.hasOption("insert")) {
 
-                if (null == realmPolicy) throw new Exception("[AGENT-000001] Must specify realm policy using --realm before specifying checkout dir");
-                if (null == projectPolicy) throw new Exception("[AGENT-000002] Must specify application policy using --app before specifying checkout dir");
+                if (null == realmPolicy) throw new Exception("[AGENT-000076] Must specify realm policy using --realm before specifying checkout dir");
+                if (null == projectPolicy) throw new Exception("[AGENT-000077] Must specify application policy using --app before specifying checkout dir");
                 String checkoutDir = line.getOptionValue("git-dir");
                 boolean importCodes = false;
 
@@ -371,7 +371,7 @@ public class Main {
                 if (projectPolicy.renumber_on_next_run) {
                     doRenumber = true;
                     if (! apiProvider.markRenumberingOK(projectPolicy)) {
-                        throw new RuntimeException("[AGENT-000027] Unable to renumber automatically.");
+                        throw new RuntimeException("[AGENT-000078] Unable to renumber automatically.");
                     }
                 }
 
@@ -383,7 +383,7 @@ public class Main {
                 JsonObject runGitMetadata = new JsonObject();
                 final GitMetadata gitMetadata = populateGitMetadata(checkoutDir, appGitMetadata, runGitMetadata);
                 if (gitMetadata.detachedHead) {
-                    System.err.println("[AGENT-000040] Detached HEAD in the git repository.");
+                    System.err.println("[AGENT-000079] Detached HEAD in the git repository.");
                     System.exit(-1);
                 }
 
@@ -454,8 +454,8 @@ public class Main {
 
             } else if (line.hasOption("check")) {
 
-                if (null == realmPolicy) throw new Exception("[AGENT-000004] Must specify realm policy using --realm before specifying report dir");
-                if (null == projectPolicy) throw new Exception("[AGENT-000005] Must specify application policy using --app before specifying report dir");
+                if (null == realmPolicy) throw new Exception("[AGENT-000080] Must specify realm policy using --realm before specifying report dir");
+                if (null == projectPolicy) throw new Exception("[AGENT-000081] Must specify application policy using --app before specifying report dir");
                 String reportDir = line.getOptionValue("git-dir");
                 String current_branch = null;
                 boolean check = true; // always, only, "check" mode.
@@ -466,7 +466,7 @@ public class Main {
 
                 if (check) {
                     if ((apiProvider instanceof UnitTestApiProvider)) {
-                        throw new RuntimeException("[AGENT-000006] Not compatible with the unit test api provider.");
+                        throw new RuntimeException("[AGENT-000082] Not compatible with the unit test api provider.");
                     }
                 }
 
@@ -484,12 +484,12 @@ public class Main {
                 }
 
                 if (null == current_branch && gitMetadata.detachedHead) {
-                    System.err.println("[AGENT-000041] Detached HEAD in the git repository; current branch must be specified by --branch.");
+                    System.err.println("[AGENT-000083] Detached HEAD in the git repository; current branch must be specified by --branch.");
                     System.exit(-1);
                 }
                 if (! dirty) {
                     if (!gitMetadata.statusIsClean) {
-                        System.err.println("[AGENT-000042] --analyse requires a clean git checkout.");
+                        System.err.println("[AGENT-000084] --analyse requires a clean git checkout.");
                         System.exit(-1);
                     }
                 }
@@ -540,10 +540,10 @@ public class Main {
 
                 if (wouldChangeAFile) {
                     if (check) {
-                        System.err.println("[AGENT-000043] Please run --insert to add missing error codes and retry.");
+                        System.err.println("[AGENT-000085] Please run --insert to add missing error codes and retry.");
                         System.exit(-1);
                     } else {
-                        System.out.println("[AGENT-000044] Some error codes are missing.");
+                        System.out.println("[AGENT-000086] Some error codes are missing.");
                     }
                 }
 
@@ -553,22 +553,22 @@ public class Main {
                 }
 
             } else {
-                System.err.println("Must specify either --insert or --check");
+                System.err.println("[AGENT-000087] Must specify either --insert or --check");
                 System.exit(-1);
             }
         }
         catch (ParseException exp) {
             // oops, something went wrong
-            System.err.println("Parsing failed.  Reason: " + exp.getMessage());
+            System.err.println("[AGENT-000088] Parsing failed.  Reason: " + exp.getMessage());
             System.exit(-1);
         } catch (IOException e) {
-            System.err.println("Unable to configure via token-file: " + e.getMessage());
+            System.err.println("[AGENT-000089] Unable to configure via token-file: " + e.getMessage());
             System.exit(-1);
         } catch (GitAPIException e) {
-            System.err.println("Problem using git: " + e.getMessage());
+            System.err.println("[AGENT-000090] Problem using git: " + e.getMessage());
             System.exit(-1);
         } catch (Exception e) {
-            System.err.println("General error: " + e.getMessage());
+            System.err.println("[AGENT-000091] General error: " + e.getMessage());
             System.exit(-1);
         }
     }
