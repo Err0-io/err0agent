@@ -76,5 +76,6 @@ You must specify:
 1 of --insert, or --check
 --git-dir
 
+Copyright 2022-2023 BlueTrailSoftware, Holding Inc.
 License: Apache 2.0		Web: https://www.err0.io/
 ```
