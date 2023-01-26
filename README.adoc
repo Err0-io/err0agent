@@ -27,7 +27,8 @@ The err0agent supports: java, javascript, c, c++, c#, python, php, go, typescrip
 You will need java either from the JDK (java development kit) or JRE (java runtime environment) version 1.8 or above.  See: https://www.oracle.com/java/technologies/downloads/
 
 In stand-alone mode, you can use the err0agent jar to
-manage error codes in your project!  This assumes that you have built the jar with ```gradlew build```...
+manage error codes in your project!  This assumes that you have built the jar with ```gradlew build```...  or downloaded our latest release
+and extracted the file ```err0agent-java_1_8-fat.jar```.
 
 Firstly: to insert codes into your project:
 
