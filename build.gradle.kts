@@ -21,10 +21,11 @@ plugins {
   java
   application
   id("com.github.johnrengelman.shadow") version "7.1.2"
+  id("com.github.gmazzo.buildconfig") version "3.0.3"
 }
 
 group = "io.err0"
-version = "1.0.3-SNAPSHOT"
+version = "1.3.1-BETA"
 
 repositories {
   mavenCentral()
@@ -44,6 +45,26 @@ application {
   mainClass.set(launcherClassName)
 }
 
+fun versionBanner(): String {
+  val os = org.apache.commons.io.output.ByteArrayOutputStream()
+  project.exec {
+    commandLine = "git rev-parse --short HEAD".split(" ")
+    standardOutput = os
+  }
+  return String(os.toByteArray()).trim()
+}
+
+val buildTime = System.currentTimeMillis()
+
+buildConfig {
+  className("BuildConfig")
+  packageName("io.err0.client")
+  buildConfigField("String", "NAME", "\"io.err0.err0agent\"")
+  buildConfigField("String", "VERSION", provider { "\"${project.version}\"" })
+  buildConfigField("String", "GIT_SHORT_VERSION", "\"" + versionBanner() + "\"")
+  buildConfigField("long", "BUILD_UNIXTIME", "${buildTime}L")
+}
+
 dependencies {
   // https://mvnrepository.com/artifact/org.apache.ant/ant-launcher
   implementation("org.apache.ant:ant-launcher:1.10.11") //needed by shadow
@@ -59,6 +80,9 @@ dependencies {
 
   // https://mvnrepository.com/artifact/org.apache.httpcomponents.client5/httpclient5
   implementation("org.apache.httpcomponents.client5:httpclient5:5.1")
+
+  // https://mvnrepository.com/artifact/commons-cli/commons-cli
+  implementation("commons-cli:commons-cli:1.5.0")
 
   // the below are uncommented to allow me to use autocomplete to edit the
   // java unit test cases, please comment these out as the tests don't actually
@@ -96,33 +120,7 @@ tasks.withType<Test> {
 }
 
 tasks.withType<JavaExec> {
-
-  // Check-out bts projects...
-
-  /*
-  args = listOf(
-    "--token", "../ccc/api-masterdata-devel/err0-ccc-api-masterdata-ee9bfddb-94b3-11ec-8263-ae3b21a6cd73.json", "--insert", "../ccc/api-masterdata-devel/",
-  )
-  
-   */
-
-  /*
-  args = listOf(
-    "--token", "../fp/futurepay-portal/err0-futurepay-portal-1f8d9570-90b7-11ec-b6db-1613dacd7971.json", "--insert", "../fp/futurepay-portal/",
-    "--token", "../fp/futurepay-checkout-backend/err0-futurepay-checkout-backend-1ac49bae-90b7-11ec-b6db-1613dacd7971.json", "--insert", "../fp/futurepay-checkout-backend/",
-    "--token", "../fp/futurepay-credit-api/err0-futurepay-credit-service-1d26f5af-90b7-11ec-b6db-1613dacd7971.json", "--insert", "../fp/futurepay-credit-api/"
-  )
-
-  */
-
-  /*
-  // Check-out bts projects...
-  args = listOf(
-    "--token", "tokens/err0-bts-internal-projects-bts-platform-8ae046e8-8f12-11ec-b3b7-de7ff53b7565.json", "--insert", "../bts_internship_2019_be_app"
-  )
-
-   */
-
+/*
   // Check-out the open-source-bundle project at the same parent level as this project:
   args = listOf(
     // pass #1 -- insert error codes (or re-insert error codes).
@@ -167,4 +165,7 @@ tasks.withType<JavaExec> {
     "--token", "../open-source-bundle/dev-localhost/err0-mender-20221207-5b47787b-763f-11ed-8b95-4401bb8de3b3.json", "--analyse", "--dirty", "../open-source-bundle/mender", // go
 
   )
+
+ */
+  args = listOf("--version", "--help")
 }

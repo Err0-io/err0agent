@@ -25,6 +25,7 @@ import io.err0.client.rules.ExceptionRuleSelection;
 import io.err0.client.test.UnitTestApiProvider;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import org.apache.commons.cli.*;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.api.Status;
@@ -251,6 +252,345 @@ public class Main {
     }
 
     public static void main(String args[]) {
+        if (args.length > 1 && ("--offline".equals(args[0]) || "--token".equals(args[0])))
+            legacy_compatibility_main(args);
+        else
+            new_syntax_main(args);
+    }
+
+    public static void new_syntax_main(String args[]) {
+        Options options = new Options();
+        options.addOption("v", "version", false, "Show the current version of err0agent.");
+        options.addOption("h", "help", false, "Print this help message.");
+        options.addOption("s", "stand-alone", false, "Run err0agent stand alone, no account required!");
+        options.addOption("t", "token-file", true, "Run err0agent with a project token (json) from err0.io.");
+        options.addOption("i", "insert", false, "Use err0agent to insert codes in your project.");
+        options.addOption("c", "check", false, "Use err0agent to check for canonical codes in your project.");
+        options.addOption("g", "git-dir", true, "Use with this git project.");
+        options.addOption("r", "renumber", false, "When used with insert, will renumber the project.");
+        options.addOption("b", "branch", true, "Can be used to provide a branch name e.g. in a CI/CD pipeline.");
+        options.addOption("d", "dirty", false, "Can be used to run err0agent with a dirty checkout.");
+        options.addOption("m", "metrics", false, "Can be used to output source code metrics in json format.");
+        options.addOption("e", "error-codes", false, "Can be used to output error code data in json format.");
+
+        // create the parser
+        CommandLineParser parser = new DefaultParser();
+        try {
+            // parse the command line arguments
+            CommandLine line = parser.parse(options, args);
+
+            if (line.hasOption("version")) {
+                StringBuilder message = new StringBuilder();
+message.append("Version: ").append(io.err0.client.BuildConfig.VERSION).append(" revision: ").append(io.err0.client.BuildConfig.GIT_SHORT_VERSION).append(" timestamp: ").append(BuildConfig.BUILD_UNIXTIME).append("\n");
+                System.out.println(message.toString());
+            }
+
+            if (line.hasOption("help")) {
+                HelpFormatter helpFormatter = new HelpFormatter();
+                helpFormatter.printHelp("err0agent", options);
+                StringBuilder message = new StringBuilder();
+message.append("\n");
+message.append("You must specify:\n");
+message.append("1 of --stand-alone, or --token-file\n");
+message.append("1 of --insert, or --check\n");
+message.append("--git-dir\n");
+message.append("\n");
+message.append("Copyright 2022-2023 BlueTrailSoftware, Holding Inc.\n");
+message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
+                System.out.print(message.toString());
+                System.exit(0);
+            }
+
+            if ((!line.hasOption("stand-alone")) && (!line.hasOption("token-file"))) {
+                System.err.println("[AGENT-000074] Must specify either --stand-alone or --token-file.");
+                System.exit(-1);
+            }
+
+            if (!line.hasOption("git-dir")) {
+                System.err.println("[AGENT-000075] Must specify --git-dir.");
+                System.exit(-1);
+            }
+
+            ApiProvider apiProvider = null;
+            ResultDriver driver = new FileResultDriver();
+
+            RealmPolicy realmPolicy = null;
+            ProjectPolicy projectPolicy = null;
+
+            if (line.hasOption("stand-alone")) {
+                // a new API provider per token
+                if (apiProvider != null) {
+                    apiProvider.close();
+                    apiProvider = null;
+                }
+                projectPolicy = null;
+                realmPolicy = null;
+
+                apiProvider = new OfflineApiProvider();
+
+                JsonObject realmJson = new JsonObject();
+                JsonObject policy = new JsonObject();
+                policy.addProperty("error_prefix", "ERR");
+                realmJson.add("policy", policy);
+                JsonObject realm = new JsonObject();
+                realm.addProperty("pk", UUID.randomUUID().toString());
+                realm.add("data", realmJson);
+
+                JsonObject projectJson = new JsonObject();
+                JsonObject project = new JsonObject();
+                project.addProperty("pk", UUID.randomUUID().toString());
+                project.add("data", projectJson);
+
+                realmPolicy = new RealmPolicy(realm);
+                projectPolicy = new ProjectPolicy(realmPolicy, project);
+            }
+            else if (line.hasOption("token-file")) {
+                // a new API provider per token
+                if (apiProvider != null) {
+                    apiProvider.close();
+                    apiProvider = null;
+                }
+                projectPolicy = null;
+                realmPolicy = null;
+
+                apiProvider = new RestApiProvider(line.getOptionValue("token-file"));
+                RestApiProvider restApiProvider = (RestApiProvider) apiProvider;
+
+                AtomicReference<RealmPolicy> arRealmPolicy = new AtomicReference<>();
+                AtomicReference<ProjectPolicy> arApplicationPolicy = new AtomicReference<>();
+
+                // Download the policies...
+                restApiProvider.getPolicy(responseJson -> {
+                    if (GsonHelper.asBoolean(responseJson, "success", false)) {
+                        arRealmPolicy.set(new RealmPolicy(responseJson.get("realm").getAsJsonObject()));
+                        arApplicationPolicy.set(new ProjectPolicy(arRealmPolicy.get(), responseJson.get("app").getAsJsonObject()));
+                    } else {
+                        RestApiProvider.JsonFormattedExceptionHelper.formatToStderrAndFail(responseJson);
+                    }
+                });
+
+                realmPolicy = arRealmPolicy.get();
+                projectPolicy = arApplicationPolicy.get();
+            }
+
+            boolean metricsReport = line.hasOption("metrics");
+            boolean errorCodeData = line.hasOption("error-codes");
+
+            if (line.hasOption("insert")) {
+
+                if (null == realmPolicy) throw new Exception("[AGENT-000076] Must specify realm policy using --realm before specifying checkout dir");
+                if (null == projectPolicy) throw new Exception("[AGENT-000077] Must specify application policy using --app before specifying checkout dir");
+                String checkoutDir = line.getOptionValue("git-dir");
+                boolean importCodes = false;
+
+                boolean doRenumber = line.hasOption("renumber");
+
+                if (projectPolicy.renumber_on_next_run) {
+                    doRenumber = true;
+                    if (! apiProvider.markRenumberingOK(projectPolicy)) {
+                        throw new RuntimeException("[AGENT-000078] Unable to renumber automatically.");
+                    }
+                }
+
+                final GlobalState globalState = new GlobalState();
+
+                apiProvider.ensurePolicyIsSetUp(projectPolicy);
+
+                JsonObject appGitMetadata = new JsonObject();
+                JsonObject runGitMetadata = new JsonObject();
+                final GitMetadata gitMetadata = populateGitMetadata(checkoutDir, appGitMetadata, runGitMetadata);
+                if (gitMetadata.detachedHead) {
+                    System.err.println("[AGENT-000079] Detached HEAD in the git repository.");
+                    System.exit(-1);
+                }
+
+                final String gitHash = gitMetadata.gitHash;
+
+                if (! importCodes) {
+                    apiProvider.importPreviousState(projectPolicy, globalState, GsonHelper.asString(runGitMetadata, "current_branch", null));
+                }
+
+                final UUID run_uuid = apiProvider.createRun(projectPolicy, appGitMetadata, runGitMetadata, "insert");
+
+                final StatisticsGatherer statisticsGatherer = new StatisticsGatherer();
+                boolean didChangeAFile = false;
+
+                try {
+
+                    scan(projectPolicy, globalState, checkoutDir, apiProvider, doRenumber);
+
+                    if (importCodes) {
+                        _import(apiProvider, globalState, projectPolicy);
+                    }
+
+
+                    didChangeAFile = runInsert(apiProvider, globalState, projectPolicy, driver, run_uuid, statisticsGatherer);
+                }
+                catch (Throwable t) {
+                    statisticsGatherer.throwable = t;
+                }
+
+                if (didChangeAFile) {
+                    // flag the hash as dirty, we changed files
+                    if (null != gitHash && !gitHash.endsWith("-dirty")) {
+                        runGitMetadata.addProperty("git_hash", gitHash + "-dirty");
+                    }
+                    // remove tags, it no longer corresponds to the tagged version
+                    runGitMetadata.add("git_tags", new JsonArray());
+                }
+
+                JsonObject runMetadata = statisticsGatherer.toRunMetadata(true);
+                //System.out.println("Statistics:\n" + runMetadata.toString());
+                apiProvider.updateRun(projectPolicy, run_uuid, runGitMetadata, runMetadata);
+
+                if (metricsReport || errorCodeData) {
+                    Date date = new Date();
+                    final String dateString = dateFormat.format(date);
+                    if (metricsReport) {
+                        String filename = "err0-metrics-" + dateString + ".json";
+                        Files.write(Utils.pathOf(filename), runMetadata.toString().getBytes(StandardCharsets.UTF_8));
+                    }
+                    if (errorCodeData) {
+                        String filename = "err0-data-" + dateString + ".json";
+                        JsonArray errorCodes = new JsonArray();
+                        statisticsGatherer.results.forEach(forInsert -> {
+                            JsonObject insert = new JsonObject();
+                            insert.addProperty("error_code", forInsert.errorCode);
+                            insert.addProperty("error_ordinal", forInsert.errorOrdinal);
+                            insert.add("metadata", forInsert.metaData);
+                            errorCodes.add(insert);
+                        });
+                        Files.write(Utils.pathOf(filename), errorCodes.toString().getBytes(StandardCharsets.UTF_8));
+                    }
+                }
+
+                if (null != statisticsGatherer.throwable) {
+                    System.err.println(statisticsGatherer.throwable.getMessage());
+                    System.exit(-1);
+                }
+
+            } else if (line.hasOption("check")) {
+
+                if (null == realmPolicy) throw new Exception("[AGENT-000080] Must specify realm policy using --realm before specifying report dir");
+                if (null == projectPolicy) throw new Exception("[AGENT-000081] Must specify application policy using --app before specifying report dir");
+                String reportDir = line.getOptionValue("git-dir");
+                String current_branch = null;
+                boolean check = true; // always, only, "check" mode.
+                boolean dirty = line.hasOption("dirty");
+                if (line.hasOption("branch")) {
+                    current_branch = line.getOptionValue("branch");
+                }
+
+                if (check) {
+                    if ((apiProvider instanceof UnitTestApiProvider)) {
+                        throw new RuntimeException("[AGENT-000082] Not compatible with the unit test api provider.");
+                    }
+                }
+
+                final GlobalState globalState = new GlobalState();
+
+                apiProvider.ensurePolicyIsSetUp(projectPolicy);
+
+                JsonObject appGitMetadata = new JsonObject();
+                JsonObject runGitMetadata = new JsonObject();
+                final GitMetadata gitMetadata = populateGitMetadata(reportDir, appGitMetadata, runGitMetadata);
+
+                if (null != current_branch && !"".equals(current_branch)) {
+                    // override current_branch setting
+                    runGitMetadata.addProperty("current_branch", current_branch);
+                }
+
+                if (null == current_branch && gitMetadata.detachedHead) {
+                    System.err.println("[AGENT-000083] Detached HEAD in the git repository; current branch must be specified by --branch.");
+                    System.exit(-1);
+                }
+                if (! dirty) {
+                    if (!gitMetadata.statusIsClean) {
+                        System.err.println("[AGENT-000084] --analyse requires a clean git checkout.");
+                        System.exit(-1);
+                    }
+                }
+
+                apiProvider.importPreviousState(projectPolicy, globalState, GsonHelper.asString(runGitMetadata, "current_branch", null));
+
+                final UUID run_uuid = apiProvider.createRun(projectPolicy, appGitMetadata, runGitMetadata, "analyse");
+
+                final StatisticsGatherer statisticsGatherer = new StatisticsGatherer();
+                boolean wouldChangeAFile = true;
+                try {
+                    scan(projectPolicy, globalState, reportDir, apiProvider, false);
+
+                    wouldChangeAFile = runAnalyse(apiProvider, globalState, projectPolicy, driver, run_uuid, statisticsGatherer);
+                }
+                catch (Throwable t) {
+                    statisticsGatherer.throwable = t;
+                }
+
+                JsonObject runMetadata = statisticsGatherer.toRunMetadata(! wouldChangeAFile);
+                //System.out.println("Statistics:\n" + runMetadata.toString());
+                apiProvider.updateRun(projectPolicy, run_uuid, runGitMetadata, runMetadata);
+
+                if (! wouldChangeAFile) {
+                    apiProvider.finaliseRun(projectPolicy, run_uuid);
+                }
+
+                if (metricsReport || errorCodeData) {
+                    Date date = new Date();
+                    final String dateString = dateFormat.format(date);
+                    if (metricsReport) {
+                        String filename = "err0-metrics-" + dateString + ".json";
+                        Files.write(Utils.pathOf(filename), runMetadata.toString().getBytes(StandardCharsets.UTF_8));
+                    }
+                    if (errorCodeData) {
+                        String filename = "err0-data-" + dateString + ".json";
+                        JsonArray errorCodes = new JsonArray();
+                        statisticsGatherer.results.forEach(forInsert -> {
+                            JsonObject insert = new JsonObject();
+                            insert.addProperty("error_code", forInsert.errorCode);
+                            insert.addProperty("error_ordinal", forInsert.errorOrdinal);
+                            insert.add("metadata", forInsert.metaData);
+                            errorCodes.add(insert);
+                        });
+                        Files.write(Utils.pathOf(filename), errorCodes.toString().getBytes(StandardCharsets.UTF_8));
+                    }
+                }
+
+                if (wouldChangeAFile) {
+                    if (check) {
+                        System.err.println("[AGENT-000085] Please run --insert to add missing error codes and retry.");
+                        System.exit(-1);
+                    } else {
+                        System.out.println("[AGENT-000086] Some error codes are missing.");
+                    }
+                }
+
+                if (null != statisticsGatherer.throwable) {
+                    System.err.println(statisticsGatherer.throwable.getMessage());
+                    System.exit(-1);
+                }
+
+            } else {
+                System.err.println("[AGENT-000087] Must specify either --insert or --check");
+                System.exit(-1);
+            }
+        }
+        catch (ParseException exp) {
+            // oops, something went wrong
+            System.err.println("[AGENT-000088] Parsing failed.  Reason: " + exp.getMessage());
+            System.exit(-1);
+        } catch (IOException e) {
+            System.err.println("[AGENT-000089] Unable to configure via token-file: " + e.getMessage());
+            System.exit(-1);
+        } catch (GitAPIException e) {
+            System.err.println("[AGENT-000090] Problem using git: " + e.getMessage());
+            System.exit(-1);
+        } catch (Exception e) {
+            System.err.println("[AGENT-000091] General error: " + e.getMessage());
+            System.exit(-1);
+        }
+    }
+
+    public static void legacy_compatibility_main(String args[]) {
 
         ApiProvider apiProvider = null;
         ResultDriver driver = new FileResultDriver();
