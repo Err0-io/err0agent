@@ -100,6 +100,13 @@ public class Main {
             if (matcher.find()) {
                 gitpath = Utils.pathOf(checkoutDir + "/" + matcher.group(1));
             }
+            if (! Files.exists(gitpath) || ! Files.isDirectory(gitpath)) {
+                System.err.println("[AGENT-000092] Error: cannot find .git directory, err0's docker scripts must be run from the top-level of your git project, not a submodule.");
+                System.exit(-1);
+            }
+        } else if (! Files.exists(gitpath)) {
+            System.err.println("[AGENT-000093] Error: cannot find .git directory are you at the top-level of your git project?");
+            System.exit(-1);
         }
 
         // find git version etc.
