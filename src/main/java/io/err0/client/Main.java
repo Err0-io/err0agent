@@ -1353,6 +1353,7 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
 
                             //final String errorCode = policy.getErrorCodeFormatter().formatErrorCodeOnly(currentToken.errorOrdinal);
 
+                            metaData.addProperty("language", stateItem.parse.language.name());
                             metaData.addProperty("type", lastToken.classification.toString());
                             if (lastToken.classification == Token.Classification.EXCEPTION_THROW && null != lastToken.exceptionClass) {
                                 metaData.addProperty("exception_class", lastToken.exceptionClass);
