@@ -1205,9 +1205,6 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
         for (int i = 0, l = fileNamesInOrder.length; i < l; ++i) {
             final String filename = fileNamesInOrder[i];
 
-            //if (! filename.endsWith("StreetStallWebVerticle.java")) continue;
-            //if (! filename.endsWith("PublishedSnapshotService.cs")) continue;
-
             final StateItem stateItem = globalState.files.get(filename);
             final SourceCodeParse parse = stateItem.parse;
 
