@@ -30,7 +30,21 @@ The err0agent is the agent that will parse the source code, detect errors, excep
 
 ## Which programming languages are supported by err0?
 
-The currently support languages are : java, javascript, c, c++, c#, python, php, go, typescript, and rust.
+The err0agent automatically detects the programming language.
+
+<div align="center">
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/c/c-original.svg" width="50" height="50"/>
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cplusplus/cplusplus-original.svg" width="50" height="50"/>
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/csharp/csharp-original.svg" width="50" height="50"/>
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original-wordmark.svg" width="50" height="50"/>
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" width="50" height="50" />
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" width="50" height="50" />
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" width="50" height="50"/>
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/php/php-original.svg" width="50" height="50"/>
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original-wordmark.svg" width="50" height="50"/>
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/rust/rust-plain.svg" width="50" height="50"/>
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/go/go-original-wordmark.svg" width="50" height="50"/>
+</div>
 
 ## Using err0agent
 
@@ -46,7 +60,17 @@ When you're ready to use this in production why not create an err0 account, you 
 
 ### Full mode
 
-A step by step guide is available on the <a href="https://bit.ly/3PJoFaw">err0</a> platform.
+A step by step guide is available on the <a href="https://bit.ly/3PJoFaw">err0</a> platform, which details each step:
+ 1. Create a numbering policy
+ 2. Add a project to the numbering policy
+ 3. Run the agent, in sandbox mode, on your code to insert error codes
+ 4. Test & tweak the agent configuration to reach your objective
+ 5. Disable sandbox mode and commit error codes
+ 6. Run the agent  `err0-check.sh` command to mark the error codes as committed
+ 7. Create a software (ie. product or service)
+ 8. Track your software versions, to access error codes diff
+ 9. Contribute knowledge and publish knowledge base on your error codes
+ 10. Use error code contexts to keep track of how frequently error codes are occuring
 
 ## License
 
