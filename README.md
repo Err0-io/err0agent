@@ -7,6 +7,7 @@
 <div align="center">
     <a href="https://github.com/Err0-io/err0agent/LICENSE"><img src="https://img.shields.io/github/license/Err0-io/err0agent" alt="license"></a>
     <a href="https://github.com/release/Err0-io/err0agent"><img src="https://img.shields.io/github/release/Err0-io/err0agent" alt="license"></a>
+	<img alt="GitHub all releases" src="https://img.shields.io/github/downloads/Err0-io/err0agent/total">
     <a href="https://twitter.com/err0_io"><img src="https://img.shields.io/twitter/follow/err0_io?style=social" alt="Twitter"></a>
 </div>
 
