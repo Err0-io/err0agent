@@ -7,7 +7,7 @@
 <div align="center">
     <a href="https://github.com/Err0-io/err0agent/LICENSE"><img src="https://img.shields.io/github/license/Err0-io/err0agent" alt="license"></a>
     <a href="https://github.com/release/Err0-io/err0agent"><img src="https://img.shields.io/github/release/Err0-io/err0agent" alt="license"></a>
-	<img alt="GitHub all releases" src="https://img.shields.io/github/downloads/Err0-io/err0agent/total">
+        <img alt="GitHub all releases" src="https://img.shields.io/github/downloads/Err0-io/err0agent/total">
     <a href="https://twitter.com/err0_io"><img src="https://img.shields.io/twitter/follow/err0_io?style=social" alt="Twitter"></a>
 </div>
 
@@ -45,6 +45,15 @@ The err0agent automatically detects the programming language.
 <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original-wordmark.svg" width="50" height="50"/>
 <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/rust/rust-plain.svg" width="50" height="50"/>
 <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/go/go-original-wordmark.svg" width="50" height="50"/>
+</div>
+
+## Can it be integrated in CI/CD?
+
+Yes. We are using GitLab on our end, and the err0agent is provided with:
+<div align="center">
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original-wordmark.svg" width="50" height="50"/>
+<img src="https://dwglogo.com/wp-content/uploads/2017/12/Gradle_logo_01.png" width="100" height="50"/>
+<img src="https://raw.githubusercontent.com/docker-library/docs/e2782b8942c1af41419536078c8d0176665a005d/maven/logo.png" width="120" height="50">
 </div>
 
 ## Using err0agent
