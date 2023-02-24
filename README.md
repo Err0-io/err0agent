@@ -21,6 +21,8 @@ The use of Error Codes enable to solve key scaling issues in Product Management,
 
 See https://www.err0.io/ for more information.
 
+Visit the err0agent knowledge base: https://err0agent.err0.io/ for more information on err0agent's codes.
+
 ## What is required to test or use err0?
 
 A <a href="https://bit.ly/3PJoFaw">free account on the err0.io platform</a> is required to use all the features of err0agent, but you can also use it without an account by using the stand-alone mode.
