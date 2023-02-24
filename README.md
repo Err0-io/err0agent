@@ -83,7 +83,7 @@ A step by step guide is available on the <a href="https://bit.ly/3PJoFaw">err0</
  9. Contribute knowledge and publish knowledge base on your error codes
  10. Use error code contexts to keep track of how frequently error codes are occuring
  
-### err0agent comment line parameters help
+### err0agent command line parameters help
 ```
 usage: err0agent
  -b,--branch <arg>       Can be used to provide a branch name e.g. in a
