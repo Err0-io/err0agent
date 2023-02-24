@@ -82,6 +82,34 @@ A step by step guide is available on the <a href="https://bit.ly/3PJoFaw">err0</
  8. Track your software versions, to access error codes diff
  9. Contribute knowledge and publish knowledge base on your error codes
  10. Use error code contexts to keep track of how frequently error codes are occuring
+ 
+### err0agent comment line parameters help
+```
+usage: err0agent
+ -b,--branch <arg>       Can be used to provide a branch name e.g. in a
+                         CI/CD pipeline.
+ -c,--check              Use err0agent to check for canonical codes in
+                         your project.
+ -d,--dirty              Can be used to run err0agent with a dirty
+                         checkout.
+ -e,--error-codes        Can be used to output error code data in json
+                         format.
+ -g,--git-dir <arg>      Use with this git project.
+ -h,--help               Print this help message.
+ -i,--insert             Use err0agent to insert codes in your project.
+ -m,--metrics            Can be used to output source code metrics in json
+                         format.
+ -r,--renumber           When used with insert, will renumber the project.
+ -s,--stand-alone        Run err0agent stand alone, no account required!
+ -t,--token-file <arg>   Run err0agent with a project token (json) from
+                         err0.io.
+ -v,--version            Show the current version of err0agent.
+
+You must specify:
+1 of --stand-alone, or --token-file
+1 of --insert, or --check
+--git-dir
+```
 
 ## License
 
