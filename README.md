@@ -49,7 +49,7 @@ The err0agent automatically detects the programming language.
 
 ## Can it be integrated in CI/CD?
 
-Yes. We are using GitLab on our end, and the err0agent is provided with:
+Yes. We are using both GitLab and GitHub on our side, and the err0agent is provided with:
 <div align="center">
 <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original-wordmark.svg" width="50" height="50"/>
 <img src="https://dwglogo.com/wp-content/uploads/2017/12/Gradle_logo_01.png" width="100" height="50"/>
@@ -66,7 +66,7 @@ In stand-alone mode, you can use the err0agent jar to manage error codes in your
 
 [![asciicast](https://asciinema.org/a/557983.svg)](https://asciinema.org/a/557983)
 
-When you're ready to use this in production why not create an err0 account, you can make a detailed configuration for the agent on our platform and of course manage knowledge around your error codes.
+When you're ready to use this in production why not <a href="https://bit.ly/3PJoFaw">create an err0 account</a>, you can make a detailed configuration for the agent on our platform and of course manage knowledge around your error codes.
 
 ### Full mode
 
