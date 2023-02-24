@@ -1067,6 +1067,7 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
             catch (IOException e) {
                 System.err.println("[AGENT-000069] While recursing: " + startPoint);
                 e.printStackTrace(System.err);
+                System.exit(-1);
             }
 
         });
