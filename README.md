@@ -81,7 +81,7 @@ You will need Java version 1.8 or above.
 
 In stand-alone mode, you can use the err0agent jar to insert error codes in your project! See the demo below, 2 minutes on freshly cloned from GitHub AI project coded in Python.
 
-[![asciicast](https://asciinema.org/a/557983.svg)](https://asciinema.org/a/557983)
+<a href="https://asciinema.org/a/557983" target="_blank"><img src="https://asciinema.org/a/557983.svg" /></a>
 
 When you're ready to use this in production why not <a href="https://bit.ly/3Sv4dLV">create an err0 account</a>, you can make a detailed configuration for the agent on our platform and of course manage knowledge around your error codes. It's free, no credit card required.
 
@@ -98,6 +98,8 @@ A step by step guide is available on the <a href="https://bit.ly/3Sv4dLV">err0</
  8. Track your software versions, to access error codes diff
  9. Contribute knowledge and publish knowledge base on your error codes
  10. Use error code contexts to keep track of how frequently error codes are occuring
+
+<a href="https://asciinema.org/a/564800?t=02" target="_blank"><img src="https://asciinema.org/a/564800.svg" /></a>
  
 ### err0agent command line parameters help
 ```
