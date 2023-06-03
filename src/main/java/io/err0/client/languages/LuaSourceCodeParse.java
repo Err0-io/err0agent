@@ -61,21 +61,19 @@ public class LuaSourceCodeParse extends SourceCodeParse {
         for (int i = 0, l = chars.length; i < l; ++i) {
             final char ch = chars[i];
             boolean precedingCharactersAreIndent = countIndent;
-            if (countIndent) {
-                if (ch == '\n') {
-                    ++lineNumber;
-                    indentNumber = 0;
-                } else if (ch == '\t' && countIndent) {
-                    indentNumber = ((indentNumber / 8) + 1) * 8; // tab is 8 spaces
-                } else if (ch == ' ' && countIndent) {
-                    ++indentNumber;
-                } else {
-                    countIndent = false;
-                }
+            if (ch == '\n') {
+                ++lineNumber;
+                indentNumber = 0;
+            } else if (ch == '\t' && countIndent) {
+                indentNumber = ((indentNumber / 8) + 1) * 8; // tab is 8 spaces
+            } else if (ch == ' ' && countIndent) {
+                ++indentNumber;
+            } else {
+                countIndent = false;
+            }
 
-                if (countIndent) {
-                    currentToken.depth = indentNumber;
-                }
+            if (countIndent) {
+                currentToken.depth = indentNumber;
             }
 
             switch (currentToken.type) {
@@ -111,6 +109,7 @@ public class LuaSourceCodeParse extends SourceCodeParse {
                         currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenClassification.COMMENT_LINE;
                         currentToken.sourceCode.append(ch);
+                        currentToken.sourceCode.append(chars[++i]);
                         currentToken.depth = indentNumber;
                         currentToken.startLineNumber = lineNumber;
                     } else {
@@ -258,14 +257,11 @@ public class LuaSourceCodeParse extends SourceCodeParse {
                         if (null != token.next()) {
                             // note token current is a type of string literal.
                             boolean staticLiteral = true;
-                            boolean fLiteral = false;
                             Token current = token.next();
                             StringBuilder cleaned = new StringBuilder();
                             StringBuilder output = new StringBuilder();
                             int bracketDepth = 1; // we are already one bracket into the expression.
-                            if (token.source.endsWith("f")) {
-                                fLiteral = true;
-                            }
+                            boolean exit = false;
                             do {
                                 final String sourceCode = null != current.sourceNoErrorCode ? current.sourceNoErrorCode : current.source;
                                 switch (current.type) {
@@ -280,10 +276,14 @@ public class LuaSourceCodeParse extends SourceCodeParse {
                                                 }
                                             } else if (ch == '(') {
                                                 ++bracketDepth;
+                                            } else if (token.classification == Token.Classification.EXCEPTION_THROW && ch == ',') {
+                                                // second parameter in error() is an error level, e.g. 1, 2, 3.
+                                                exit = true;
+                                                break;
                                             }
                                             if (!Character.isWhitespace(ch)) cleaned.append(ch);
                                             output.append(ch);
-                                            if (!(Character.isWhitespace(ch) || ch == '+')) { // string concatenation
+                                            if (!(Character.isWhitespace(ch) || ch == '.')) { // string concatenation
                                                 dynamic = true;
                                             }
                                         }
@@ -296,16 +296,14 @@ public class LuaSourceCodeParse extends SourceCodeParse {
                                     case COMMENT_LINE:
                                         break;
                                     default:
-                                        if (fLiteral && token.next() == current) {
-                                            if (sourceCode.indexOf('{') >= 0) {
-                                                staticLiteral = false;
-                                            }
-                                        }
                                         cleaned.append(sourceCode);
                                         output.append(sourceCode);
                                         break;
                                 }
                                 if (bracketDepth < 1) {
+                                    break;
+                                }
+                                if (exit) {
                                     break;
                                 }
                             }
