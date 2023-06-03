@@ -1064,7 +1064,7 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                         } else if (luaAllowed && newFileLower.endsWith(".lua")) {
                             final FileCoding fileCoding = new FileCoding(p);
                             globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, LuaSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
-                            System.out.println("Parsed: " + newFile);
+                            System.out.println("[AGENT-000094] Parsed: " + newFile);
                         }
                     }
                 });
