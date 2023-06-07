@@ -37,6 +37,7 @@ public class Token {
     public Token next() { return this.next; }
 
     public TokenClassification type;
+    public int longBracketLevel = 0;
     public StringBuilder sourceCode = new StringBuilder();
     public String initialSource = null;
     public String source = null;
@@ -62,6 +63,8 @@ public class Token {
                 return s.length() > 6 ? s.substring(3, s.length() - 6) : "";
             case BACKTICK_LITERAL:
                 return s.length() > 2 ? s.substring(1, s.length() - 2) : "";
+            case LONGBRACKET_LITERAL:
+                return s.length() > (4 + (2*longBracketLevel)) ? s.substring(2 + longBracketLevel, s.length() - (4 + (2*longBracketLevel))) : "";
             default:
                 throw new RuntimeException("[AGENT-000020] Not a string literal, type = " + type.name());
         }
@@ -76,6 +79,8 @@ public class Token {
                 return 1;
             case QUOT3_LITERAL:
                 return 3;
+            case LONGBRACKET_LITERAL:
+                return 2 + longBracketLevel;
             default:
                 throw new RuntimeException("[AGENT-000017] Not a string literal, type = " + type.name());
         }

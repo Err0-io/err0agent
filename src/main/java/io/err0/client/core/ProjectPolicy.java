@@ -314,7 +314,7 @@ public class ProjectPolicy {
     private Pattern reErrorNumber_lua = null;
     public Pattern getReErrorNumber_lua() {
         if (null == reErrorNumber_lua) {
-            reErrorNumber_lua = Pattern.compile("^('|\"|(\\[=*\\]))\\[" + getErrorPrefix() + "-(\\d+)\\]\\s*");
+            reErrorNumber_lua = Pattern.compile("^('|\"|(\\[=*\\[))\\[" + getErrorPrefix() + "-(\\d+)\\]\\s*");
         }
         return reErrorNumber_lua;
     }

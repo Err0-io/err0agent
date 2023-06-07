@@ -76,6 +76,7 @@ public class LuaSourceCodeParse extends SourceCodeParse {
                 currentToken.depth = indentNumber;
             }
 
+            int longBracketLevel = 0;
             switch (currentToken.type) {
                 case SOURCE_CODE:
                     if (ch == '\n') {
@@ -101,9 +102,17 @@ public class LuaSourceCodeParse extends SourceCodeParse {
                         currentToken.sourceCode.append(ch);
                         currentToken.depth = indentNumber;
                         currentToken.startLineNumber = lineNumber;
-                    /*
-                    FIXME: [[ ... ]] [===[ ... ]===] multi-line strings levels 0 and 3 in this example
-                     */
+                    } else if ((longBracketLevel = isOpeningLongBracket(chars, i)) >= 0) {
+                        parse.tokenList.add(currentToken.finish(lineNumber));
+                        currentToken = new Token(n++, currentToken);
+                        currentToken.type = TokenClassification.LONGBRACKET_LITERAL;
+                        currentToken.longBracketLevel = longBracketLevel;
+                        currentToken.sourceCode.append(ch);
+                        currentToken.sourceCode.append(chars[++i]);
+                        for (int j = 0; j < longBracketLevel; ++j)
+                            currentToken.sourceCode.append(chars[++i]);
+                        currentToken.depth = indentNumber;
+                        currentToken.startLineNumber = lineNumber;
                     } else if (precedingCharactersAreIndent && ch == '-' && (i+1 < l && chars[i+1] == '-')) {
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
@@ -161,15 +170,58 @@ public class LuaSourceCodeParse extends SourceCodeParse {
                         currentToken.sourceCode.append(ch);
                     }
                     break;
+                case LONGBRACKET_LITERAL:
+                    if (isClosingLongBracket(chars, i, currentToken.longBracketLevel)) {
+                        currentToken.sourceCode.append(ch);
+                        currentToken.sourceCode.append(chars[++i]);
+                        for (int j = 0; j < longBracketLevel; ++j)
+                            currentToken.sourceCode.append(chars[++i]);
+                        parse.tokenList.add(currentToken.finish(lineNumber));
+                        currentToken = new Token(n++, currentToken);
+                        currentToken.type = TokenClassification.SOURCE_CODE;
+                        currentToken.depth = indentNumber;
+                        currentToken.startLineNumber = lineNumber;
+                    } else {
+                        currentToken.sourceCode.append(ch);
+                    }
+                    break;
             }
         }
         parse.tokenList.add(currentToken.finish(lineNumber));
         return parse;
     }
 
+    private static int isOpeningLongBracket(char chars[], int i) {
+        int longBracketLevel = 0;
+        if (chars[i++] == '[') {
+            for(;;++i) {
+                if (chars[i] == '[') {
+                    return longBracketLevel;
+                } else if (chars[i] != '=') {
+                    return -1;
+                }
+                ++longBracketLevel;
+            }
+        } else {
+            return -1;
+        }
+    }
+
+    private static boolean isClosingLongBracket(char chars[], int i, int longBracketLevel) {
+        if (chars[i++] != ']')
+            return false;
+        for (;longBracketLevel>0;--longBracketLevel) {
+            if (chars[i++] != '=')
+                return false;
+        }
+        if (chars[i++] != ']')
+            return false;
+        return true;
+    }
+
     @Override
     public boolean couldContainErrorNumber(Token token) {
-        return token.type == TokenClassification.APOS_LITERAL || token.type == TokenClassification.BACKTICK_LITERAL || token.type == TokenClassification.QUOT_LITERAL;
+        return token.type == TokenClassification.APOS_LITERAL || token.type == TokenClassification.QUOT_LITERAL || token.type == TokenClassification.LONGBRACKET_LITERAL;
     }
 
     @Override
@@ -178,7 +230,7 @@ public class LuaSourceCodeParse extends SourceCodeParse {
             switch (token.type) {
                 case APOS_LITERAL:
                 case QUOT_LITERAL:
-                case QUOT3_LITERAL:
+                case LONGBRACKET_LITERAL:
                 {
                     // 1) Strip '[ERR-nnnnnn] ' from string literals for re-injection
                     Matcher matcherErrorNumber = policy.getReErrorNumber_lua().matcher(token.source);
@@ -208,7 +260,7 @@ public class LuaSourceCodeParse extends SourceCodeParse {
                 {
                     token.classification = Token.Classification.NOT_FULLY_CLASSIFIED;
                     Token next = token.next();
-                    if (next != null && (next.type == TokenClassification.QUOT_LITERAL || next.type == TokenClassification.APOS_LITERAL || next.type == TokenClassification.QUOT3_LITERAL)) {
+                    if (next != null && (next.type == TokenClassification.QUOT_LITERAL || next.type == TokenClassification.APOS_LITERAL || next.type == TokenClassification.LONGBRACKET_LITERAL)) {
                         // rule 0 - this code must be followed by a string literal
                         if (null != languageCodePolicy && languageCodePolicy.rules.size() > 0) {
                             // classify according to rules.
