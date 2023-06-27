@@ -35,7 +35,16 @@ public abstract class SourceCodeParse {
     public final LanguageCodePolicy languageCodePolicy;
 
     public enum Language {
-        JAVA, C_SHARP, GOLANG, PYTHON, JAVASCRIPT, TYPESCRIPT, PHP, C_CPP, RUST
+        JAVA,
+        C_SHARP,
+        GOLANG,
+        PYTHON,
+        JAVASCRIPT,
+        TYPESCRIPT,
+        PHP,
+        C_CPP,
+        RUST,
+        LUA,
     }
 
     public final ArrayList<Token> tokenList = new ArrayList<>();

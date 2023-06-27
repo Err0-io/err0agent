@@ -311,6 +311,14 @@ public class ProjectPolicy {
         return reErrorNumber_py;
     }
 
+    private Pattern reErrorNumber_lua = null;
+    public Pattern getReErrorNumber_lua() {
+        if (null == reErrorNumber_lua) {
+            reErrorNumber_lua = Pattern.compile("^('|\"|(\\[=*\\[))\\[" + getErrorPrefix() + "-(\\d+)\\]\\s*");
+        }
+        return reErrorNumber_lua;
+    }
+
     public CodePolicy getCodePolicy() {
         if (null == this.prj_code_policy) {
             return realmPolicy.realm_code_policy;

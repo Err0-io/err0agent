@@ -19,7 +19,9 @@ err0 is an Error Code Management Platform.
 
 The use of Error Codes enable to solve key scaling issues in Product Management, QA, User eXperience, Customer eXperience, DevOps and Monitoring, Logs Management, CyberSecurity, Compliance and audit trails, Support and Software debugging. 
 
-See https://www.err0.io/ for more information.
+See <a href="https://bit.ly/3Sv4dLV">err0.io/</a> for more information, demo request, contact,  and check our <a href="https://www.linkedin.com/company/err0-io/">LinkedIn</a> for more information on the power of error codes.
+
+Please note that err0 is totally free for all Open-Source projects, just contact us.
 
 ## What is required to test or use err0?
 
@@ -44,6 +46,7 @@ The err0agent automatically detects the programming language.
 <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original-wordmark.svg" width="50" height="50"/>
 <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/rust/rust-plain.svg" width="50" height="50"/>
 <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/go/go-original-wordmark.svg" width="50" height="50"/>
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/lua/lua-plain-wordmark.svg" width="50" />
 </div>
 
 ## Can it be integrated in CI/CD?
@@ -55,21 +58,37 @@ Yes. We are using both GitLab and GitHub on our side, and the err0agent is provi
 <img src="https://raw.githubusercontent.com/docker-library/docs/e2782b8942c1af41419536078c8d0176665a005d/maven/logo.png" width="120" height="50">
 </div>
 
+## Knowledge Base
+
+err0 platform enables to publish and maintain Knowledge Data Bases (KDB) of error codes, thus bringing a key solution to major pain point.
+
+Visit the err0agent knowledge base: <a href="http://bit.ly/3YYxmS5">err0 agent KDB</a> for more information on err0agent's codes.
+
+## Quality Metrics
+
+When running the err0agent it will collect metrics on errors and logs quality:
+
+ - Number of static messages (not parameter)
+ - Number of dynamic messages (with parameters)
+ - Number of duplicate messages (the same message used in multiple places)
+ - Number of messages per log level
+ - Average number of errors and logs per file
+
 ## Using err0agent
 
 You will need Java version 1.8 or above. 
 
 ### Stand-alone mode
 
-In stand-alone mode, you can use the err0agent jar to manage error codes in your project! 
+In stand-alone mode, you can use the err0agent jar to insert error codes in your project! See the demo below, 2 minutes on freshly cloned from GitHub AI project coded in Python.
 
-[![asciicast](https://asciinema.org/a/557983.svg)](https://asciinema.org/a/557983)
+<a href="https://asciinema.org/a/557983" target="_blank"><img src="https://asciinema.org/a/557983.svg" /></a>
 
-When you're ready to use this in production why not <a href="https://bit.ly/3PJoFaw">create an err0 account</a>, you can make a detailed configuration for the agent on our platform and of course manage knowledge around your error codes.
+When you're ready to use this in production why not <a href="https://bit.ly/3Sv4dLV">create an err0 account</a>, you can make a detailed configuration for the agent on our platform and of course manage knowledge around your error codes. It's free, no credit card required.
 
 ### Full mode
 
-A step by step guide is available on the <a href="https://bit.ly/3PJoFaw">err0</a> platform, which details each step:
+A step by step guide is available on the <a href="https://bit.ly/3Sv4dLV">err0</a> platform, which details each step:
  1. Create a numbering policy
  2. Add a project to the numbering policy
  3. Run the agent, in sandbox mode, on your code to insert error codes
@@ -80,6 +99,36 @@ A step by step guide is available on the <a href="https://bit.ly/3PJoFaw">err0</
  8. Track your software versions, to access error codes diff
  9. Contribute knowledge and publish knowledge base on your error codes
  10. Use error code contexts to keep track of how frequently error codes are occuring
+
+<a href="https://asciinema.org/a/564800?t=02" target="_blank"><img src="https://asciinema.org/a/564800.svg" /></a>
+ 
+### err0agent command line parameters help
+```
+usage: err0agent
+ -b,--branch <arg>       Can be used to provide a branch name e.g. in a
+                         CI/CD pipeline.
+ -c,--check              Use err0agent to check for canonical codes in
+                         your project.
+ -d,--dirty              Can be used to run err0agent with a dirty
+                         checkout.
+ -e,--error-codes        Can be used to output error code data in json
+                         format.
+ -g,--git-dir <arg>      Use with this git project.
+ -h,--help               Print this help message.
+ -i,--insert             Use err0agent to insert codes in your project.
+ -m,--metrics            Can be used to output source code metrics in json
+                         format.
+ -r,--renumber           When used with insert, will renumber the project.
+ -s,--stand-alone        Run err0agent stand alone, no account required!
+ -t,--token-file <arg>   Run err0agent with a project token (json) from
+                         err0.io.
+ -v,--version            Show the current version of err0agent.
+
+You must specify:
+1 of --stand-alone, or --token-file
+1 of --insert, or --check
+--git-dir
+```
 
 ## License
 

@@ -1003,6 +1003,7 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
             final boolean pythonAllowed = codePolicy.mode != CodePolicy.CodePolicyMode.ADVANCED_CONFIGURATION || (null == codePolicy.adv_python || !codePolicy.adv_python.disable_language);
             final boolean cCppAllowed = codePolicy.mode != CodePolicy.CodePolicyMode.ADVANCED_CONFIGURATION || (null == codePolicy.adv_ccpp || !codePolicy.adv_ccpp.disable_language);
             final boolean rustAllowed = codePolicy.mode != CodePolicy.CodePolicyMode.ADVANCED_CONFIGURATION || (null == codePolicy.adv_rust || !codePolicy.adv_rust.disable_language);
+            final boolean luaAllowed = codePolicy.mode != CodePolicy.CodePolicyMode.ADVANCED_CONFIGURATION || (null == codePolicy.adv_lua || !codePolicy.adv_lua.disable_language);
 
             try (Stream<Path> paths = Files.walk(Paths.get(startPoint)))
             {
@@ -1060,6 +1061,10 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                             final FileCoding fileCoding = new FileCoding(p);
                             globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, RustSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
                             System.out.println("[AGENT-000072] Parsed: " + newFile);
+                        } else if (luaAllowed && newFileLower.endsWith(".lua")) {
+                            final FileCoding fileCoding = new FileCoding(p);
+                            globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, LuaSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
+                            System.out.println("[AGENT-000094] Parsed: " + newFile);
                         }
                     }
                 });
@@ -1067,6 +1072,7 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
             catch (IOException e) {
                 System.err.println("[AGENT-000069] While recursing: " + startPoint);
                 e.printStackTrace(System.err);
+                System.exit(-1);
             }
 
         });
@@ -1214,9 +1220,6 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
 
                 if ((
                         parse.couldContainErrorNumber(currentToken)
-                        //(sourceType != SourceCodeParse.ParseType.JAVASCRIPT && sourceType != SourceCodeParse.ParseType.GOLANG && sourceType != SourceCodeParse.ParseType.PHP && currentToken.type == ParseItem.QUOT_LITERAL) ||
-                        //(sourceType == SourceCodeParse.ParseType.PHP && (currentToken.type == ParseItem.QUOT_LITERAL || currentToken.type == ParseItem.APOS_LITERAL)) ||
-                        //((sourceType == SourceCodeParse.ParseType.JAVASCRIPT || sourceType == SourceCodeParse.ParseType.GOLANG) && (currentToken.type == ParseItem.QUOT_LITERAL || currentToken.type == ParseItem.APOS_LITERAL || currentToken.type == ParseItem.BACKTICK_LITERAL))
                 ) &&
                         null != lastToken &&
                         lastToken.type == TokenClassification.SOURCE_CODE
@@ -1585,9 +1588,6 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
         for (int i = 0, l = fileNamesInOrder.length; i < l; ++i) {
             final String filename = fileNamesInOrder[i];
 
-            //if (! filename.endsWith("StreetStallWebVerticle.java")) continue;
-            //if (! filename.endsWith("PublishedSnapshotService.cs")) continue;
-
             final StateItem stateItem = globalState.files.get(filename);
             final SourceCodeParse parse = stateItem.parse;
 
@@ -1726,9 +1726,6 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
         for (int i = 0, l = fileNamesInOrder.length; i < l; ++i) {
             final String filename = fileNamesInOrder[i];
 
-            //if (! filename.endsWith("StreetStallWebVerticle.java")) continue;
-            //if (! filename.endsWith("PublishedSnapshotService.cs")) continue;
-
             final StateItem stateItem = globalState.files.get(filename);
             final SourceCodeParse parse = stateItem.parse;
 
@@ -1768,9 +1765,6 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
         // pass 4
         for (int i = 0, l = fileNamesInOrder.length; i < l; ++i) {
             final String filename = fileNamesInOrder[i];
-
-            //if (! filename.endsWith("StreetStallWebVerticle.java")) continue;
-            //if (! filename.endsWith("PublishedSnapshotService.cs")) continue;
 
             final StateItem stateItem = globalState.files.get(filename);
             final SourceCodeParse parse = stateItem.parse;

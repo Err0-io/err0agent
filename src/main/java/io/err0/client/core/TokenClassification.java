@@ -24,5 +24,6 @@ public enum TokenClassification {
     APOS_LITERAL,
     QUOT_LITERAL,
     QUOT3_LITERAL,
-    BACKTICK_LITERAL
+    BACKTICK_LITERAL,
+    LONGBRACKET_LITERAL,
 }
