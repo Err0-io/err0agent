@@ -45,6 +45,7 @@ public abstract class SourceCodeParse {
         C_CPP,
         RUST,
         LUA,
+        RUBY,
     }
 
     public final ArrayList<Token> tokenList = new ArrayList<>();
