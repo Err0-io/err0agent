@@ -169,6 +169,7 @@ public class RubySourceCodeParse extends SourceCodeParse {
     }
 
     private static Pattern reContinuation = Pattern.compile("\\\\$");
+    private static Pattern reIfUnless = Pattern.compile(" (if|unless) ");
 
     @Override
     public void classifyForErrorCode(ApiProvider apiProvider, GlobalState globalState, ProjectPolicy policy, StateItem stateItem, Token token) {
@@ -268,12 +269,16 @@ public class RubySourceCodeParse extends SourceCodeParse {
                                 StringBuilder output = new StringBuilder();
                                 boolean abort = false;
                                 do {
-                                    final String sourceCode = null != current.sourceNoErrorCode ? current.sourceNoErrorCode : current.source;
+                                    String sourceCode = null != current.sourceNoErrorCode ? current.sourceNoErrorCode : current.source;
                                     switch (current.type) {
                                         case SOURCE_CODE:
                                             if (sourceCode.indexOf('\n') >= 0) {
                                                 if (!reContinuation.matcher(sourceCode).find()) {
                                                     abort = true;
+                                                    Matcher matcherIfUnless = reIfUnless.matcher(sourceCode);
+                                                    if (matcherIfUnless.find()) {
+                                                        sourceCode = sourceCode.substring(0, matcherIfUnless.start());
+                                                    }
                                                     if (!Main.reWhitespace.matcher(sourceCode).matches()) {
                                                         staticLiteral = false;
                                                     }

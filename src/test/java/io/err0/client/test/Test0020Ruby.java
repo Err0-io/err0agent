@@ -64,6 +64,14 @@ public class Test0020Ruby {
             assertEquals(globalState.files.size(), apiProvider.resultStorage.size());
 
             previousState = apiProvider.getState();
+
+            // check if/unless doesn't change static to dynamic.
+            {
+                UnitTestApiProvider.MetaData metaData = previousState.metaDataStorage.get(6L);
+                assertNotNull(metaData);
+                boolean static_literal = metaData.metaData.get("static_literal").getAsBoolean();
+                assertTrue(static_literal);
+            }
         }
 
         // pass #2 - scan and report (no changes)
@@ -92,7 +100,7 @@ public class Test0020Ruby {
 
             previousState = apiProvider.getState();
 
-            assertEquals(5, previousState.metaDataStorage.size());
+            assertEquals(6, previousState.metaDataStorage.size());
         }
     }
 }

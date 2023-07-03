@@ -36,3 +36,7 @@ Example seven, heredoc type 5, single quoted string, indented.
   HEREDOC
 
 end
+
+def syntax_examples
+  raise IOError, "closed stream" if closed?
+end
