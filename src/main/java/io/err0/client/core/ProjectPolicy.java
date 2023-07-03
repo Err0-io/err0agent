@@ -322,7 +322,7 @@ public class ProjectPolicy {
     private Pattern reErrorNumber_rb = null;
     public Pattern getReErrorNumber_rb() {
         if (null == reErrorNumber_rb) {
-            reErrorNumber_rb = Pattern.compile("^('|\"\"\"|\")\\[" + getErrorPrefix() + "-(\\d+)\\]\\s*");
+            reErrorNumber_rb = Pattern.compile("^('|\")\\[" + getErrorPrefix() + "-(\\d+)\\]\\s*");
         }
         return reErrorNumber_rb;
     }

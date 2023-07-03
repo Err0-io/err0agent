@@ -925,6 +925,15 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
             for (int j = 0, m = parse.tokenList.size(); j < m; ++j) {
                 lastToken = currentToken;
                 currentToken = parse.tokenList.get(j);
+                if (parse.language == SourceCodeParse.Language.RUBY) {
+                    if (null != lastToken && lastToken.type == TokenClassification.SOURCE_CODE) {
+                        Matcher matcher = reWhitespace.matcher(lastToken.source);
+                        while (matcher.matches() && lastToken.prev != null && lastToken.prev.type == TokenClassification.SOURCE_CODE) {
+                            lastToken = lastToken.prev;
+                            matcher = reWhitespace.matcher(lastToken.source);
+                        }
+                    }
+                }
 
                 if ((
                         parse.couldContainErrorNumber(currentToken)
@@ -1207,7 +1216,7 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
         return analyseWholeProject(apiProvider, globalState, policy, driver, run_uuid, logic, statisticsGatherer, true);
     }
 
-    private static Pattern reWhitespace = Pattern.compile("^\\s*$");
+    public static Pattern reWhitespace = Pattern.compile("^\\s*$");
 
     private static boolean analyseWholeProject(final ApiProvider apiProvider, final GlobalState globalState, final ProjectPolicy policy, final ResultDriver driver, final UUID run_uuid, final AnalyseLogic logic, final StatisticsGatherer statisticsGatherer, boolean doNotAssignNewNumbers) {
         final String fileNamesInOrder[] = new String[globalState.files.size()];
@@ -1220,8 +1229,17 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
             final SourceCodeParse parse = stateItem.parse;
 
             for (int j = 0, m = parse.tokenList.size(); j < m; ++j) {
-                final Token lastToken = j > 0 ? parse.tokenList.get(j - 1) : null;
+                Token lastToken = j > 0 ? parse.tokenList.get(j - 1) : null;
                 final Token currentToken = parse.tokenList.get(j);
+                if (parse.language == SourceCodeParse.Language.RUBY) {
+                    if (null != lastToken && lastToken.type == TokenClassification.SOURCE_CODE) {
+                        Matcher matcher = reWhitespace.matcher(lastToken.source);
+                        while (matcher.matches() && lastToken.prev != null && lastToken.prev.type == TokenClassification.SOURCE_CODE) {
+                            lastToken = lastToken.prev;
+                            matcher = reWhitespace.matcher(lastToken.source);
+                        }
+                    }
+                }
 
                 if ((
                         parse.couldContainErrorNumber(currentToken)

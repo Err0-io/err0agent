@@ -30,24 +30,23 @@ public class RubySourceCodeParse extends SourceCodeParse {
         super(Language.RUBY, policy, policy.adv_ruby);
         switch (policy.mode) {
             case DEFAULTS:
-                reLogger = Pattern.compile("(^|\\s+)(m?_?)*log(ger)?\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)\\s*\\(\\s*f?$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+                reLogger = Pattern.compile("(^|\\s+)(m?_?)*log(ger)?\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)\\s+$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
                 break;
 
             case EASY_CONFIGURATION:
             case ADVANCED_CONFIGURATION:
-                reLogger = Pattern.compile("(^|\\s+)" + policy.easyModeObjectPattern() + "\\." + policy.easyModeMethodPattern() + "\\s*\\(\\s*f?$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+                reLogger = Pattern.compile("(^|\\s+)" + policy.easyModeObjectPattern() + "\\." + policy.easyModeMethodPattern() + "\\s+$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
                 break;
         }
 
         final String pattern = policy.mode == CodePolicy.CodePolicyMode.DEFAULTS ? "(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)" : policy.easyModeMethodPattern();
-        reLoggerLevel = Pattern.compile("\\.(" + pattern + ")\\s*\\(\\s*f?$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE); // group #1 is the level
+        reLoggerLevel = Pattern.compile("\\.(" + pattern + ")\\s+$", Pattern.CASE_INSENSITIVE); // group #1 is the level
     }
 
-    private static Pattern reMethod = Pattern.compile("^(\\s*)(def|class|if|for|while|except)\\s+.*$");
+    private static Pattern reMethod = Pattern.compile("^(\\s*)(def|class|if|unless|for|while|except)\\s+.*$");
     private Pattern reLogger = null;
     private Pattern reLoggerLevel = null;
-    private static Pattern reException = Pattern.compile("(^|\\s+)raise\\s([^\\s\\(]*)\\s*\\(*.+$");
-    private static Pattern reFunctionOfLiteral = Pattern.compile("^\\s*\\.");
+    private static Pattern reException = Pattern.compile("(^|\\s+)raise\\s(\\S+),\\s+$");
     private static int reException_group_class = 2;
 
     public static RubySourceCodeParse lex(final CodePolicy policy, final String sourceCode) {
@@ -95,30 +94,6 @@ public class RubySourceCodeParse extends SourceCodeParse {
                         currentToken.depth = indentNumber;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == '\"') {
-                        if (i+1<l) {
-                            final char ch1 = chars[i+1];
-                            if (ch1 == '\"') {
-                                if (i+2<l) {
-                                    final char ch2 = chars[i+2];
-                                    if (ch2 == '\"') {
-                                        // comment literal """ <<comment>> """
-                                        parse.tokenList.add(currentToken.finish(lineNumber));
-                                        currentToken = new Token(n++, currentToken);
-                                        currentToken.type = TokenClassification.QUOT3_LITERAL;
-                                        currentToken.sourceCode.append(ch);
-                                        currentToken.sourceCode.append(ch1);
-                                        currentToken.sourceCode.append(ch2);
-                                        currentToken.depth = indentNumber;
-                                        currentToken.startLineNumber = lineNumber;
-                                        ++i;
-                                        ++i;
-
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-
                         // otherwise, it is a quot literal.
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
@@ -133,15 +108,7 @@ public class RubySourceCodeParse extends SourceCodeParse {
                         currentToken.sourceCode.append(ch);
                         currentToken.depth = indentNumber;
                         currentToken.startLineNumber = lineNumber;
-                    } /*else if (ch == '`') {
-                        parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++);
-                        currentToken.type = TokenClassification.BACKTICK_LITERAL;
-                        currentToken.sourceCode.append(ch);
-                        currentToken.depth = indentNumber;
-                        currentToken.startLineNumber = lineNumber;
-                        currentToken.startIndentNumber = indentNumber;
-                    }*/ else {
+                    } else {
                         currentToken.sourceCode.append(ch);
                     }
                     break;
@@ -154,40 +121,6 @@ public class RubySourceCodeParse extends SourceCodeParse {
                         currentToken.type = TokenClassification.SOURCE_CODE;
                         currentToken.depth = indentNumber;
                         currentToken.startLineNumber = lineNumber;
-                    } else {
-                        currentToken.sourceCode.append(ch);
-                    }
-                    break;
-                case QUOT3_LITERAL:
-                    if (ch == '\"') {
-                        if (i+1<l) {
-                            final char ch1 = chars[i+1];
-                            if (ch1 == '\"') {
-                                if (i+2<l) {
-                                    final char ch2 = chars[i+2];
-                                    if (ch2 == '\"') {
-                                        // comment literal """ <<comment>> """
-                                        currentToken.sourceCode.append(ch);
-                                        currentToken.sourceCode.append(ch1);
-                                        currentToken.sourceCode.append(ch2);
-                                        parse.tokenList.add(currentToken.finish(lineNumber));
-                                        currentToken = new Token(n++, currentToken);
-                                        currentToken.type = TokenClassification.SOURCE_CODE;
-                                        currentToken.depth = indentNumber;
-                                        currentToken.startLineNumber = lineNumber;
-                                        i+=2;
-
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    // behaves like any string
-                    if (ch == '\\') {
-                        currentToken.sourceCode.append(ch);
-                        final char ch2 = chars[++i];
-                        currentToken.sourceCode.append(ch2);
                     } else {
                         currentToken.sourceCode.append(ch);
                     }
@@ -224,21 +157,6 @@ public class RubySourceCodeParse extends SourceCodeParse {
                         currentToken.sourceCode.append(ch);
                     }
                     break;
-                    /*
-                case BACKTICK_LITERAL:
-                    if (ch == '`') {
-                        currentToken.sourceCode.append(ch);
-                        parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
-                        currentToken.depth = indentNumber;
-                        currentToken.startLineNumber = lineNumber;
-                        currentToken.startIndentNumber = indentNumber;
-                    } else {
-                        currentToken.sourceCode.append(ch);
-                    }
-                    break;
-                    */
             }
         }
         parse.tokenList.add(currentToken.finish(lineNumber));
@@ -250,30 +168,18 @@ public class RubySourceCodeParse extends SourceCodeParse {
         return token.type == TokenClassification.APOS_LITERAL || token.type == TokenClassification.BACKTICK_LITERAL || token.type == TokenClassification.QUOT_LITERAL;
     }
 
+    private static Pattern reContinuation = Pattern.compile("\\\\$");
+
     @Override
     public void classifyForErrorCode(ApiProvider apiProvider, GlobalState globalState, ProjectPolicy policy, StateItem stateItem, Token token) {
         if (token.classification == Token.Classification.NOT_CLASSIFIED_YET) {
             switch (token.type) {
                 case APOS_LITERAL:
                 case QUOT_LITERAL:
-                case QUOT3_LITERAL:
                 {
                     // 1) Strip '[ERR-nnnnnn] ' from string literals for re-injection
                     Matcher matcherErrorNumber = policy.getReErrorNumber_rb().matcher(token.source);
                     boolean found = matcherErrorNumber.find();
-
-                    // Is this in fact a function of a literal, e.g. ", ".join(...)?
-                    Token next = token.next();
-                    if (null != next) {
-                        if (reFunctionOfLiteral.matcher(next.source).find()) {
-                            if (found) {
-                                final String quot = matcherErrorNumber.group(1);
-                                token.sourceNoErrorCode = token.source = quot + token.source.substring(matcherErrorNumber.end());
-                            }
-                            token.classification = Token.Classification.NO_MATCH;
-                            return;
-                        }
-                    }
 
                     if (found) {
                         token.classification = Token.Classification.ERROR_NUMBER;
@@ -300,7 +206,10 @@ public class RubySourceCodeParse extends SourceCodeParse {
                 {
                     token.classification = Token.Classification.NOT_FULLY_CLASSIFIED;
                     Token next = token.next();
-                    if (next != null && (next.type == TokenClassification.QUOT_LITERAL || next.type == TokenClassification.APOS_LITERAL || next.type == TokenClassification.QUOT3_LITERAL)) {
+                    while (null != next && next.type == TokenClassification.SOURCE_CODE && Main.reWhitespace.matcher(next.source).matches()) {
+                        next = next.next();
+                    }
+                    if (next != null && (next.type == TokenClassification.QUOT_LITERAL || next.type == TokenClassification.APOS_LITERAL)) {
                         // rule 0 - this code must be followed by a string literal
                         if (null != languageCodePolicy && languageCodePolicy.rules.size() > 0) {
                             // classify according to rules.
@@ -350,62 +259,61 @@ public class RubySourceCodeParse extends SourceCodeParse {
                         if (null != token.next()) {
                             // note token current is a type of string literal.
                             boolean staticLiteral = true;
-                            boolean fLiteral = false;
                             Token current = token.next();
-                            StringBuilder cleaned = new StringBuilder();
-                            StringBuilder output = new StringBuilder();
-                            int bracketDepth = 1; // we are already one bracket into the expression.
-                            if (token.source.endsWith("f")) {
-                                fLiteral = true;
+                            while (current != null && current.type == TokenClassification.SOURCE_CODE && Main.reWhitespace.matcher(current.source).matches()) {
+                                current = current.next();
                             }
-                            do {
-                                final String sourceCode = null != current.sourceNoErrorCode ? current.sourceNoErrorCode : current.source;
-                                switch (current.type) {
-                                    case SOURCE_CODE:
-                                        boolean dynamic = false;
-                                        final char chars[] = sourceCode.toCharArray();
-                                        for (int i = 0, l = chars.length; i < l; ++i) {
-                                            final char ch = chars[i];
-                                            if (ch == ')') {
-                                                if (--bracketDepth < 1) {
-                                                    break;
+                            if (null != current) {
+                                StringBuilder cleaned = new StringBuilder();
+                                StringBuilder output = new StringBuilder();
+                                boolean abort = false;
+                                do {
+                                    final String sourceCode = null != current.sourceNoErrorCode ? current.sourceNoErrorCode : current.source;
+                                    switch (current.type) {
+                                        case SOURCE_CODE:
+                                            if (sourceCode.indexOf('\n') >= 0) {
+                                                if (!reContinuation.matcher(sourceCode).find()) {
+                                                    abort = true;
+                                                    if (!Main.reWhitespace.matcher(sourceCode).matches()) {
+                                                        staticLiteral = false;
+                                                    }
                                                 }
-                                            } else if (ch == '(') {
-                                                ++bracketDepth;
+                                            } else {
+                                                if (!Main.reWhitespace.matcher(sourceCode).matches()) {
+                                                    staticLiteral = false;
+                                                }
                                             }
-                                            if (!Character.isWhitespace(ch)) cleaned.append(ch);
-                                            output.append(ch);
-                                            if (!(Character.isWhitespace(ch) || ch == '+')) { // string concatenation
-                                                dynamic = true;
+                                            break;
+                                        case COMMENT_BLOCK:
+                                        case CONTENT:
+                                        case COMMENT_LINE:
+                                            break;
+                                        case QUOT_LITERAL:
+                                            if (token.next() == current) {
+                                                if (sourceCode.contains("#{") ||
+                                                        sourceCode.contains("#@") ||
+                                                        sourceCode.contains("#$")) {
+                                                    staticLiteral = false;
+                                                }
                                             }
-                                        }
-                                        if (dynamic) {
-                                            staticLiteral = false;
-                                        }
-                                        break;
-                                    case COMMENT_BLOCK:
-                                    case CONTENT:
-                                    case COMMENT_LINE:
-                                        break;
-                                    default:
-                                        if (fLiteral && token.next() == current) {
-                                            if (sourceCode.indexOf('{') >= 0) {
-                                                staticLiteral = false;
-                                            }
-                                        }
-                                        cleaned.append(sourceCode);
-                                        output.append(sourceCode);
-                                        break;
+                                            // falls through to the next case:
+                                        case APOS_LITERAL:
+                                            cleaned.append(sourceCode);
+                                            output.append(sourceCode);
+                                            break;
+                                    }
                                 }
-                                if (bracketDepth < 1) {
-                                    break;
-                                }
-                            }
-                            while (null != (current = current.next()));
+                                while (!abort && null != (current = current.next()));
 
-                            token.staticLiteral = staticLiteral;
-                            token.cleanedMessageExpression = cleaned.toString();
-                            token.messageExpression = output.toString();
+                                token.staticLiteral = staticLiteral;
+                                token.cleanedMessageExpression = cleaned.toString();
+                                token.messageExpression = output.toString();
+                            }
+                            else {
+                                token.classification = Token.Classification.NO_MATCH;
+                            }
+                        } else {
+                            token.classification = Token.Classification.NO_MATCH;
                         }
                     }
                 }

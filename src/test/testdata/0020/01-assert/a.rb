@@ -14,7 +14,7 @@ def exception_examples
   raise ExceptionClass, '[E-3] Example one, single quoted strings.'
   raise ExceptionClass, "[E-4] Example two, double quoted strings."
   raise ExceptionClass,
-    "Example three, string on another line." \
+    "[E-5] Example three, string on another line." \
     "with continuation on a line afterwards."
   raise ExceptionClass, <<HEREDOC
 Example four, heredoc type 1, double quote string.
