@@ -327,6 +327,14 @@ public class ProjectPolicy {
         return reErrorNumber_rb;
     }
 
+    private Pattern reErrorNumber_rb_hereDoc = null;
+    public Pattern getReErrorNumber_rb_hereDoc() {
+        if (null == reErrorNumber_rb_hereDoc) {
+            reErrorNumber_rb_hereDoc = Pattern.compile("^(\\s*)\\[" + getErrorPrefix() + "-(\\d+)\\]\\s*");
+        }
+        return reErrorNumber_rb_hereDoc;
+    }
+
     public CodePolicy getCodePolicy() {
         if (null == this.prj_code_policy) {
             return realmPolicy.realm_code_policy;

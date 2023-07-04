@@ -10,6 +10,16 @@ def log_examples
   logger.error %[Example five, percent quoted strings, double quotes, with parameters #{1 + 1}]
   logger.error %Q<Example six, percent quoted strings, double quotes, with parameters #{1 + 1}>
   logger.error %Q|Example seven, percent quoted strings, double quotes, with parameters #{1 + 1}|
+
+  a_method <<~DOC1, <<~DOC2
+    first document content
+  DOC1
+    second document content
+  DOC2
+
+  logger.log <<~EG8
+    Example eight, heredoc log.
+  EG8
 end
 
 def exception_examples
@@ -25,7 +35,7 @@ HEREDOC
   raise ExceptionClass, <<-HEREDOC
 Example four, heredoc type 2, indented.
   HEREDOC
-  raise ExceptionClass, <<~HEREDOC
+  raise ExceptionClass, <<~"HEREDOC"
     Example five, heredoc type 3, squiggly.
   HEREDOC
   raise ExceptionClass, <<'HEREDOC'

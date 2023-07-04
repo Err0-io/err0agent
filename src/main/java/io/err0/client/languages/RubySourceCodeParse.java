@@ -20,7 +20,10 @@ import com.google.gson.JsonArray;
 import io.err0.client.Main;
 import io.err0.client.core.*;
 import io.err0.client.languages.ext.RubyExtendedInformation;
+import jdk.nashorn.internal.parser.TokenType;
 
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -61,11 +64,29 @@ public class RubySourceCodeParse extends SourceCodeParse {
         boolean countIndent = true;
         currentToken.startLineNumber = lineNumber;
         final char chars[] = sourceCode.toCharArray();
+        LinkedList<RubyExtendedInformation.HereDoc> queuedHereDocs = new LinkedList<>();
+        RubyExtendedInformation.HereDoc currentHereDoc = null;
         for (int i = 0, l = chars.length; i < l; ++i) {
             final char ch = chars[i];
             if (ch == '\n') {
                 ++lineNumber;
                 indentNumber = 0;
+                if (currentToken.type == TokenClassification.SOURCE_CODE) {
+                    if (null == currentHereDoc && ! queuedHereDocs.isEmpty()) {
+                        currentHereDoc = queuedHereDocs.pop();
+                        currentToken.sourceCode.append(ch);
+                        countIndent = true;
+                        parse.tokenList.add(currentToken.finish(lineNumber));
+                        currentToken = new Token(n++, currentToken);
+                        currentToken.type = currentHereDoc.interpolated() ? TokenClassification.QUOT_LITERAL : TokenClassification.APOS_LITERAL;
+                        currentToken.depth = indentNumber;
+                        currentToken.startLineNumber = lineNumber;
+                        RubyExtendedInformation extendedInformation = new RubyExtendedInformation(currentToken);
+                        extendedInformation.hereDoc = currentHereDoc;
+                        currentToken.extendedInformation = extendedInformation;
+                        continue;
+                    }
+                }
             } else if (ch == '\t' && countIndent) {
                 indentNumber = ((indentNumber/8)+1)*8; // tab is 8 spaces
             } else if (ch == ' ' && countIndent) {
@@ -76,6 +97,39 @@ public class RubySourceCodeParse extends SourceCodeParse {
 
             if (countIndent) {
                 currentToken.depth = indentNumber;
+            }
+
+            if (null != currentHereDoc) {
+                StringBuilder currentLine = new StringBuilder();
+                int last = -1;
+                for (int j = i; j < chars.length; ++j) {
+                    if (chars[j] == '\n') {
+                        last = j;
+                        break;
+                    } else {
+                        currentLine.append(chars[j]);
+                    }
+                }
+                if (last < 0) {
+                    throw new RuntimeException("Decoding heredoc.");
+                }
+                String line = currentLine.toString();
+                String trimmed = line.trim();
+                if (currentHereDoc.label.equals(trimmed)) {
+                    // yes, the here doc is finished.
+                    currentHereDoc = null;
+                    parse.tokenList.add(currentToken.finish(lineNumber));
+                    currentToken = new Token(n++, currentToken);
+                    currentToken.type = TokenClassification.SOURCE_CODE;
+                    currentToken.depth = indentNumber;
+                    currentToken.startLineNumber = lineNumber;
+                    currentToken.sourceCode.append(line);
+                    i = last - 1;
+                } else {
+                    currentToken.sourceCode.append(line).append('\n');
+                    i = last;
+                }
+                continue;
             }
 
             switch (currentToken.type) {
@@ -110,6 +164,50 @@ public class RubySourceCodeParse extends SourceCodeParse {
                         currentToken.sourceCode.append(ch);
                         currentToken.depth = indentNumber;
                         currentToken.startLineNumber = lineNumber;
+                    } else if (ch == '<' && i + 1 < chars.length && chars[i + 1] == '<') {
+                        currentToken.sourceCode.append(ch);
+                        currentToken.sourceCode.append(chars[++i]);
+                        if (i + 1 < chars.length) {
+                            RubyExtendedInformation.HereDocType type = RubyExtendedInformation.HereDocType.REGULAR;
+                            if (chars[i + 1] == '-') {
+                                currentToken.sourceCode.append(chars[++i]);
+                                type = RubyExtendedInformation.HereDocType.INDENTED;
+                            } else if (chars[i + 1] == '~') {
+                                currentToken.sourceCode.append(chars[++i]);
+                                type = RubyExtendedInformation.HereDocType.SQUIGGLY;
+                            }
+                            if (i + 1 < chars.length) {
+                                char quoteChar = 0;
+                                if (chars[i + 1] == '\'' || chars[i + 1] == '"') {
+                                    quoteChar = chars[++i];
+                                    currentToken.sourceCode.append(quoteChar);
+                                }
+                                if (i + 1 < chars.length) {
+                                    StringBuilder hereDocLabel = new StringBuilder();
+                                    int first = i + 1;
+                                    while (i + 1 < chars.length) {
+                                        if (chars[i + 1] == '\n') {
+                                            break;
+                                        }
+                                        currentToken.sourceCode.append(chars[++i]);
+                                        if ((quoteChar != 0 && chars[i] == quoteChar) || (quoteChar == 0 && Character.isWhitespace(chars[i]))) {
+                                            break;
+                                        }
+                                        if (Character.isLetter(chars[i]) || (first != i && (chars[i] == '_' || Character.isDigit(chars[i])))) {
+                                            hereDocLabel.append(chars[i]);
+                                        } else {
+                                            break;
+                                        }
+                                    }
+                                    String label = hereDocLabel.toString();
+                                    if ("".equals(label)) {
+                                        throw new RuntimeException("Unexpected HEREDOC identifier syntax.");
+                                    }
+                                    RubyExtendedInformation.HereDoc hereDoc = new RubyExtendedInformation.HereDoc(label, type, quoteChar);
+                                    queuedHereDocs.add(hereDoc);
+                                }
+                            }
+                        }
                     } else if (ch == '%') {
                         char opening = 0;
                         char closing = 0;
@@ -268,7 +366,7 @@ public class RubySourceCodeParse extends SourceCodeParse {
 
     @Override
     public boolean couldContainErrorNumber(Token token) {
-        return token.type == TokenClassification.APOS_LITERAL || token.type == TokenClassification.BACKTICK_LITERAL || token.type == TokenClassification.QUOT_LITERAL;
+        return token.type == TokenClassification.APOS_LITERAL || token.type == TokenClassification.QUOT_LITERAL;
     }
 
     private static Pattern reContinuation = Pattern.compile("\\\\$");
@@ -281,28 +379,61 @@ public class RubySourceCodeParse extends SourceCodeParse {
                 case APOS_LITERAL:
                 case QUOT_LITERAL:
                 {
-                    // 1) Strip '[ERR-nnnnnn] ' from string literals for re-injection
-                    Matcher matcherErrorNumber = policy.getReErrorNumber_rb().matcher(token.source);
-                    boolean found = matcherErrorNumber.find();
+                    RubyExtendedInformation.HereDoc hereDoc = null;
+                    if (null != token.extendedInformation) {
+                        RubyExtendedInformation extendedInformation = (RubyExtendedInformation) token.extendedInformation;
+                        if (null != extendedInformation.hereDoc) {
+                            hereDoc = extendedInformation.hereDoc;
+                        }
+                    }
+                    if (null != hereDoc) {
+                        // 1) Strip '[ERR-nnnnnn] ' from string literals for re-injection
+                        Matcher matcherErrorNumber = policy.getReErrorNumber_rb_hereDoc().matcher(token.source);
+                        boolean found = matcherErrorNumber.find();
 
-                    if (found) {
-                        token.classification = Token.Classification.ERROR_NUMBER;
-                        final String quot = matcherErrorNumber.group(1);
-                        long errorOrdinal = Long.parseLong(matcherErrorNumber.group(2));
-                        if (apiProvider.validErrorNumber(policy, errorOrdinal)) {
-                            if (globalState.store(errorOrdinal, stateItem, token)) {
-                                token.keepErrorCode = true;
-                                token.errorOrdinal = errorOrdinal;
-                                token.sourceNoErrorCode = quot + token.source.substring(matcherErrorNumber.end());
+                        if (found) {
+                            token.classification = Token.Classification.ERROR_NUMBER;
+                            final String indent = matcherErrorNumber.group(1);
+                            long errorOrdinal = Long.parseLong(matcherErrorNumber.group(2));
+                            if (apiProvider.validErrorNumber(policy, errorOrdinal)) {
+                                if (globalState.store(errorOrdinal, stateItem, token)) {
+                                    token.keepErrorCode = true;
+                                    token.errorOrdinal = errorOrdinal;
+                                    token.sourceNoErrorCode = indent + token.source.substring(matcherErrorNumber.end());
+                                } else {
+                                    token.sourceNoErrorCode = token.source = indent + token.source.substring(matcherErrorNumber.end());
+                                }
+                            } else {
+                                token.sourceNoErrorCode = token.source = indent + token.source.substring(matcherErrorNumber.end());
+                            }
+                        } else {
+                            token.classification = Token.Classification.POTENTIAL_ERROR_NUMBER;
+                            token.sourceNoErrorCode = token.source;
+                        }
+                    } else {
+                        // 1) Strip '[ERR-nnnnnn] ' from string literals for re-injection
+                        Matcher matcherErrorNumber = policy.getReErrorNumber_rb().matcher(token.source);
+                        boolean found = matcherErrorNumber.find();
+
+                        if (found) {
+                            token.classification = Token.Classification.ERROR_NUMBER;
+                            final String quot = matcherErrorNumber.group(1);
+                            long errorOrdinal = Long.parseLong(matcherErrorNumber.group(2));
+                            if (apiProvider.validErrorNumber(policy, errorOrdinal)) {
+                                if (globalState.store(errorOrdinal, stateItem, token)) {
+                                    token.keepErrorCode = true;
+                                    token.errorOrdinal = errorOrdinal;
+                                    token.sourceNoErrorCode = quot + token.source.substring(matcherErrorNumber.end());
+                                } else {
+                                    token.sourceNoErrorCode = token.source = quot + token.source.substring(matcherErrorNumber.end());
+                                }
                             } else {
                                 token.sourceNoErrorCode = token.source = quot + token.source.substring(matcherErrorNumber.end());
                             }
                         } else {
-                            token.sourceNoErrorCode = token.source = quot + token.source.substring(matcherErrorNumber.end());
+                            token.classification = Token.Classification.POTENTIAL_ERROR_NUMBER;
+                            token.sourceNoErrorCode = token.source;
                         }
-                    } else {
-                        token.classification = Token.Classification.POTENTIAL_ERROR_NUMBER;
-                        token.sourceNoErrorCode = token.source;
                     }
                 }
                 break;
@@ -337,7 +468,16 @@ public class RubySourceCodeParse extends SourceCodeParse {
                     }
 
                     if ((token.classification == Token.Classification.NOT_FULLY_CLASSIFIED || token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) && (null == languageCodePolicy || !languageCodePolicy.disable_builtin_log_detection)) {
-                        Matcher matcherLogger = reLogger.matcher(token.source);
+                        boolean nextIsHereDoc = (null != next.extendedInformation && null != ((RubyExtendedInformation) next.extendedInformation).hereDoc);
+                        String source = token.source;
+                        if (nextIsHereDoc) {
+                            int i = source.indexOf("<<");
+                            if (i >= 0) {
+                                source = source.substring(0, i);
+                            }
+                        }
+
+                        Matcher matcherLogger = reLogger.matcher(source);
                         if (matcherLogger.find()) {
                             token.classification = Token.Classification.LOG_OUTPUT;
                             // extract canonical log level meta data
@@ -349,7 +489,16 @@ public class RubySourceCodeParse extends SourceCodeParse {
                     }
 
                     if (token.classification == Token.Classification.NOT_FULLY_CLASSIFIED || token.classification == Token.Classification.NOT_LOG_OUTPUT || token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) {
-                        Matcher matcherException = reException.matcher(token.source);
+                        boolean nextIsHereDoc = (null != next.extendedInformation && null != ((RubyExtendedInformation) next.extendedInformation).hereDoc);
+                        String source = token.source;
+                        if (nextIsHereDoc) {
+                            int i = source.indexOf("<<");
+                            if (i >= 0) {
+                                source = source.substring(0, i);
+                            }
+                        }
+
+                        Matcher matcherException = reException.matcher(source);
                         if (matcherException.find()) {
                             token.classification = Token.Classification.EXCEPTION_THROW;
                             token.exceptionClass = matcherException.group(reException_group_class);

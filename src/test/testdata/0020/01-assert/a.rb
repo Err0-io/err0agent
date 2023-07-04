@@ -10,36 +10,46 @@ def log_examples
   logger.error %[\[E-5\] Example five, percent quoted strings, double quotes, with parameters #{1 + 1}]
   logger.error %Q<[E-6] Example six, percent quoted strings, double quotes, with parameters #{1 + 1}>
   logger.error %Q|[E-7] Example seven, percent quoted strings, double quotes, with parameters #{1 + 1}|
+
+  a_method <<~DOC1, <<~DOC2
+    first document content
+  DOC1
+    second document content
+  DOC2
+
+  logger.log <<~EG8
+    [E-8] Example eight, heredoc log.
+  EG8
 end
 
 def exception_examples
 
-  raise ExceptionClass, '[E-8] Example one, single quoted strings.'
-  raise ExceptionClass, "[E-9] Example two, double quoted strings."
+  raise ExceptionClass, '[E-9] Example one, single quoted strings.'
+  raise ExceptionClass, "[E-10] Example two, double quoted strings."
   raise ExceptionClass,
-    "[E-10] Example three, string on another line." \
+    "[E-11] Example three, string on another line." \
     "with continuation on a line afterwards."
   raise ExceptionClass, <<HEREDOC
-Example four, heredoc type 1, double quote string.
+[E-12] Example four, heredoc type 1, double quote string.
 HEREDOC
   raise ExceptionClass, <<-HEREDOC
-Example four, heredoc type 2, indented.
+[E-13] Example four, heredoc type 2, indented.
   HEREDOC
-  raise ExceptionClass, <<~HEREDOC
-    Example five, heredoc type 3, squiggly.
+  raise ExceptionClass, <<~"HEREDOC"
+    [E-14] Example five, heredoc type 3, squiggly.
   HEREDOC
   raise ExceptionClass, <<'HEREDOC'
-Example six, heredoc type 4, single quoted string.
+[E-15] Example six, heredoc type 4, single quoted string.
 HEREDOC
   raise ExceptionClass, <<-'HEREDOC'
-Example seven, heredoc type 5, single quoted string, indented.
+[E-16] Example seven, heredoc type 5, single quoted string, indented.
   HEREDOC
   raise ExceptionClass, <<~'HEREDOC'
-    Example eight, heredoc type 6, single quoted string, squiggly.
+    [E-17] Example eight, heredoc type 6, single quoted string, squiggly.
   HEREDOC
 
 end
 
 def syntax_examples
-  raise IOError, "[E-11] closed stream" if closed?
+  raise IOError, "[E-18] closed stream" if closed?
 end

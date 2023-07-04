@@ -100,7 +100,7 @@ public class Test0020Ruby {
 
             previousState = apiProvider.getState();
 
-            assertEquals(11, previousState.metaDataStorage.size());
+            assertEquals(18, previousState.metaDataStorage.size());
         }
     }
 }
