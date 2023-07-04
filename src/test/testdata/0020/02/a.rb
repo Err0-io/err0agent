@@ -5,16 +5,19 @@ def log_examples
 
   logger.log '[E-1] Example one, single quoted strings.'
   logger.warn "[E-2] Example two, double quoted strings."
-  logger.error %q{Example three, percent quoted strings, single quotes.}
-  logger.error %Q{Example four, percent quoted strings, double quotes, with parameters #{1 + 1}}
+  logger.error %q{[E-3] Example three, percent quoted strings, single quotes.}
+  logger.error %Q{[E-4] Example four, percent quoted strings, double quotes, with parameters #{1 + 1}}
+  logger.error %[\[E-5\] Example five, percent quoted strings, double quotes, with parameters #{1 + 1}]
+  logger.error %Q<[E-6] Example six, percent quoted strings, double quotes, with parameters #{1 + 1}>
+  logger.error %Q|[E-7] Example seven, percent quoted strings, double quotes, with parameters #{1 + 1}|
 end
 
 def exception_examples
 
-  raise ExceptionClass, '[E-3] Example one, single quoted strings.'
-  raise ExceptionClass, "[E-4] Example two, double quoted strings."
+  raise ExceptionClass, '[E-8] Example one, single quoted strings.'
+  raise ExceptionClass, "[E-9] Example two, double quoted strings."
   raise ExceptionClass,
-    "[E-5] Example three, string on another line." \
+    "[E-10] Example three, string on another line." \
     "with continuation on a line afterwards."
   raise ExceptionClass, <<HEREDOC
 Example four, heredoc type 1, double quote string.
@@ -38,5 +41,5 @@ Example seven, heredoc type 5, single quoted string, indented.
 end
 
 def syntax_examples
-  raise IOError, "[E-6] closed stream" if closed?
+  raise IOError, "[E-11] closed stream" if closed?
 end

@@ -45,6 +45,7 @@ public class Token {
     public int depth = 0;
     public int startLineNumber = 0;
     public int lastLineNumber = 0;
+    public TokenExtendedInformation extendedInformation;
 
     public Consumer<Void> errorCodeConsumer = null;
 
@@ -53,6 +54,13 @@ public class Token {
     {
         String s = null != sourceNoErrorCode ? sourceNoErrorCode : source;
         if (null == s) return null;
+
+        if (null != extendedInformation) {
+            String extended = getStringLiteral();
+            if (null != extended) {
+                return extended;
+            }
+        }
 
         switch (type) {
             case QUOT_LITERAL:
@@ -71,6 +79,10 @@ public class Token {
     }
     public int getStringQuoteWidth()
     {
+        if (null != extendedInformation) {
+            return extendedInformation.getStringQuoteWidth();
+        }
+
         switch (type)
         {
             case QUOT_LITERAL:

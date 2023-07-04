@@ -7,6 +7,9 @@ def log_examples
   logger.warn "Example two, double quoted strings."
   logger.error %q{Example three, percent quoted strings, single quotes.}
   logger.error %Q{Example four, percent quoted strings, double quotes, with parameters #{1 + 1}}
+  logger.error %[Example five, percent quoted strings, double quotes, with parameters #{1 + 1}]
+  logger.error %Q<Example six, percent quoted strings, double quotes, with parameters #{1 + 1}>
+  logger.error %Q|Example seven, percent quoted strings, double quotes, with parameters #{1 + 1}|
 end
 
 def exception_examples

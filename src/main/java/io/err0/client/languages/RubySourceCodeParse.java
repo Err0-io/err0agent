@@ -19,6 +19,7 @@ package io.err0.client.languages;
 import com.google.gson.JsonArray;
 import io.err0.client.Main;
 import io.err0.client.core.*;
+import io.err0.client.languages.ext.RubyExtendedInformation;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -48,6 +49,7 @@ public class RubySourceCodeParse extends SourceCodeParse {
     private Pattern reLoggerLevel = null;
     private static Pattern reException = Pattern.compile("(^|\\s+)raise\\s(\\S+),\\s+$");
     private static int reException_group_class = 2;
+    private static final char[] percentLiteralCharacters = { 'q', 'Q', 'w', 'W', 'i', 'I', 's' };
 
     public static RubySourceCodeParse lex(final CodePolicy policy, final String sourceCode) {
         int n = 0;
@@ -108,6 +110,65 @@ public class RubySourceCodeParse extends SourceCodeParse {
                         currentToken.sourceCode.append(ch);
                         currentToken.depth = indentNumber;
                         currentToken.startLineNumber = lineNumber;
+                    } else if (ch == '%') {
+                        char opening = 0;
+                        char closing = 0;
+                        if (i + 1 < chars.length) {
+                            char nextChar = chars[i + 1];
+                            char found = 0;
+                            for (char c : percentLiteralCharacters) {
+                                if (c == nextChar) {
+                                    found = c;
+                                    break;
+                                }
+                            }
+                            if (found == 0 || found == 'Q' || found == 'q') {
+                                if (i + (found == 0 ? 1 : 2) < chars.length) {
+                                    nextChar = chars[i + (found == 0 ? 1 : 2)];
+                                    switch (nextChar) {
+                                        case '{':
+                                            opening = '{';
+                                            closing = '}';
+                                            break;
+                                        case '[':
+                                            opening = '[';
+                                            closing = ']';
+                                            break;
+                                        case '(':
+                                            opening = '(';
+                                            closing = ')';
+                                            break;
+                                        case '<':
+                                            opening = '<';
+                                            closing = '>';
+                                            break;
+                                        default:
+                                            if (!Character.isWhitespace(nextChar) && !Character.isLetter(nextChar) && !Character.isDigit(nextChar) && nextChar != '\\') {
+                                                opening = nextChar;
+                                                closing = nextChar;
+                                            }
+                                    }
+                                }
+                                if (opening != 0 && closing != 0) {
+                                    parse.tokenList.add(currentToken.finish(lineNumber));
+                                    currentToken = new Token(n++, currentToken);
+                                    currentToken.type = found == 'q' ? TokenClassification.APOS_LITERAL : TokenClassification.QUOT_LITERAL;
+                                    currentToken.sourceCode.append(ch);
+                                    currentToken.sourceCode.append(chars[++i]);
+                                    if (found != 0) {
+                                        currentToken.sourceCode.append(chars[++i]);
+                                    }
+                                    currentToken.depth = indentNumber;
+                                    currentToken.startLineNumber = lineNumber;
+                                    RubyExtendedInformation extendedInformation = new RubyExtendedInformation(currentToken);
+                                    extendedInformation.percentLiteral = true;
+                                    extendedInformation.percentLiteralType = found;
+                                    extendedInformation.opening = opening;
+                                    extendedInformation.closing = closing;
+                                    currentToken.extendedInformation = extendedInformation;
+                                }
+                            }
+                        }
                     } else {
                         currentToken.sourceCode.append(ch);
                     }
@@ -126,35 +187,84 @@ public class RubySourceCodeParse extends SourceCodeParse {
                     }
                     break;
                 case APOS_LITERAL:
-                    if (ch == '\'') {
-                        currentToken.sourceCode.append(ch);
-                        parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
-                        currentToken.depth = indentNumber;
-                        currentToken.startLineNumber = lineNumber;
-                    } else if (ch == '\\') {
-                        currentToken.sourceCode.append(ch);
-                        final char ch2 = chars[++i];
-                        currentToken.sourceCode.append(ch2);
+                    if (null != currentToken.extendedInformation) {
+                        RubyExtendedInformation extendedInformation = (RubyExtendedInformation) currentToken.extendedInformation;
+                        if (extendedInformation.percentLiteral) {
+                            if (ch == '\\' && i + 1 < chars.length) {
+                                currentToken.sourceCode.append(ch);
+                                currentToken.sourceCode.append(chars[++i]);
+                            } else if (ch == extendedInformation.closing) {
+                                currentToken.sourceCode.append(ch);
+                                parse.tokenList.add(currentToken.finish(lineNumber));
+                                currentToken = new Token(n++, currentToken);
+                                currentToken.type = TokenClassification.SOURCE_CODE;
+                                currentToken.depth = indentNumber;
+                                currentToken.startLineNumber = lineNumber;
+                            } else {
+                                currentToken.sourceCode.append(ch);
+                            }
+                        } else {
+                            throw new RuntimeException("Illegal state.");
+                        }
                     } else {
-                        currentToken.sourceCode.append(ch);
+                        if (ch == '\'') {
+                            currentToken.sourceCode.append(ch);
+                            parse.tokenList.add(currentToken.finish(lineNumber));
+                            currentToken = new Token(n++, currentToken);
+                            currentToken.type = TokenClassification.SOURCE_CODE;
+                            currentToken.depth = indentNumber;
+                            currentToken.startLineNumber = lineNumber;
+                        } else if (ch == '\\') {
+                            currentToken.sourceCode.append(ch);
+                            final char ch2 = chars[++i];
+                            currentToken.sourceCode.append(ch2);
+                        } else {
+                            currentToken.sourceCode.append(ch);
+                        }
                     }
                     break;
                 case QUOT_LITERAL:
-                    if (ch == '\"') {
-                        currentToken.sourceCode.append(ch);
-                        parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
-                        currentToken.depth = indentNumber;
-                        currentToken.startLineNumber = lineNumber;
-                    } else if (ch == '\\') {
-                        currentToken.sourceCode.append(ch);
-                        final char ch2 = chars[++i];
-                        currentToken.sourceCode.append(ch2);
+                    if (null != currentToken.extendedInformation) {
+                        RubyExtendedInformation extendedInformation = (RubyExtendedInformation) currentToken.extendedInformation;
+                        if (extendedInformation.percentLiteral) {
+                            if (ch == '\\' && i + 1 < chars.length) {
+                                currentToken.sourceCode.append(ch);
+                                currentToken.sourceCode.append(chars[++i]);
+                            } else if (ch == '#' && i + 1 < chars.length && chars[i + 1] == '{') {
+                                currentToken.sourceCode.append(ch);
+                                currentToken.sourceCode.append(chars[++i]);
+                                extendedInformation.curlyBracketIndent++;
+                            } else if (extendedInformation.curlyBracketIndent > 0 && ch == '}') {
+                                currentToken.sourceCode.append(ch);
+                                extendedInformation.curlyBracketIndent--;
+                            } else if (ch == extendedInformation.closing) {
+                                currentToken.sourceCode.append(ch);
+                                parse.tokenList.add(currentToken.finish(lineNumber));
+                                currentToken = new Token(n++, currentToken);
+                                currentToken.type = TokenClassification.SOURCE_CODE;
+                                currentToken.depth = indentNumber;
+                                currentToken.startLineNumber = lineNumber;
+                            } else {
+                                currentToken.sourceCode.append(ch);
+                            }
+                        } else {
+                            throw new RuntimeException("Illegal state.");
+                        }
                     } else {
-                        currentToken.sourceCode.append(ch);
+                        if (ch == '\"') {
+                            currentToken.sourceCode.append(ch);
+                            parse.tokenList.add(currentToken.finish(lineNumber));
+                            currentToken = new Token(n++, currentToken);
+                            currentToken.type = TokenClassification.SOURCE_CODE;
+                            currentToken.depth = indentNumber;
+                            currentToken.startLineNumber = lineNumber;
+                        } else if (ch == '\\') {
+                            currentToken.sourceCode.append(ch);
+                            final char ch2 = chars[++i];
+                            currentToken.sourceCode.append(ch2);
+                        } else {
+                            currentToken.sourceCode.append(ch);
+                        }
                     }
                     break;
             }

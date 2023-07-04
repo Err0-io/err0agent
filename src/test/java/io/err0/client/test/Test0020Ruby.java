@@ -67,7 +67,7 @@ public class Test0020Ruby {
 
             // check if/unless doesn't change static to dynamic.
             {
-                UnitTestApiProvider.MetaData metaData = previousState.metaDataStorage.get(6L);
+                UnitTestApiProvider.MetaData metaData = previousState.metaDataStorage.get(11L);
                 assertNotNull(metaData);
                 boolean static_literal = metaData.metaData.get("static_literal").getAsBoolean();
                 assertTrue(static_literal);
@@ -100,7 +100,7 @@ public class Test0020Ruby {
 
             previousState = apiProvider.getState();
 
-            assertEquals(6, previousState.metaDataStorage.size());
+            assertEquals(11, previousState.metaDataStorage.size());
         }
     }
 }

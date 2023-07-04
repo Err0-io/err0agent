@@ -1580,7 +1580,13 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                             if (width > 1) {
                                 start = start + whitespace;
                             }
-                            item.token.source = start + "[" + policy.getErrorCodeFormatter().formatErrorCode(item.token.errorOrdinal) + (remainder.length() == 0 || remainder.equals(start) ? "]" : "] ") + remainder;
+                            String open = "[", close = "]";
+                            if (item.token.extendedInformation != null && item.token.extendedInformation.escapeErrorCode()) {
+                                open = "\\[";
+                                close = "\\]";
+                            }
+
+                            item.token.source = start + open + policy.getErrorCodeFormatter().formatErrorCode(item.token.errorOrdinal) + close + (remainder.length() == 0 || remainder.equals(start) ? "" : " ") + remainder;
                         }
                     } else {
                         item.token.keepErrorCode = false;
@@ -1594,7 +1600,12 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                             if (width > 1) {
                                 start = start + whitespace;
                             }
-                            item.token.source = start + "[" + policy.getErrorCodeFormatter().formatErrorCode(item.token.errorOrdinal) + (remainder.length() == 0 || remainder.equals(start) ? "]" : "] ") + remainder;
+                            String open = "[", close = "]";
+                            if (item.token.extendedInformation != null && item.token.extendedInformation.escapeErrorCode()) {
+                                open = "\\[";
+                                close = "\\]";
+                            }
+                            item.token.source = start + open + policy.getErrorCodeFormatter().formatErrorCode(item.token.errorOrdinal) + close + (remainder.length() == 0 || remainder.equals(start) ? "" : " ") + remainder;
                         };
                     }
                 }
@@ -1659,7 +1670,12 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                             if (width > 1) {
                                 start = start + whitespace;
                             }
-                            currentToken.source = start + "[" + policy.getErrorCodeFormatter().formatErrorCode(currentToken.errorOrdinal) + (remainder.length() == 0 || remainder.equals(start) ? "]" : "] ") + remainder;
+                            String open = "[", close = "]";
+                            if (currentToken.extendedInformation != null && currentToken.extendedInformation.escapeErrorCode()) {
+                                open = "\\[";
+                                close = "\\]";
+                            }
+                            currentToken.source = start + open + policy.getErrorCodeFormatter().formatErrorCode(currentToken.errorOrdinal) + close + (remainder.length() == 0 || remainder.equals(start) ? "" : " ") + remainder;
                         } else {
                             final int width = currentToken.getStringQuoteWidth();
                             String start = currentToken.sourceNoErrorCode.substring(0, width);
@@ -1668,7 +1684,12 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                             if (width > 1) {
                                 start = start + whitespace;
                             }
-                            final String formatted = start + "[" + policy.getErrorCodeFormatter().formatErrorCode(currentToken.errorOrdinal) + (remainder.length() == 0 || remainder.equals(start) ? "]" : "] ") + remainder;
+                            String open = "[", close = "]";
+                            if (currentToken.extendedInformation != null && currentToken.extendedInformation.escapeErrorCode()) {
+                                open = "\\[";
+                                close = "\\]";
+                            }
+                            final String formatted = start + open + policy.getErrorCodeFormatter().formatErrorCode(currentToken.errorOrdinal) + close + (remainder.length() == 0 || remainder.equals(start) ? "" : " ") + remainder;
                             if (!formatted.equals(currentToken.initialSource)) {
                                 currentToken.source = formatted;
                                 logic.pass3InsertExistingErrorNumber(stateItem, currentToken); // no code corresponds to this in the main 'do everything' analyse method
