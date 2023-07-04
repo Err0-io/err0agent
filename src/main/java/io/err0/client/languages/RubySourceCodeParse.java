@@ -190,10 +190,7 @@ public class RubySourceCodeParse extends SourceCodeParse {
                     if (null != currentToken.extendedInformation) {
                         RubyExtendedInformation extendedInformation = (RubyExtendedInformation) currentToken.extendedInformation;
                         if (extendedInformation.percentLiteral) {
-                            if (ch == '\\' && i + 1 < chars.length) {
-                                currentToken.sourceCode.append(ch);
-                                currentToken.sourceCode.append(chars[++i]);
-                            } else if (ch == extendedInformation.closing) {
+                            if (ch == extendedInformation.closing) {
                                 currentToken.sourceCode.append(ch);
                                 parse.tokenList.add(currentToken.finish(lineNumber));
                                 currentToken = new Token(n++, currentToken);
@@ -214,10 +211,6 @@ public class RubySourceCodeParse extends SourceCodeParse {
                             currentToken.type = TokenClassification.SOURCE_CODE;
                             currentToken.depth = indentNumber;
                             currentToken.startLineNumber = lineNumber;
-                        } else if (ch == '\\') {
-                            currentToken.sourceCode.append(ch);
-                            final char ch2 = chars[++i];
-                            currentToken.sourceCode.append(ch2);
                         } else {
                             currentToken.sourceCode.append(ch);
                         }
@@ -389,12 +382,12 @@ public class RubySourceCodeParse extends SourceCodeParse {
                                                     if (matcherIfUnless.find()) {
                                                         sourceCode = sourceCode.substring(0, matcherIfUnless.start());
                                                     }
-                                                    if (!Main.reWhitespace.matcher(sourceCode).matches()) {
+                                                    if (!reStringConcatenationContinuation.matcher(sourceCode).matches()) {
                                                         staticLiteral = false;
                                                     }
                                                 }
                                             } else {
-                                                if (!Main.reWhitespace.matcher(sourceCode).matches()) {
+                                                if (!reStringConcatenationContinuation.matcher(sourceCode).matches()) {
                                                     staticLiteral = false;
                                                 }
                                             }
@@ -438,6 +431,8 @@ public class RubySourceCodeParse extends SourceCodeParse {
             }
         }
     }
+
+    public static Pattern reStringConcatenationContinuation = Pattern.compile("^(\\s|\\+)*\\?$");
 
     @Override
     public void classifyForCallStack(Token token) {
