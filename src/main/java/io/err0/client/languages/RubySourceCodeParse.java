@@ -204,7 +204,7 @@ public class RubySourceCodeParse extends SourceCodeParse {
                                 currentToken.sourceCode.append(ch);
                             }
                         } else {
-                            throw new RuntimeException("Illegal state.");
+                            throw new RuntimeException("[AGENT-000096] Illegal state.");
                         }
                     } else {
                         if (ch == '\'') {
@@ -248,7 +248,7 @@ public class RubySourceCodeParse extends SourceCodeParse {
                                 currentToken.sourceCode.append(ch);
                             }
                         } else {
-                            throw new RuntimeException("Illegal state.");
+                            throw new RuntimeException("[AGENT-000097] Illegal state.");
                         }
                     } else {
                         if (ch == '\"') {

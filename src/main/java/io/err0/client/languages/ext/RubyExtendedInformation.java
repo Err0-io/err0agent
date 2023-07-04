@@ -30,7 +30,7 @@ public class RubyExtendedInformation implements TokenExtendedInformation {
         if (percentLiteral) {
             return s.length() > 1 ? s.substring(this.getStringQuoteWidth(), s.length() - 1) : "";
         } else {
-            throw new RuntimeException("Not yet implemented.");
+            throw new RuntimeException("[AGENT-000098] Not yet implemented.");
         }
     }
 
@@ -39,7 +39,7 @@ public class RubyExtendedInformation implements TokenExtendedInformation {
         if (percentLiteral) {
             return percentLiteralType == 0 ? 2 : 3;
         } else {
-            throw new RuntimeException("Not yet implemented.");
+            throw new RuntimeException("[AGENT-000099] Not yet implemented.");
         }
     }
 
