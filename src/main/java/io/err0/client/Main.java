@@ -1703,9 +1703,16 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                         final String errorCode = policy.getErrorCodeFormatter().formatErrorCodeOnly(currentToken.errorOrdinal);
                         // update database with this information
                         if (currentToken.getChanged()) {
+                            Token prev = currentToken.prev;
+                            if (prev != null && parse.language == SourceCodeParse.Language.RUBY && prev.type == TokenClassification.SOURCE_CODE) {
+                                while (prev != null && reWhitespace.matcher(prev.source).matches()) {
+                                    prev = prev.prev;
+                                }
+                            }
+
                             System.out.println(
                                     "[AGENT-000059]" + "\t" +
-                                    stateItem.localToCheckoutUnchanged + ":\t" + currentToken.startLineNumber + "\t" + errorCode + "\t" + (null == currentToken.prev ? "" : currentToken.prev.classification));
+                                    stateItem.localToCheckoutUnchanged + ":\t" + currentToken.startLineNumber + "\t" + errorCode + "\t" + (null == prev ? "" : prev.classification));
                             //if (null != comments && !"".equals(comments)) {
                             //    System.out.println(comments);
                             //}
