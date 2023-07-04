@@ -432,7 +432,7 @@ public class RubySourceCodeParse extends SourceCodeParse {
         }
     }
 
-    public static Pattern reStringConcatenationContinuation = Pattern.compile("^(\\s|\\+)*\\?$");
+    public static Pattern reStringConcatenationContinuation = Pattern.compile("^(\\s|\\+)*\\\\?$");
 
     @Override
     public void classifyForCallStack(Token token) {
