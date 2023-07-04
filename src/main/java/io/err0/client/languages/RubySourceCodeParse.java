@@ -111,7 +111,7 @@ public class RubySourceCodeParse extends SourceCodeParse {
                     }
                 }
                 if (last < 0) {
-                    throw new RuntimeException("Decoding heredoc.");
+                    throw new RuntimeException("[AGENT-000100] Decoding heredoc.");
                 }
                 String line = currentLine.toString();
                 String trimmed = line.trim();
@@ -201,7 +201,7 @@ public class RubySourceCodeParse extends SourceCodeParse {
                                     }
                                     String label = hereDocLabel.toString();
                                     if ("".equals(label)) {
-                                        throw new RuntimeException("Unexpected HEREDOC identifier syntax.");
+                                        throw new RuntimeException("[AGENT-000101] Unexpected HEREDOC identifier syntax.");
                                     }
                                     RubyExtendedInformation.HereDoc hereDoc = new RubyExtendedInformation.HereDoc(label, type, quoteChar);
                                     queuedHereDocs.add(hereDoc);
