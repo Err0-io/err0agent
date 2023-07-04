@@ -45,7 +45,7 @@ jobs:
     - name: git fetch tags
       run: |
         git fetch --all --tags --force
-    - uses: actions/download-artifact@v3.0.0
+    - uses: actions/download-artifact@v3
       with: 
         name: err0agent-token
         path: tokens
@@ -125,7 +125,7 @@ jobs:
     
     steps:
     - uses: actions/checkout@v3
-    - uses: actions/download-artifact@v3.0.0
+    - uses: actions/download-artifact@v3
       with: 
         name: err0agent-fat-jar
         path: docker/agent
@@ -148,7 +148,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v3.0.0
+      - uses: actions/download-artifact@v3
         with:
           name: err0agent-fat-jar
           path: docker/agent
