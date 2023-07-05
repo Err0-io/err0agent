@@ -164,7 +164,13 @@ public class RubySourceCodeParse extends SourceCodeParse {
                         currentToken.sourceCode.append(ch);
                         currentToken.depth = indentNumber;
                         currentToken.startLineNumber = lineNumber;
-                    } else if (ch == '<' && i + 1 < chars.length && chars[i + 1] == '<') {
+                    } else if (ch == '<' && i + 2 < chars.length && chars[i + 1] == '<' && (
+                                chars[i + 2] == '-' ||
+                                chars[i + 2] == '~' ||
+                                chars[i + 2] == '\'' ||
+                                chars[i + 2] == '"' ||
+                                Character.isLetter(chars[i + 2])
+                            )) {
                         currentToken.sourceCode.append(ch);
                         currentToken.sourceCode.append(chars[++i]);
                         if (i + 1 < chars.length) {
@@ -201,10 +207,11 @@ public class RubySourceCodeParse extends SourceCodeParse {
                                     }
                                     String label = hereDocLabel.toString();
                                     if ("".equals(label)) {
-                                        throw new RuntimeException("[AGENT-000101] Unexpected HEREDOC identifier syntax.");
+                                        System.err.println("[AGENT-000101] Ruby: unexpected HEREDOC identifier syntax.");
+                                    } else {
+                                        RubyExtendedInformation.HereDoc hereDoc = new RubyExtendedInformation.HereDoc(label, type, quoteChar);
+                                        queuedHereDocs.add(hereDoc);
                                     }
-                                    RubyExtendedInformation.HereDoc hereDoc = new RubyExtendedInformation.HereDoc(label, type, quoteChar);
-                                    queuedHereDocs.add(hereDoc);
                                 }
                             }
                         }
