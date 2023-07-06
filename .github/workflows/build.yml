@@ -45,7 +45,7 @@ jobs:
     - name: git fetch tags
       run: |
         git fetch --all --tags --force
-    - uses: actions/download-artifact@v3.0.0
+    - uses: actions/download-artifact@v3
       with: 
         name: err0agent-token
         path: tokens
@@ -65,7 +65,7 @@ jobs:
         java-version: '11'
         distribution: 'temurin'
     - name: Build with Gradle
-      uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
+      uses: gradle/gradle-build-action@v2
       with:
         arguments: build
     - name: Create checksums
@@ -125,7 +125,7 @@ jobs:
     
     steps:
     - uses: actions/checkout@v3
-    - uses: actions/download-artifact@v3.0.0
+    - uses: actions/download-artifact@v3
       with: 
         name: err0agent-fat-jar
         path: docker/agent
@@ -148,7 +148,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v3.0.0
+      - uses: actions/download-artifact@v3
         with:
           name: err0agent-fat-jar
           path: docker/agent

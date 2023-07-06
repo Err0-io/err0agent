@@ -25,7 +25,7 @@ plugins {
 }
 
 group = "io.err0"
-version = "1.3.4-BETA"
+version = "1.3.5-BETA"
 
 repositories {
   mavenCentral()
@@ -121,7 +121,7 @@ tasks.withType<Test> {
 
 tasks.withType<JavaExec> {
   args = listOf(
-    "--token", "../open-source-bundle/dev-localhost/err0-smartthingsedgedrivers-20230603-077907dc-0214-11ee-a0ed-305a3ac84b71.json", "--insert", "../open-source-bundle/SmartThingsEdgeDrivers", // Lua
+    "--token", "../open-source-bundle/dev-localhost/err0-rails-20230723-82c92bf1-1997-11ee-8025-305a3ac84b71.json", "--insert", "../open-source-bundle/rails", // Ruby
   )
 /*
   // Check-out the open-source-bundle project at the same parent level as this project:

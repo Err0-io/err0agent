@@ -925,6 +925,15 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
             for (int j = 0, m = parse.tokenList.size(); j < m; ++j) {
                 lastToken = currentToken;
                 currentToken = parse.tokenList.get(j);
+                if (parse.language == SourceCodeParse.Language.RUBY) {
+                    if (null != lastToken && lastToken.type == TokenClassification.SOURCE_CODE) {
+                        Matcher matcher = reWhitespace.matcher(lastToken.source);
+                        while (matcher.matches() && lastToken.prev != null && lastToken.prev.type == TokenClassification.SOURCE_CODE) {
+                            lastToken = lastToken.prev;
+                            matcher = reWhitespace.matcher(lastToken.source);
+                        }
+                    }
+                }
 
                 if ((
                         parse.couldContainErrorNumber(currentToken)
@@ -1004,6 +1013,7 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
             final boolean cCppAllowed = codePolicy.mode != CodePolicy.CodePolicyMode.ADVANCED_CONFIGURATION || (null == codePolicy.adv_ccpp || !codePolicy.adv_ccpp.disable_language);
             final boolean rustAllowed = codePolicy.mode != CodePolicy.CodePolicyMode.ADVANCED_CONFIGURATION || (null == codePolicy.adv_rust || !codePolicy.adv_rust.disable_language);
             final boolean luaAllowed = codePolicy.mode != CodePolicy.CodePolicyMode.ADVANCED_CONFIGURATION || (null == codePolicy.adv_lua || !codePolicy.adv_lua.disable_language);
+            final boolean rubyAllowed = codePolicy.mode != CodePolicy.CodePolicyMode.ADVANCED_CONFIGURATION || (null == codePolicy.adv_ruby || !codePolicy.adv_ruby.disable_language);
 
             try (Stream<Path> paths = Files.walk(Paths.get(startPoint)))
             {
@@ -1065,6 +1075,10 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                             final FileCoding fileCoding = new FileCoding(p);
                             globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, LuaSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
                             System.out.println("[AGENT-000094] Parsed: " + newFile);
+                        } else if (rubyAllowed && newFileLower.endsWith(".rb")) {
+                            final FileCoding fileCoding = new FileCoding(p);
+                            globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, RubySourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
+                            System.out.println("[AGENT-000095] Parsed: " + newFile);
                         }
                     }
                 });
@@ -1202,7 +1216,7 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
         return analyseWholeProject(apiProvider, globalState, policy, driver, run_uuid, logic, statisticsGatherer, true);
     }
 
-    private static Pattern reWhitespace = Pattern.compile("^\\s*$");
+    public static Pattern reWhitespace = Pattern.compile("^\\s*$");
 
     private static boolean analyseWholeProject(final ApiProvider apiProvider, final GlobalState globalState, final ProjectPolicy policy, final ResultDriver driver, final UUID run_uuid, final AnalyseLogic logic, final StatisticsGatherer statisticsGatherer, boolean doNotAssignNewNumbers) {
         final String fileNamesInOrder[] = new String[globalState.files.size()];
@@ -1215,8 +1229,17 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
             final SourceCodeParse parse = stateItem.parse;
 
             for (int j = 0, m = parse.tokenList.size(); j < m; ++j) {
-                final Token lastToken = j > 0 ? parse.tokenList.get(j - 1) : null;
+                Token lastToken = j > 0 ? parse.tokenList.get(j - 1) : null;
                 final Token currentToken = parse.tokenList.get(j);
+                if (parse.language == SourceCodeParse.Language.RUBY) {
+                    if (null != lastToken && lastToken.type == TokenClassification.SOURCE_CODE) {
+                        Matcher matcher = reWhitespace.matcher(lastToken.source);
+                        while (matcher.matches() && lastToken.prev != null && lastToken.prev.type == TokenClassification.SOURCE_CODE) {
+                            lastToken = lastToken.prev;
+                            matcher = reWhitespace.matcher(lastToken.source);
+                        }
+                    }
+                }
 
                 if ((
                         parse.couldContainErrorNumber(currentToken)
@@ -1557,7 +1580,13 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                             if (width > 1) {
                                 start = start + whitespace;
                             }
-                            item.token.source = start + "[" + policy.getErrorCodeFormatter().formatErrorCode(item.token.errorOrdinal) + (remainder.length() == 0 || remainder.equals(start) ? "]" : "] ") + remainder;
+                            String open = "[", close = "]";
+                            if (item.token.extendedInformation != null && item.token.extendedInformation.escapeErrorCode()) {
+                                open = "\\[";
+                                close = "\\]";
+                            }
+
+                            item.token.source = start + open + policy.getErrorCodeFormatter().formatErrorCode(item.token.errorOrdinal) + close + (remainder.length() == 0 || remainder.equals(start) ? "" : " ") + remainder;
                         }
                     } else {
                         item.token.keepErrorCode = false;
@@ -1571,7 +1600,12 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                             if (width > 1) {
                                 start = start + whitespace;
                             }
-                            item.token.source = start + "[" + policy.getErrorCodeFormatter().formatErrorCode(item.token.errorOrdinal) + (remainder.length() == 0 || remainder.equals(start) ? "]" : "] ") + remainder;
+                            String open = "[", close = "]";
+                            if (item.token.extendedInformation != null && item.token.extendedInformation.escapeErrorCode()) {
+                                open = "\\[";
+                                close = "\\]";
+                            }
+                            item.token.source = start + open + policy.getErrorCodeFormatter().formatErrorCode(item.token.errorOrdinal) + close + (remainder.length() == 0 || remainder.equals(start) ? "" : " ") + remainder;
                         };
                     }
                 }
@@ -1636,7 +1670,12 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                             if (width > 1) {
                                 start = start + whitespace;
                             }
-                            currentToken.source = start + "[" + policy.getErrorCodeFormatter().formatErrorCode(currentToken.errorOrdinal) + (remainder.length() == 0 || remainder.equals(start) ? "]" : "] ") + remainder;
+                            String open = "[", close = "]";
+                            if (currentToken.extendedInformation != null && currentToken.extendedInformation.escapeErrorCode()) {
+                                open = "\\[";
+                                close = "\\]";
+                            }
+                            currentToken.source = start + open + policy.getErrorCodeFormatter().formatErrorCode(currentToken.errorOrdinal) + close + (remainder.length() == 0 || remainder.equals(start) ? "" : " ") + remainder;
                         } else {
                             final int width = currentToken.getStringQuoteWidth();
                             String start = currentToken.sourceNoErrorCode.substring(0, width);
@@ -1645,7 +1684,12 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                             if (width > 1) {
                                 start = start + whitespace;
                             }
-                            final String formatted = start + "[" + policy.getErrorCodeFormatter().formatErrorCode(currentToken.errorOrdinal) + (remainder.length() == 0 || remainder.equals(start) ? "]" : "] ") + remainder;
+                            String open = "[", close = "]";
+                            if (currentToken.extendedInformation != null && currentToken.extendedInformation.escapeErrorCode()) {
+                                open = "\\[";
+                                close = "\\]";
+                            }
+                            final String formatted = start + open + policy.getErrorCodeFormatter().formatErrorCode(currentToken.errorOrdinal) + close + (remainder.length() == 0 || remainder.equals(start) ? "" : " ") + remainder;
                             if (!formatted.equals(currentToken.initialSource)) {
                                 currentToken.source = formatted;
                                 logic.pass3InsertExistingErrorNumber(stateItem, currentToken); // no code corresponds to this in the main 'do everything' analyse method
@@ -1680,9 +1724,16 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                         final String errorCode = policy.getErrorCodeFormatter().formatErrorCodeOnly(currentToken.errorOrdinal);
                         // update database with this information
                         if (currentToken.getChanged()) {
+                            Token prev = currentToken.prev;
+                            if (prev != null && parse.language == SourceCodeParse.Language.RUBY && prev.type == TokenClassification.SOURCE_CODE) {
+                                while (prev != null && reWhitespace.matcher(prev.source).matches()) {
+                                    prev = prev.prev;
+                                }
+                            }
+
                             System.out.println(
                                     "[AGENT-000059]" + "\t" +
-                                    stateItem.localToCheckoutUnchanged + ":\t" + currentToken.startLineNumber + "\t" + errorCode + "\t" + (null == currentToken.prev ? "" : currentToken.prev.classification));
+                                    stateItem.localToCheckoutUnchanged + ":\t" + currentToken.startLineNumber + "\t" + errorCode + "\t" + (null == prev ? "" : prev.classification));
                             //if (null != comments && !"".equals(comments)) {
                             //    System.out.println(comments);
                             //}

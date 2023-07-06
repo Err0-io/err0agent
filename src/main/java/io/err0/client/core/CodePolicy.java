@@ -68,6 +68,8 @@ public class CodePolicy {
                 this.adv_rust = null == e ? new LanguageCodePolicy(new JsonObject()) : new LanguageCodePolicy(e.getAsJsonObject());
                 e = codePolicyJson.get("adv_lua");
                 this.adv_lua = null == e ? new LanguageCodePolicy(new JsonObject()) : new LanguageCodePolicy(e.getAsJsonObject());
+                e = codePolicyJson.get("adv_ruby");
+                this.adv_ruby = null == e ? new LanguageCodePolicy(new JsonObject()) : new LanguageCodePolicy(e.getAsJsonObject());
                 break;
             default:
                 throw new RuntimeException("[AGENT-000009] Unknown mode");
@@ -87,6 +89,7 @@ public class CodePolicy {
     public LanguageCodePolicy adv_ccpp;
     public LanguageCodePolicy adv_rust;
     public LanguageCodePolicy adv_lua;
+    public LanguageCodePolicy adv_ruby;
 
     public String easyModeObjectPattern() {
         JsonElement el = codePolicyJson.get("easy_mode_logger_object_naming_pattern");
