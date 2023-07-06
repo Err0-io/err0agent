@@ -84,7 +84,7 @@ public class CodePolicy {
         }
 
         if (this.enablePlaceholder && (null == this.placeholderValue || "".equals(this.placeholderValue))) {
-            throw new RuntimeException("Invalid placeholder settings.");
+            throw new RuntimeException("[AGENT-000102] Invalid placeholder settings.");
         }
     }
 
