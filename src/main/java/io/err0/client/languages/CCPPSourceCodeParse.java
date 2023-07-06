@@ -46,8 +46,6 @@ public class CCPPSourceCodeParse extends SourceCodeParse {
     private static Pattern reMethodPerhaps = Pattern.compile("\\)\\s*$");
     private static Pattern reMethod = Pattern.compile("\\s*(([^{};]+?)\\([^)]*?\\)(\\s+throws\\s+[^;{(]+?)?)\\s*$");
     private static Pattern reClass = Pattern.compile("\\s*(([^){\\[\\]};]+?)\\s+class\\s+(\\S+)[^;{(]+?)\\s*$");
-    private static Pattern reMethodIgnore = Pattern.compile("(\\s+|^\\s*)(catch|if|do|while|switch|for)\\s+", Pattern.MULTILINE);
-    //private static Pattern reErrorNumber = Pattern.compile("^\"\\[ERR-(\\d+)\\]\\s+");
     private Pattern reBuiltInLogger = Pattern.compile("\\s*(v?syslog)\\s*\\(.*$");
     private Pattern reBuiltInLoggerLevel = Pattern.compile("LOG_(EMERG|ALERT|CRIT|ERR|WARNING|NOTICE|INFO|DEBUG)");
     private Pattern reLogger = null;
@@ -56,9 +54,9 @@ public class CCPPSourceCodeParse extends SourceCodeParse {
     private static int reException_group_class = 1;
     private static Pattern rePreprocessor = Pattern.compile("^(\\s*#([^#\r\n]+))", Pattern.MULTILINE);
 
-    public static CCPPSourceCodeParse lex(final CodePolicy policy, final String sourceCode) {
+    public static CCPPSourceCodeParse lex(final CodePolicy codePolicy, final String sourceCode) {
         int n = 0;
-        CCPPSourceCodeParse parse = new CCPPSourceCodeParse(policy);
+        CCPPSourceCodeParse parse = new CCPPSourceCodeParse(codePolicy);
         Token currentToken = new Token(n++, null);
         currentToken.type = TokenClassification.SOURCE_CODE;
         int lineNumber = 1;
@@ -263,7 +261,7 @@ public class CCPPSourceCodeParse extends SourceCodeParse {
                         token.classification = Token.Classification.NO_MATCH;
                     }
 
-                    if ((token.classification == Token.Classification.NOT_FULLY_CLASSIFIED || token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) && (null == languageCodePolicy || !languageCodePolicy.disable_builtin_log_detection)) {
+                    if ((token.classification == Token.Classification.NOT_FULLY_CLASSIFIED || token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) && (null == languageCodePolicy || !languageCodePolicy.disable_builtin_log_detection) && (!this.codePolicy.getDisableLogs())) {
                         Matcher matcherLogger = reLogger.matcher(token.source);
                         if (matcherLogger.find()) {
                             token.classification = Token.Classification.LOG_OUTPUT;
@@ -284,7 +282,7 @@ public class CCPPSourceCodeParse extends SourceCodeParse {
                         }
                     }
 
-                    if (token.classification == Token.Classification.NOT_FULLY_CLASSIFIED || token.classification == Token.Classification.NOT_LOG_OUTPUT || token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION)
+                    if ((token.classification == Token.Classification.NOT_FULLY_CLASSIFIED || token.classification == Token.Classification.NOT_LOG_OUTPUT || token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) && (!this.codePolicy.getDisableExceptions()))
                     {
                         Matcher matcherException = reException.matcher(token.source);
                         if (matcherException.find()) {
@@ -293,7 +291,7 @@ public class CCPPSourceCodeParse extends SourceCodeParse {
                         }
                     }
 
-                    if (token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) token.classification = Token.Classification.LOG_OUTPUT;
+                    if (token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION && (!this.codePolicy.getDisableLogs())) token.classification = Token.Classification.LOG_OUTPUT;
 
                     // message categorisation, dynamic
                     if (token.classification == Token.Classification.EXCEPTION_THROW || token.classification == Token.Classification.LOG_OUTPUT) {

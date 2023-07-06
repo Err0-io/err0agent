@@ -36,6 +36,26 @@ public class TestPolicy {
         }
     }
 
+    public static ProjectPolicy getPolicyDisableLogs() {
+        try {
+            final RealmPolicy realmPolicy = new RealmPolicy(JsonParser.parseString(Utils.readString(Utils.pathOf("policies/realm/example-realm-disable-logs.json"))).getAsJsonObject());
+            return new ProjectPolicy(realmPolicy, JsonParser.parseString(Utils.readString(Utils.pathOf("policies/application/example-app.json"))).getAsJsonObject());
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static ProjectPolicy getPolicyDisableExceptions() {
+        try {
+            final RealmPolicy realmPolicy = new RealmPolicy(JsonParser.parseString(Utils.readString(Utils.pathOf("policies/realm/example-realm-disable-exceptions.json"))).getAsJsonObject());
+            return new ProjectPolicy(realmPolicy, JsonParser.parseString(Utils.readString(Utils.pathOf("policies/application/example-app.json"))).getAsJsonObject());
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static ProjectPolicy getAdvJavaPolicy() {
         try {
             final RealmPolicy realmPolicy = new RealmPolicy(JsonParser.parseString(Utils.readString(Utils.pathOf("policies/realm/example-realm.json"))).getAsJsonObject());

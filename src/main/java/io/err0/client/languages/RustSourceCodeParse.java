@@ -43,8 +43,6 @@ public class RustSourceCodeParse extends SourceCodeParse {
     }
 
     private static Pattern reMethod = Pattern.compile("(^|\\s+)(pub\\s+)?fn\\s+(.*)?$", Pattern.MULTILINE);
-    private static Pattern reMethodIgnore = Pattern.compile("(\\s+|^\\s*)(for|if|else|loop|match|while)\\s+", Pattern.MULTILINE);
-    //private static Pattern reErrorNumber = Pattern.compile("^(`|'|\")\\[ERR-(\\d+)\\]\\s+");
     private Pattern reLogger = null;
     private Pattern reLoggerLevel = null;
     private static Pattern reException = Pattern.compile("(panic)!\\s*\\(\\s*$");
@@ -261,7 +259,7 @@ public class RustSourceCodeParse extends SourceCodeParse {
                         token.classification = Token.Classification.NO_MATCH;
                     }
 
-                    if ((token.classification == Token.Classification.NOT_FULLY_CLASSIFIED || token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) && (null == languageCodePolicy || !languageCodePolicy.disable_builtin_log_detection)) {
+                    if ((token.classification == Token.Classification.NOT_FULLY_CLASSIFIED || token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) && (null == languageCodePolicy || !languageCodePolicy.disable_builtin_log_detection) && (!codePolicy.getDisableLogs())) {
                         Matcher matcherLogger = reLogger.matcher(token.source);
                         if (matcherLogger.find()) {
                             token.classification = Token.Classification.LOG_OUTPUT;
@@ -273,7 +271,7 @@ public class RustSourceCodeParse extends SourceCodeParse {
                         }
                     }
 
-                    if (token.classification == Token.Classification.NOT_FULLY_CLASSIFIED || token.classification == Token.Classification.NOT_LOG_OUTPUT || token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION)
+                    if ((token.classification == Token.Classification.NOT_FULLY_CLASSIFIED || token.classification == Token.Classification.NOT_LOG_OUTPUT || token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) && (!codePolicy.getDisableExceptions()))
                     {
                         Matcher matcherException = reException.matcher(token.source);
                         if (matcherException.find()) {
@@ -283,7 +281,7 @@ public class RustSourceCodeParse extends SourceCodeParse {
                         }
                     }
 
-                    if (token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) token.classification = Token.Classification.LOG_OUTPUT;
+                    if (token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION && (!codePolicy.getDisableLogs())) token.classification = Token.Classification.LOG_OUTPUT;
 
                     // message categorisation, dynamic
                     if (token.classification == Token.Classification.EXCEPTION_THROW || token.classification == Token.Classification.LOG_OUTPUT) {

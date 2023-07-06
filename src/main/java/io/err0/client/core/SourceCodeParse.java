@@ -24,14 +24,14 @@ import java.util.regex.Pattern;
 
 public abstract class SourceCodeParse {
 
-    public SourceCodeParse(final Language language, final CodePolicy policy, final LanguageCodePolicy languageCodePolicy) {
+    public SourceCodeParse(final Language language, final CodePolicy codePolicy, final LanguageCodePolicy languageCodePolicy) {
         this.language = language;
-        this.policy = policy;
+        this.codePolicy = codePolicy;
         this.languageCodePolicy = languageCodePolicy; // or null
     }
 
     public final Language language;
-    public final CodePolicy policy;
+    public final CodePolicy codePolicy;
     public final LanguageCodePolicy languageCodePolicy;
 
     public enum Language {

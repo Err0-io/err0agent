@@ -55,9 +55,9 @@ public class CSharpSourceCodeParse extends SourceCodeParse {
     private static int reException_group_class = 1;
     private static Pattern rePreprocessor = Pattern.compile("^(\\s*#([^#\r\n]+))", Pattern.MULTILINE);
 
-    public static CSharpSourceCodeParse lex(final CodePolicy policy, final String sourceCode) {
+    public static CSharpSourceCodeParse lex(final CodePolicy codePolicy, final String sourceCode) {
         int n = 0;
-        CSharpSourceCodeParse parse = new CSharpSourceCodeParse(policy);
+        CSharpSourceCodeParse parse = new CSharpSourceCodeParse(codePolicy);
         Token currentToken = new Token(n++, null);
         currentToken.type = TokenClassification.SOURCE_CODE;
         int lineNumber = 1;
@@ -262,7 +262,7 @@ public class CSharpSourceCodeParse extends SourceCodeParse {
                         token.classification = Token.Classification.NO_MATCH;
                     }
 
-                    if ((token.classification == Token.Classification.NOT_FULLY_CLASSIFIED || token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) && (null == languageCodePolicy || !languageCodePolicy.disable_builtin_log_detection)) {
+                    if ((token.classification == Token.Classification.NOT_FULLY_CLASSIFIED || token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) && (null == languageCodePolicy || !languageCodePolicy.disable_builtin_log_detection) && (!codePolicy.getDisableLogs())) {
                         Matcher matcherLogger = reLogger.matcher(token.source);
                         if (matcherLogger.find()) {
                             token.classification = Token.Classification.LOG_OUTPUT;
@@ -274,7 +274,7 @@ public class CSharpSourceCodeParse extends SourceCodeParse {
                         }
                     }
 
-                    if (token.classification == Token.Classification.NOT_FULLY_CLASSIFIED || token.classification == Token.Classification.NOT_LOG_OUTPUT || token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION)
+                    if ((token.classification == Token.Classification.NOT_FULLY_CLASSIFIED || token.classification == Token.Classification.NOT_LOG_OUTPUT || token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) && (!codePolicy.getDisableExceptions()))
                     {
                         Matcher matcherException = reException.matcher(token.source);
                         if (matcherException.find()) {
@@ -283,7 +283,7 @@ public class CSharpSourceCodeParse extends SourceCodeParse {
                         }
                     }
 
-                    if (token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) token.classification = Token.Classification.LOG_OUTPUT;
+                    if (token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION && (!codePolicy.getDisableLogs())) token.classification = Token.Classification.LOG_OUTPUT;
 
                     // message categorisation, dynamic
                     if (token.classification == Token.Classification.EXCEPTION_THROW || token.classification == Token.Classification.LOG_OUTPUT) {

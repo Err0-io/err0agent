@@ -59,8 +59,9 @@ public class LanguageCodePolicy {
         String level = null;
     }
 
-    public LanguageCodePolicy(final JsonObject languagePolicyJson)
+    public LanguageCodePolicy(final JsonObject languagePolicyJson, final CodePolicy codePolicy)
     {
+        this.codePolicy = codePolicy;
         if (null != languagePolicyJson) {
             this.disable_language = GsonHelper.asBoolean(languagePolicyJson, "disable_language", false);
             this.disable_builtin_log_detection = GsonHelper.asBoolean(languagePolicyJson, "disable_builtin_log_detection", false);
@@ -88,6 +89,8 @@ public class LanguageCodePolicy {
         }
     }
 
+    final CodePolicy codePolicy;
+
     public boolean disable_language = false;
     public boolean disable_builtin_log_detection = false;
     public ArrayList<LoggerRule> rules = new ArrayList<>();
@@ -103,6 +106,10 @@ public class LanguageCodePolicy {
 
     public ClassificationResult classify(String lineOfCode, String stringLiteral) {
         Token.Classification classification = Token.Classification.NOT_FULLY_CLASSIFIED;
+        if (codePolicy.getDisableLogs()) {
+            return new ClassificationResult(classification, null);
+        }
+
         String loggerLevel = null;
         for (LoggerRule rule : rules) {
             switch (rule.type) {

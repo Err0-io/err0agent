@@ -474,7 +474,7 @@ public class RubySourceCodeParse extends SourceCodeParse {
                         token.classification = Token.Classification.NO_MATCH;
                     }
 
-                    if ((token.classification == Token.Classification.NOT_FULLY_CLASSIFIED || token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) && (null == languageCodePolicy || !languageCodePolicy.disable_builtin_log_detection)) {
+                    if ((token.classification == Token.Classification.NOT_FULLY_CLASSIFIED || token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) && (null == languageCodePolicy || !languageCodePolicy.disable_builtin_log_detection) && (!codePolicy.getDisableLogs())) {
                         boolean nextIsHereDoc = (null != next.extendedInformation && null != ((RubyExtendedInformation) next.extendedInformation).hereDoc);
                         String source = token.source;
                         if (nextIsHereDoc) {
@@ -495,7 +495,7 @@ public class RubySourceCodeParse extends SourceCodeParse {
                         }
                     }
 
-                    if (token.classification == Token.Classification.NOT_FULLY_CLASSIFIED || token.classification == Token.Classification.NOT_LOG_OUTPUT || token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) {
+                    if ((token.classification == Token.Classification.NOT_FULLY_CLASSIFIED || token.classification == Token.Classification.NOT_LOG_OUTPUT || token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) && (!codePolicy.getDisableExceptions())) {
                         boolean nextIsHereDoc = (null != next.extendedInformation && null != ((RubyExtendedInformation) next.extendedInformation).hereDoc);
                         String source = token.source;
                         if (nextIsHereDoc) {
@@ -512,7 +512,7 @@ public class RubySourceCodeParse extends SourceCodeParse {
                         }
                     }
 
-                    if (token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) token.classification = Token.Classification.LOG_OUTPUT;
+                    if (token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION && (!codePolicy.getDisableLogs())) token.classification = Token.Classification.LOG_OUTPUT;
 
                     // message categorisation, dynamic
                     if (token.classification == Token.Classification.EXCEPTION_THROW || token.classification == Token.Classification.LOG_OUTPUT) {
