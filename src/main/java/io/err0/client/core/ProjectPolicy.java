@@ -475,6 +475,20 @@ public class ProjectPolicy {
         return reErrorNumber_rb_hereDoc;
     }
 
+    private Pattern reErrorNumber_rb_placeholder = null;
+    public Pattern getReErrorNumber_rb_placeholder() {
+        if (null == reErrorNumber_rb_placeholder) {
+            CodePolicy codePolicy = getCodePolicy();
+            if (!codePolicy.enablePlaceholder) {
+                throw new RuntimeException("Unable to search for placeholder");
+            }
+            reErrorNumber_rb_placeholder = Pattern.compile("^(['\"])(" + codePolicy.placeholderValue + "|" + getErrorPrefix() + "-(\\d+))\\1$");
+        }
+        return reErrorNumber_rb_placeholder;
+    }
+    public final int reErrorNumber_rb_placeholder_open_close_group = 1;
+    public final int reErrorNumber_rb_placeholder_number_group = 3;
+
     public CodePolicy getCodePolicy() {
         if (null == this.prj_code_policy) {
             return realmPolicy.realm_code_policy;
