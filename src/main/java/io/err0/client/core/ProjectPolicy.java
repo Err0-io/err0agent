@@ -285,6 +285,20 @@ public class ProjectPolicy {
         return reErrorNumber_java_textblocks;
     }
 
+    private Pattern reErrorNumber_java_placeholder = null;
+    public Pattern getReErrorNumber_java_placeholder() {
+        if (null == reErrorNumber_java_placeholder) {
+            CodePolicy codePolicy = getCodePolicy();
+            if (!codePolicy.enablePlaceholder) {
+                throw new RuntimeException("Unable to search for placeholder");
+            }
+            reErrorNumber_java_placeholder = Pattern.compile("^(\")(" + codePolicy.placeholderValue + "|" + getErrorPrefix() + "-(\\d+))\\1$");
+        }
+        return reErrorNumber_java_placeholder;
+    }
+    public final int reErrorNumber_java_placeholder_open_close_group = 1;
+    public final int reErrorNumber_java_placeholder_number_group = 3;
+
     // PHP pattern for finding our error number.
     private Pattern reErrorNumber_php = null;
     public Pattern getReErrorNumber_php() {

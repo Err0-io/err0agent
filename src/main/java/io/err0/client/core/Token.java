@@ -117,7 +117,8 @@ public class Token {
         EXCEPTION_THROW,
         CLASS_SIGNATURE,
         METHOD_SIGNATURE,
-        LAMBDA_SIGNATURE
+        LAMBDA_SIGNATURE,
+        PLACEHOLDER,
     }
 
     public Classification classification = Classification.NOT_CLASSIFIED_YET;

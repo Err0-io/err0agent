@@ -1251,48 +1251,35 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                     parse.classifyForErrorCode(apiProvider, globalState, policy, stateItem, currentToken);
 
                     if (currentToken.classification == Token.Classification.ERROR_NUMBER ||
-                            currentToken.classification == Token.Classification.POTENTIAL_ERROR_NUMBER
+                        currentToken.classification == Token.Classification.POTENTIAL_ERROR_NUMBER ||
+                        currentToken.classification == Token.Classification.PLACEHOLDER
                     ) {
-                        // now we may need to know what this particular token evaluates to
-                        parse.classifyForErrorCode(apiProvider, globalState, policy, stateItem, lastToken);
+                        if (currentToken.classification == Token.Classification.ERROR_NUMBER ||
+                            currentToken.classification == Token.Classification.POTENTIAL_ERROR_NUMBER) {
 
-                        if (lastToken.classification == Token.Classification.LOG_OUTPUT ||
-                                lastToken.classification == Token.Classification.EXCEPTION_THROW
-                        ) {
+                            // now we may need to know what this particular token evaluates to
+                            parse.classifyForErrorCode(apiProvider, globalState, policy, stateItem, lastToken);
 
-                            currentToken.insertErrorCode = true;
-
-                            /*
-
-                            In this first pass we don't alter error numbers, we will do that in a second pass...
-
-                            if (! currentToken.keepErrorCode) {
-                                // log match
-                                currentToken.errorOrdinal = apiProvider.nextErrorNumber();
-                                currentToken.source = currentToken.source.substring(0,1) + "[" + policy.getErrorCodeFormatter().formatErrorCode(currentToken.errorOrdinal) + "] " + currentToken.source.substring(1);
-                                stateItem.changed = true;
+                            if (lastToken.classification == Token.Classification.LOG_OUTPUT ||
+                                    lastToken.classification == Token.Classification.EXCEPTION_THROW
+                            ) {
+                                currentToken.insertErrorCode = true;
                             } else {
-                                final String formatted = currentToken.sourceNoErrorCode.substring(0,1) + "[" + policy.getErrorCodeFormatter().formatErrorCode(currentToken.errorOrdinal) + "] " + currentToken.sourceNoErrorCode.substring(1);
-                                if (! formatted.equals(currentToken.source)) {
-                                    currentToken.source = formatted;
-                                    currentToken.changed = true;
-                                    stateItem.changed = true;
+
+                                // insertErrorCode is false by default.
+
+                                // oops!  we have an error code assigned to a string which isn't a log output or an exception
+                                if (null != currentToken.sourceNoErrorCode && currentToken.errorOrdinal >= 0) {
+                                    globalState.errorCodeMap.get(currentToken.errorOrdinal).removeIf(tokenStateItem -> currentToken == tokenStateItem.token);
+                                    currentToken.errorOrdinal = -1;
+                                    currentToken.source = currentToken.sourceNoErrorCode;
+                                    currentToken.keepErrorCode = false; // always
                                 }
                             }
-                            // otherwise no change, keep the error code
-
-                             */
+                        } else if (currentToken.classification == Token.Classification.PLACEHOLDER) {
+                            currentToken.insertErrorCode = true;
                         } else {
-
-                            // insertErrorCode is false by default.
-
-                            // oops!  we have an error code assigned to a string which isn't a log output or an exception
-                            if (null != currentToken.sourceNoErrorCode && currentToken.errorOrdinal >= 0) {
-                                globalState.errorCodeMap.get(currentToken.errorOrdinal).removeIf(tokenStateItem -> currentToken == tokenStateItem.token);
-                                currentToken.errorOrdinal = -1;
-                                currentToken.source = currentToken.sourceNoErrorCode;
-                                currentToken.keepErrorCode = false; // always
-                            }
+                            throw new RuntimeException("Invalid state.");
                         }
 
                         // now search for meta-data about this
@@ -1418,19 +1405,6 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                                     metaData.add("line_of_code", lineArray.get(0));
                                 }
                             }
-
-                            /*
-
-                            System.out.println(stateItem.localToCheckoutLower);
-                            if (null != comments && !"".equals(comments)) {
-                                System.out.println(comments);
-                            }
-                            System.out.println(callStack);
-
-                            // update database with this information
-                            apiProvider.insertMetaData(policy, run_uuid, errorCode, currentToken.errorOrdinal, metaData);
-
-                             */
 
                             currentToken.metaData = metaData;
                             currentToken.signature = new Signature(metaData);
@@ -1585,7 +1559,10 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                                 open = "\\[";
                                 close = "\\]";
                             }
-
+                            if (item.token.classification == Token.Classification.PLACEHOLDER) {
+                                open = "";
+                                close = "";
+                            }
                             item.token.source = start + open + policy.getErrorCodeFormatter().formatErrorCode(item.token.errorOrdinal) + close + (remainder.length() == 0 || remainder.equals(start) ? "" : " ") + remainder;
                         }
                     } else {
@@ -1604,6 +1581,10 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                             if (item.token.extendedInformation != null && item.token.extendedInformation.escapeErrorCode()) {
                                 open = "\\[";
                                 close = "\\]";
+                            }
+                            if (item.token.classification == Token.Classification.PLACEHOLDER) {
+                                open = "";
+                                close = "";
                             }
                             item.token.source = start + open + policy.getErrorCodeFormatter().formatErrorCode(item.token.errorOrdinal) + close + (remainder.length() == 0 || remainder.equals(start) ? "" : " ") + remainder;
                         };
@@ -1644,9 +1625,13 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
 
                         HashSet<Long> newByType = statisticsGatherer.newErrorOrdinalsInLog;
                         HashSet<Long> existingByType = statisticsGatherer.existingErrorOrdinalsInLog;
-                        if ("EXCEPTION_THROW".equals(currentToken.metaData.get("type").getAsString())) {
+                        String type = currentToken.metaData.get("type").getAsString();
+                        if ("EXCEPTION_THROW".equals(type)) {
                             newByType = statisticsGatherer.newErrorOrdinalsInException;
                             existingByType = statisticsGatherer.existingErrorOrdinalsInException;
+                        } else if ("PLACEHOLDER".equals(type)) {
+                            newByType = statisticsGatherer.newErrorOrdinalsInPlaceholder;
+                            existingByType = statisticsGatherer.existingErrorOrdinalsInPlaceholder;
                         }
 
                         if (currentToken.keepErrorCode) {
@@ -1675,6 +1660,10 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                                 open = "\\[";
                                 close = "\\]";
                             }
+                            if (currentToken.classification == Token.Classification.PLACEHOLDER) {
+                                open = "";
+                                close = "";
+                            }
                             currentToken.source = start + open + policy.getErrorCodeFormatter().formatErrorCode(currentToken.errorOrdinal) + close + (remainder.length() == 0 || remainder.equals(start) ? "" : " ") + remainder;
                         } else {
                             final int width = currentToken.getStringQuoteWidth();
@@ -1688,6 +1677,10 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                             if (currentToken.extendedInformation != null && currentToken.extendedInformation.escapeErrorCode()) {
                                 open = "\\[";
                                 close = "\\]";
+                            }
+                            if (currentToken.classification == Token.Classification.PLACEHOLDER) {
+                                open = "";
+                                close = "";
                             }
                             final String formatted = start + open + policy.getErrorCodeFormatter().formatErrorCode(currentToken.errorOrdinal) + close + (remainder.length() == 0 || remainder.equals(start) ? "" : " ") + remainder;
                             if (!formatted.equals(currentToken.initialSource)) {
@@ -1729,6 +1722,9 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                                 while (prev != null && reWhitespace.matcher(prev.source).matches()) {
                                     prev = prev.prev;
                                 }
+                            }
+                            if (currentToken.classification == Token.Classification.PLACEHOLDER) {
+                                prev = currentToken; // we report on the current token not the exception/log.
                             }
 
                             System.out.println(

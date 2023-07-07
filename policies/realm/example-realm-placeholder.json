@@ -1,0 +1,26 @@
+{
+  "pk": "01f646f8-e479-11eb-ba80-0242ac130004",
+  "data": {
+    "name": "Example Realm",
+    "realm_code": "RLM",
+    "policy_editable_by_prj": true,
+    "context_allowed_in_prj": true,
+    "error_number_unique_in_realm": false,
+    "error_number_unique_per_project": true,
+    "policy": {
+      "types": "all",
+      "language": "autodetect",
+      "mode": "non-strict",
+      "error_prefix": "E",
+      "error_template": "%error %realm %prj %version",
+      "error_pad_to_n": 7,
+      "context": true,
+      "context_n_lines": 0
+    },
+    "realm_code_policy": {
+      "mode": 1,
+      "enable_placeholder": true,
+      "placeholder_value": "__PLACEHOLDER__"
+    }
+  }
+}
