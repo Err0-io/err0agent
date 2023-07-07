@@ -236,7 +236,7 @@ public class ProjectPolicy {
         if (null == reErrorNumber_js_placeholder) {
             CodePolicy codePolicy = getCodePolicy();
             if (!codePolicy.enablePlaceholder) {
-                throw new RuntimeException("Unable to search for placeholder");
+                throw new RuntimeException("[AGENT-000104] Unable to search for placeholder");
             }
             reErrorNumber_js_placeholder = Pattern.compile("^(`|'|\")(" + codePolicy.placeholderValue + "|" + getErrorPrefix() + "-(\\d+))\\1$");
         }
@@ -259,7 +259,7 @@ public class ProjectPolicy {
         if (null == reErrorNumber_cs_placeholder) {
             CodePolicy codePolicy = getCodePolicy();
             if (!codePolicy.enablePlaceholder) {
-                throw new RuntimeException("Unable to search for placeholder");
+                throw new RuntimeException("[AGENT-000105] Unable to search for placeholder");
             }
             reErrorNumber_cs_placeholder = Pattern.compile("^(\")(" + codePolicy.placeholderValue + "|" + getErrorPrefix() + "-(\\d+))\\1$");
         }
@@ -282,7 +282,7 @@ public class ProjectPolicy {
         if (null == reErrorNumber_ccpp_placeholder) {
             CodePolicy codePolicy = getCodePolicy();
             if (!codePolicy.enablePlaceholder) {
-                throw new RuntimeException("Unable to search for placeholder");
+                throw new RuntimeException("[AGENT-000106] Unable to search for placeholder");
             }
             reErrorNumber_ccpp_placeholder = Pattern.compile("^(\")(" + codePolicy.placeholderValue + "|" + getErrorPrefix() + "-(\\d+))\\1$");
         }
@@ -305,7 +305,7 @@ public class ProjectPolicy {
         if (null == reErrorNumber_go_placeholder) {
             CodePolicy codePolicy = getCodePolicy();
             if (!codePolicy.enablePlaceholder) {
-                throw new RuntimeException("Unable to search for placeholder");
+                throw new RuntimeException("[AGENT-000107] Unable to search for placeholder");
             }
             reErrorNumber_go_placeholder = Pattern.compile("^(`|'|\")(" + codePolicy.placeholderValue + "|" + getErrorPrefix() + "-(\\d+))\\1$");
         }
@@ -328,7 +328,7 @@ public class ProjectPolicy {
         if (null == reErrorNumber_rust_placeholder) {
             CodePolicy codePolicy = getCodePolicy();
             if (!codePolicy.enablePlaceholder) {
-                throw new RuntimeException("Unable to search for placeholder");
+                throw new RuntimeException("[AGENT-000108] Unable to search for placeholder");
             }
             reErrorNumber_rust_placeholder = Pattern.compile("^(\")(" + codePolicy.placeholderValue + "|" + getErrorPrefix() + "-(\\d+))\\1$");
         }
@@ -360,7 +360,7 @@ public class ProjectPolicy {
         if (null == reErrorNumber_java_placeholder) {
             CodePolicy codePolicy = getCodePolicy();
             if (!codePolicy.enablePlaceholder) {
-                throw new RuntimeException("Unable to search for placeholder");
+                throw new RuntimeException("[AGENT-000109] Unable to search for placeholder");
             }
             reErrorNumber_java_placeholder = Pattern.compile("^(\")(" + codePolicy.placeholderValue + "|" + getErrorPrefix() + "-(\\d+))\\1$");
         }
@@ -383,7 +383,7 @@ public class ProjectPolicy {
         if (null == reErrorNumber_php_placeholder) {
             CodePolicy codePolicy = getCodePolicy();
             if (!codePolicy.enablePlaceholder) {
-                throw new RuntimeException("Unable to search for placeholder");
+                throw new RuntimeException("[AGENT-000110] Unable to search for placeholder");
             }
             reErrorNumber_php_placeholder = Pattern.compile("^('|\")(" + codePolicy.placeholderValue + "|" + getErrorPrefix() + "-(\\d+))\\1$");
         }
@@ -406,7 +406,7 @@ public class ProjectPolicy {
         if (null == reErrorNumber_ts_placeholder) {
             CodePolicy codePolicy = getCodePolicy();
             if (!codePolicy.enablePlaceholder) {
-                throw new RuntimeException("Unable to search for placeholder");
+                throw new RuntimeException("[AGENT-000111] Unable to search for placeholder");
             }
             reErrorNumber_ts_placeholder = Pattern.compile("^(`|'|\")(" + codePolicy.placeholderValue + "|" + getErrorPrefix() + "-(\\d+))\\1$");
         }
@@ -428,7 +428,7 @@ public class ProjectPolicy {
         if (null == reErrorNumber_py_placeholder) {
             CodePolicy codePolicy = getCodePolicy();
             if (!codePolicy.enablePlaceholder) {
-                throw new RuntimeException("Unable to search for placeholder");
+                throw new RuntimeException("[AGENT-000112] Unable to search for placeholder");
             }
             reErrorNumber_py_placeholder = Pattern.compile("^('|\"\"\"|\")(" + codePolicy.placeholderValue + "|" + getErrorPrefix() + "-(\\d+))\\1$");
         }
@@ -450,7 +450,7 @@ public class ProjectPolicy {
         if (null == reErrorNumber_lua_placeholder) {
             CodePolicy codePolicy = getCodePolicy();
             if (!codePolicy.enablePlaceholder) {
-                throw new RuntimeException("Unable to search for placeholder");
+                throw new RuntimeException("[AGENT-000113] Unable to search for placeholder");
             }
             reErrorNumber_lua_placeholder = Pattern.compile("^('|\")(" + codePolicy.placeholderValue + "|" + getErrorPrefix() + "-(\\d+))\\1$");
         }
@@ -480,7 +480,7 @@ public class ProjectPolicy {
         if (null == reErrorNumber_rb_placeholder) {
             CodePolicy codePolicy = getCodePolicy();
             if (!codePolicy.enablePlaceholder) {
-                throw new RuntimeException("Unable to search for placeholder");
+                throw new RuntimeException("[AGENT-000114] Unable to search for placeholder");
             }
             reErrorNumber_rb_placeholder = Pattern.compile("^(['\"])(" + codePolicy.placeholderValue + "|" + getErrorPrefix() + "-(\\d+))\\1$");
         }

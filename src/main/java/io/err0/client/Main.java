@@ -1279,7 +1279,7 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                         } else if (currentToken.classification == Token.Classification.PLACEHOLDER) {
                             currentToken.insertErrorCode = true;
                         } else {
-                            throw new RuntimeException("Invalid state.");
+                            throw new RuntimeException("[AGENT-000103] Invalid state.");
                         }
 
                         // now search for meta-data about this
