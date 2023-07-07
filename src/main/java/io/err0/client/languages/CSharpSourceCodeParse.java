@@ -47,8 +47,6 @@ public class CSharpSourceCodeParse extends SourceCodeParse {
     private static Pattern reMethod = Pattern.compile("\\s*(([^{};]+?)\\([^)]*?\\)(\\s+throws\\s+[^;{(]+?)?)\\s*$");
     private static Pattern reLambda = Pattern.compile("\\s*(([^){\\[\\]};,]+?)\\([^)]*?\\)\\s+=>\\s*)\\s*$");
     private static Pattern reClass = Pattern.compile("\\s*(([^){\\[\\]};]+?)\\s+class\\s+(\\S+)[^;{(]+?)\\s*$");
-    private static Pattern reMethodIgnore = Pattern.compile("(\\s+|^\\s*)(catch|if|do|while|switch|for)\\s+", Pattern.MULTILINE);
-    //private static Pattern reErrorNumber = Pattern.compile("^\"\\[ERR-(\\d+)\\]\\s+");
     private Pattern reLogger = null;
     private Pattern reLoggerLevel = null;
     private static Pattern reException = Pattern.compile("throw\\s+new\\s+([^\\s(]*)\\s*\\(\\s*$");
@@ -228,6 +226,31 @@ public class CSharpSourceCodeParse extends SourceCodeParse {
                             }
                         } else {
                             token.sourceNoErrorCode = token.source = token.source.substring(0,1) + token.source.substring(matcherErrorNumber.end());
+                        }
+                    } else if (policy.getCodePolicy().getEnablePlaceholder()) {
+                        Matcher matcherPlaceholder = policy.getReErrorNumber_cs_placeholder().matcher(token.source);
+                        if (matcherPlaceholder.matches()) {
+                            token.classification = Token.Classification.PLACEHOLDER;
+                            String number = matcherPlaceholder.group(policy.reErrorNumber_cs_placeholder_number_group);
+                            if (null != number && ! "".equals(number)) {
+                                long errorOrdinal = Long.parseLong(number);
+                                if (apiProvider.validErrorNumber(policy, errorOrdinal)) {
+                                    if (globalState.store(errorOrdinal, stateItem, token)) {
+                                        token.keepErrorCode = true;
+                                        token.errorOrdinal = errorOrdinal;
+                                        token.sourceNoErrorCode = matcherPlaceholder.group(policy.reErrorNumber_cs_placeholder_open_close_group) + matcherPlaceholder.group(policy.reErrorNumber_cs_placeholder_open_close_group);
+                                    } else {
+                                        token.sourceNoErrorCode = token.source = matcherPlaceholder.group(policy.reErrorNumber_cs_placeholder_open_close_group) + matcherPlaceholder.group(policy.reErrorNumber_cs_placeholder_open_close_group);
+                                    }
+                                } else {
+                                    token.sourceNoErrorCode = token.source = matcherPlaceholder.group(policy.reErrorNumber_cs_placeholder_open_close_group) + matcherPlaceholder.group(policy.reErrorNumber_cs_placeholder_open_close_group);
+                                }
+                            } else {
+                                token.sourceNoErrorCode = token.source = matcherPlaceholder.group(policy.reErrorNumber_cs_placeholder_open_close_group) + matcherPlaceholder.group(policy.reErrorNumber_cs_placeholder_open_close_group);
+                            }
+                        } else {
+                            token.classification = Token.Classification.POTENTIAL_ERROR_NUMBER;
+                            token.sourceNoErrorCode = token.source;
                         }
                     } else {
                         token.classification = Token.Classification.POTENTIAL_ERROR_NUMBER;
