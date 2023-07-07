@@ -224,21 +224,6 @@ public class PythonSourceCodeParse extends SourceCodeParse {
                         currentToken.sourceCode.append(ch);
                     }
                     break;
-                    /*
-                case BACKTICK_LITERAL:
-                    if (ch == '`') {
-                        currentToken.sourceCode.append(ch);
-                        parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
-                        currentToken.depth = indentNumber;
-                        currentToken.startLineNumber = lineNumber;
-                        currentToken.startIndentNumber = indentNumber;
-                    } else {
-                        currentToken.sourceCode.append(ch);
-                    }
-                    break;
-                    */
             }
         }
         parse.tokenList.add(currentToken.finish(lineNumber));
@@ -247,7 +232,7 @@ public class PythonSourceCodeParse extends SourceCodeParse {
 
     @Override
     public boolean couldContainErrorNumber(Token token) {
-        return token.type == TokenClassification.APOS_LITERAL || token.type == TokenClassification.BACKTICK_LITERAL || token.type == TokenClassification.QUOT_LITERAL;
+        return token.type == TokenClassification.APOS_LITERAL || token.type == TokenClassification.QUOT3_LITERAL || token.type == TokenClassification.QUOT_LITERAL;
     }
 
     @Override
@@ -289,6 +274,31 @@ public class PythonSourceCodeParse extends SourceCodeParse {
                             }
                         } else {
                             token.sourceNoErrorCode = token.source = quot + token.source.substring(matcherErrorNumber.end());
+                        }
+                    } else if (policy.getCodePolicy().getEnablePlaceholder()) {
+                        Matcher matcherPlaceholder = policy.getReErrorNumber_py_placeholder().matcher(token.source);
+                        if (matcherPlaceholder.matches()) {
+                            token.classification = Token.Classification.PLACEHOLDER;
+                            String number = matcherPlaceholder.group(policy.reErrorNumber_py_placeholder_number_group);
+                            if (null != number && ! "".equals(number)) {
+                                long errorOrdinal = Long.parseLong(number);
+                                if (apiProvider.validErrorNumber(policy, errorOrdinal)) {
+                                    if (globalState.store(errorOrdinal, stateItem, token)) {
+                                        token.keepErrorCode = true;
+                                        token.errorOrdinal = errorOrdinal;
+                                        token.sourceNoErrorCode = matcherPlaceholder.group(policy.reErrorNumber_py_placeholder_open_close_group) + matcherPlaceholder.group(policy.reErrorNumber_py_placeholder_open_close_group);
+                                    } else {
+                                        token.sourceNoErrorCode = token.source = matcherPlaceholder.group(policy.reErrorNumber_py_placeholder_open_close_group) + matcherPlaceholder.group(policy.reErrorNumber_py_placeholder_open_close_group);
+                                    }
+                                } else {
+                                    token.sourceNoErrorCode = token.source = matcherPlaceholder.group(policy.reErrorNumber_py_placeholder_open_close_group) + matcherPlaceholder.group(policy.reErrorNumber_py_placeholder_open_close_group);
+                                }
+                            } else {
+                                token.sourceNoErrorCode = token.source = matcherPlaceholder.group(policy.reErrorNumber_py_placeholder_open_close_group) + matcherPlaceholder.group(policy.reErrorNumber_py_placeholder_open_close_group);
+                            }
+                        } else {
+                            token.classification = Token.Classification.POTENTIAL_ERROR_NUMBER;
+                            token.sourceNoErrorCode = token.source;
                         }
                     } else {
                         token.classification = Token.Classification.POTENTIAL_ERROR_NUMBER;

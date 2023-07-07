@@ -395,6 +395,20 @@ public class ProjectPolicy {
         return reErrorNumber_py;
     }
 
+    private Pattern reErrorNumber_py_placeholder = null;
+    public Pattern getReErrorNumber_py_placeholder() {
+        if (null == reErrorNumber_py_placeholder) {
+            CodePolicy codePolicy = getCodePolicy();
+            if (!codePolicy.enablePlaceholder) {
+                throw new RuntimeException("Unable to search for placeholder");
+            }
+            reErrorNumber_py_placeholder = Pattern.compile("^('|\"\"\"|\")(" + codePolicy.placeholderValue + "|" + getErrorPrefix() + "-(\\d+))\\1$");
+        }
+        return reErrorNumber_py_placeholder;
+    }
+    public final int reErrorNumber_py_placeholder_open_close_group = 1;
+    public final int reErrorNumber_py_placeholder_number_group = 3;
+
     private Pattern reErrorNumber_lua = null;
     public Pattern getReErrorNumber_lua() {
         if (null == reErrorNumber_lua) {
