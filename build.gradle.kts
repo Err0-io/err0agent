@@ -25,7 +25,7 @@ plugins {
 }
 
 group = "io.err0"
-version = "1.3.6-BETA"
+version = "1.4.0-BETA"
 
 repositories {
   mavenCentral()
