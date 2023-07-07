@@ -277,6 +277,20 @@ public class ProjectPolicy {
         return reErrorNumber_ccpp;
     }
 
+    private Pattern reErrorNumber_ccpp_placeholder = null;
+    public Pattern getReErrorNumber_ccpp_placeholder() {
+        if (null == reErrorNumber_ccpp_placeholder) {
+            CodePolicy codePolicy = getCodePolicy();
+            if (!codePolicy.enablePlaceholder) {
+                throw new RuntimeException("Unable to search for placeholder");
+            }
+            reErrorNumber_ccpp_placeholder = Pattern.compile("^(\")(" + codePolicy.placeholderValue + "|" + getErrorPrefix() + "-(\\d+))\\1$");
+        }
+        return reErrorNumber_ccpp_placeholder;
+    }
+    public final int reErrorNumber_ccpp_placeholder_open_close_group = 1;
+    public final int reErrorNumber_ccpp_placeholder_number_group = 3;
+
     // GO pattern for finding our error number.
     private Pattern reErrorNumber_go = null;
     public Pattern getReErrorNumber_go() {
