@@ -317,10 +317,24 @@ public class ProjectPolicy {
     private Pattern reErrorNumber_php = null;
     public Pattern getReErrorNumber_php() {
         if (null == reErrorNumber_php) {
-            reErrorNumber_php = Pattern.compile("^(\'|\")\\[" + getErrorPrefix() + "-(\\d+)\\]\\s*");
+            reErrorNumber_php = Pattern.compile("^('|\")\\[" + getErrorPrefix() + "-(\\d+)\\]\\s*");
         }
         return reErrorNumber_php;
     }
+
+    private Pattern reErrorNumber_php_placeholder = null;
+    public Pattern getReErrorNumber_php_placeholder() {
+        if (null == reErrorNumber_php_placeholder) {
+            CodePolicy codePolicy = getCodePolicy();
+            if (!codePolicy.enablePlaceholder) {
+                throw new RuntimeException("Unable to search for placeholder");
+            }
+            reErrorNumber_php_placeholder = Pattern.compile("^('|\")(" + codePolicy.placeholderValue + "|" + getErrorPrefix() + "-(\\d+))\\1$");
+        }
+        return reErrorNumber_php_placeholder;
+    }
+    public final int reErrorNumber_php_placeholder_open_close_group = 1;
+    public final int reErrorNumber_php_placeholder_number_group = 3;
 
     // TypeScript pattern for finding our error number.
     private Pattern reErrorNumber_ts = null;
