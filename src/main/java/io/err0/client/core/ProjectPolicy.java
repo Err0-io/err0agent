@@ -286,6 +286,20 @@ public class ProjectPolicy {
         return reErrorNumber_go;
     }
 
+    private Pattern reErrorNumber_go_placeholder = null;
+    public Pattern getReErrorNumber_go_placeholder() {
+        if (null == reErrorNumber_go_placeholder) {
+            CodePolicy codePolicy = getCodePolicy();
+            if (!codePolicy.enablePlaceholder) {
+                throw new RuntimeException("Unable to search for placeholder");
+            }
+            reErrorNumber_go_placeholder = Pattern.compile("^(`|'|\")(" + codePolicy.placeholderValue + "|" + getErrorPrefix() + "-(\\d+))\\1$");
+        }
+        return reErrorNumber_go_placeholder;
+    }
+    public final int reErrorNumber_go_placeholder_open_close_group = 1;
+    public final int reErrorNumber_go_placeholder_number_group = 3;
+
     // Rust pattern for finding our error number.
     private Pattern reErrorNumber_rust = null;
     public Pattern getReErrorNumber_rust() {
