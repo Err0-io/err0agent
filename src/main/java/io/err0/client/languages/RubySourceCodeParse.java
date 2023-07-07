@@ -128,6 +128,7 @@ public class RubySourceCodeParse extends SourceCodeParse {
                 } else {
                     currentToken.sourceCode.append(line).append('\n');
                     i = last;
+                    ++lineNumber;
                 }
                 continue;
             }

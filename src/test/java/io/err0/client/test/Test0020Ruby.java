@@ -103,4 +103,68 @@ public class Test0020Ruby {
             assertEquals(18, previousState.metaDataStorage.size());
         }
     }
+
+    @Test
+    public void t0002ContextBug() {
+
+        UnitTestApiProvider.UnitTestState previousState = null;
+
+        // pass #1 - scan and analyse
+        {
+
+            final String sourceDir = "src/test/testdata/0020/03";
+            final String assertDir = "src/test/testdata/0020/03-assert";
+
+            final ProjectPolicy policy = TestPolicy.getPolicy();
+            assertNotNull(policy);
+
+            final GlobalState globalState = new GlobalState();
+            assertNotNull(globalState);
+
+            final UnitTestApiProvider apiProvider = new UnitTestApiProvider();
+            final ResultDriver driver = apiProvider.getDriver();
+
+            Main.scan(policy, globalState, sourceDir, apiProvider, false);
+            Main._import(apiProvider, globalState, policy);
+            Main.runInsert(apiProvider, globalState, policy, driver, apiProvider.createRun(policy), new StatisticsGatherer());
+
+            // output the results to 01-assert
+            // apiProvider.writeResultsTo(assertDir);
+
+            apiProvider.resultStorage.forEach((filename, result) -> {
+                try {
+                    final String expectedSourceCode = Utils.readString(Utils.pathOf(assertDir + "/" + filename));
+                    assertEquals(expectedSourceCode, result.sourceCode, filename);
+                } catch (IOException e) {
+                    fail(e);
+                }
+            });
+
+            assertEquals(globalState.files.size(), apiProvider.resultStorage.size());
+
+            previousState = apiProvider.getState();
+
+            // check context is correct for this error number
+            {
+                UnitTestApiProvider.MetaData metaData = previousState.metaDataStorage.get(1L);
+                assertNotNull(metaData);
+                assertEquals(620, metaData.metaData.get("line").getAsLong());
+            }
+            {
+                UnitTestApiProvider.MetaData metaData = previousState.metaDataStorage.get(2L);
+                assertNotNull(metaData);
+                assertEquals(623, metaData.metaData.get("line").getAsLong());
+            }
+            {
+                UnitTestApiProvider.MetaData metaData = previousState.metaDataStorage.get(3L);
+                assertNotNull(metaData);
+                assertEquals(916, metaData.metaData.get("line").getAsLong());
+            }
+            {
+                UnitTestApiProvider.MetaData metaData = previousState.metaDataStorage.get(4L);
+                assertNotNull(metaData);
+                assertEquals(927, metaData.metaData.get("line").getAsLong());
+            }
+        }
+    }
 }
