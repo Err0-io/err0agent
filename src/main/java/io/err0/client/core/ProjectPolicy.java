@@ -231,6 +231,20 @@ public class ProjectPolicy {
         return reErrorNumber_js;
     }
 
+    private Pattern reErrorNumber_js_placeholder = null;
+    public Pattern getReErrorNumber_js_placeholder() {
+        if (null == reErrorNumber_js_placeholder) {
+            CodePolicy codePolicy = getCodePolicy();
+            if (!codePolicy.enablePlaceholder) {
+                throw new RuntimeException("Unable to search for placeholder");
+            }
+            reErrorNumber_js_placeholder = Pattern.compile("^(`|'|\")(" + codePolicy.placeholderValue + "|" + getErrorPrefix() + "-(\\d+))\\1$");
+        }
+        return reErrorNumber_js_placeholder;
+    }
+    public final int reErrorNumber_js_placeholder_open_close_group = 1;
+    public final int reErrorNumber_js_placeholder_number_group = 3;
+    
     // C# pattern for finding our error number.
     private Pattern reErrorNumber_cs = null;
     public Pattern getReErrorNumber_cs() {
