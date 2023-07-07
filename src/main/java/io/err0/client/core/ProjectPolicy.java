@@ -323,6 +323,20 @@ public class ProjectPolicy {
         return reErrorNumber_rust;
     }
 
+    private Pattern reErrorNumber_rust_placeholder = null;
+    public Pattern getReErrorNumber_rust_placeholder() {
+        if (null == reErrorNumber_rust_placeholder) {
+            CodePolicy codePolicy = getCodePolicy();
+            if (!codePolicy.enablePlaceholder) {
+                throw new RuntimeException("Unable to search for placeholder");
+            }
+            reErrorNumber_rust_placeholder = Pattern.compile("^(\")(" + codePolicy.placeholderValue + "|" + getErrorPrefix() + "-(\\d+))\\1$");
+        }
+        return reErrorNumber_rust_placeholder;
+    }
+    public final int reErrorNumber_rust_placeholder_open_close_group = 1;
+    public final int reErrorNumber_rust_placeholder_number_group = 3;
+
     // Java pattern for finding our error number.
     private Pattern reErrorNumber_java = null;
     public Pattern getReErrorNumber_java() {
