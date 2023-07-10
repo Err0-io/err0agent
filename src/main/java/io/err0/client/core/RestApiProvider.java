@@ -21,8 +21,10 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.config.ConnectionConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.BasicHttpClientConnectionManager;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 
@@ -30,16 +32,22 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.text.ParseException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 public class RestApiProvider implements ApiProvider {
     public RestApiProvider(final String tokenPath) throws IOException {
-        httpClient = HttpClients.createDefault();
+        ConnectionConfig connectionConfig = ConnectionConfig.custom()
+                .setConnectTimeout(5, TimeUnit.MINUTES)
+                .setSocketTimeout(15, TimeUnit.MINUTES)
+                .build();
+
+        BasicHttpClientConnectionManager connectionManager = new BasicHttpClientConnectionManager();
+        connectionManager.setConnectionConfig(connectionConfig);
+
+        httpClient = HttpClients.custom().setConnectionManager(connectionManager).build();
 
         try {
             tokenJson = JsonParser.parseString(Utils.readString(Utils.pathOf(tokenPath))).getAsJsonObject();
