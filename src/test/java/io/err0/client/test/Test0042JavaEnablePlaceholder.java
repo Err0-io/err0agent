@@ -93,6 +93,10 @@ public class Test0042JavaEnablePlaceholder {
             previousState = apiProvider.getState();
 
             assertEquals(7, previousState.metaDataStorage.size());
+
+            assertEquals("PLACEHOLDER", previousState.metaDataStorage.get(1L).metaData.get("type").getAsString());
+            assertEquals("LOG_OUTPUT", previousState.metaDataStorage.get(2L).metaData.get("type").getAsString());
+            assertEquals("EXCEPTION_THROW", previousState.metaDataStorage.get(7L).metaData.get("type").getAsString());
         }
 
         // pass #3 - scan and analyse

@@ -93,6 +93,10 @@ public class Test0051RubyEnablePlaceholder {
             previousState = apiProvider.getState();
 
             assertEquals(20, previousState.metaDataStorage.size());
+
+            assertEquals("PLACEHOLDER", previousState.metaDataStorage.get(9L).metaData.get("type").getAsString());
+            assertEquals("LOG_OUTPUT", previousState.metaDataStorage.get(2L).metaData.get("type").getAsString());
+            assertEquals("EXCEPTION_THROW", previousState.metaDataStorage.get(11L).metaData.get("type").getAsString());
         }
     }
 }

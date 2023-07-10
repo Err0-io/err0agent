@@ -81,7 +81,7 @@ public class UnitTestApiProvider implements ApiProvider {
         currentErrorNumber = nextErrorNumber-1;
     }
 
-    static class MetaData {
+    public static class MetaData {
         MetaData(final String errorCode, final long errorOrdinal, final JsonObject metaData) {
             this.errorCode = errorCode;
             this.errorOrdinal = errorOrdinal;

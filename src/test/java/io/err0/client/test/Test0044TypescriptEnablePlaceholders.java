@@ -93,6 +93,10 @@ public class Test0044TypescriptEnablePlaceholders {
             previousState = apiProvider.getState();
 
             assertEquals(8, previousState.metaDataStorage.size());
+
+            assertEquals("PLACEHOLDER", previousState.metaDataStorage.get(6L).metaData.get("type").getAsString());
+            assertEquals("LOG_OUTPUT", previousState.metaDataStorage.get(2L).metaData.get("type").getAsString());
+            assertEquals("EXCEPTION_THROW", previousState.metaDataStorage.get(7L).metaData.get("type").getAsString());
         }
     }
 }

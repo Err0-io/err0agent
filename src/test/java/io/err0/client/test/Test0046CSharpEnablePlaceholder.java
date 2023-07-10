@@ -93,6 +93,10 @@ public class Test0046CSharpEnablePlaceholder {
             previousState = apiProvider.getState();
 
             assertEquals(13, previousState.metaDataStorage.size());
+
+            assertEquals("PLACEHOLDER", previousState.metaDataStorage.get(5L).metaData.get("type").getAsString());
+            assertEquals("LOG_OUTPUT", previousState.metaDataStorage.get(2L).metaData.get("type").getAsString());
+            assertEquals("EXCEPTION_THROW", previousState.metaDataStorage.get(9L).metaData.get("type").getAsString());
         }
     }
 }

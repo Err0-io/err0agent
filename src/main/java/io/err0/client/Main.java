@@ -1278,6 +1278,7 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                             }
                         } else if (currentToken.classification == Token.Classification.PLACEHOLDER) {
                             currentToken.insertErrorCode = true;
+                            lastToken = currentToken; // placeholder = current token is classified, not the "previous"/"last"
                         } else {
                             throw new RuntimeException("[AGENT-000103] Invalid state.");
                         }
@@ -1717,22 +1718,7 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                         final String errorCode = policy.getErrorCodeFormatter().formatErrorCodeOnly(currentToken.errorOrdinal);
                         // update database with this information
                         if (currentToken.getChanged()) {
-                            Token prev = currentToken.prev;
-                            if (prev != null && parse.language == SourceCodeParse.Language.RUBY && prev.type == TokenClassification.SOURCE_CODE) {
-                                while (prev != null && reWhitespace.matcher(prev.source).matches()) {
-                                    prev = prev.prev;
-                                }
-                            }
-                            if (currentToken.classification == Token.Classification.PLACEHOLDER) {
-                                prev = currentToken; // we report on the current token not the exception/log.
-                            }
-
-                            System.out.println(
-                                    "[AGENT-000059]" + "\t" +
-                                    stateItem.localToCheckoutUnchanged + ":\t" + currentToken.startLineNumber + "\t" + errorCode + "\t" + (null == prev ? "" : prev.classification));
-                            //if (null != comments && !"".equals(comments)) {
-                            //    System.out.println(comments);
-                            //}
+                            System.out.println("[AGENT-000059]" + "\t" + stateItem.localToCheckoutUnchanged + ":\t" + currentToken.startLineNumber + "\t" + errorCode + "\t" + type);
                             System.out.println(callStack);
                         }
 
