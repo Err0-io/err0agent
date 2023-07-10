@@ -79,7 +79,7 @@ dependencies {
   implementation("org.eclipse.jgit:org.eclipse.jgit:5.12.0.202106070339-r")
 
   // https://mvnrepository.com/artifact/org.apache.httpcomponents.client5/httpclient5
-  implementation("org.apache.httpcomponents.client5:httpclient5:5.1")
+  implementation("org.apache.httpcomponents.client5:httpclient5:5.2")
 
   // https://mvnrepository.com/artifact/commons-cli/commons-cli
   implementation("commons-cli:commons-cli:1.5.0")
@@ -120,10 +120,6 @@ tasks.withType<Test> {
 }
 
 tasks.withType<JavaExec> {
-  args = listOf(
-    "--token", "../open-source-bundle/dev-localhost/err0-rails-20230723-82c92bf1-1997-11ee-8025-305a3ac84b71.json", "--insert", "../open-source-bundle/rails", // Ruby
-  )
-/*
   // Check-out the open-source-bundle project at the same parent level as this project:
   args = listOf(
     // pass #1 -- insert error codes (or re-insert error codes).
@@ -146,6 +142,7 @@ tasks.withType<JavaExec> {
     "--token", "../open-source-bundle/dev-localhost/err0-strapi-20221207-82bf8921-763f-11ed-8b95-4401bb8de3b3.json", "--insert", "../open-source-bundle/strapi", // javascript
     "--token", "../open-source-bundle/dev-localhost/err0-cerbos-20221207-33d4bf05-763f-11ed-8b95-4401bb8de3b3.json", "--insert", "../open-source-bundle/cerbos", // go
     "--token", "../open-source-bundle/dev-localhost/err0-mender-20221207-5b47787b-763f-11ed-8b95-4401bb8de3b3.json", "--insert", "../open-source-bundle/mender", // go
+    "--token", "../open-source-bundle/dev-localhost/err0-rails-20230723-82c92bf1-1997-11ee-8025-305a3ac84b71.json", "--insert", "../open-source-bundle/rails", // Ruby
     // pass #2 -- analyse source code, ignoring dirty checkout.
     "--token", "../open-source-bundle/dev-localhost/err0-leptos-20221220-7c62eafd-806b-11ed-b59e-4401bb8de3b3.json", "--analyse", "--dirty", "../open-source-bundle/leptos", // Rust
     "--token", "../open-source-bundle/dev-localhost/err0-postfix-20221220-5cd5d49b-806b-11ed-b59e-4401bb8de3b3.json", "--analyse", "--dirty", "../open-source-bundle/postfix", // C
@@ -166,9 +163,8 @@ tasks.withType<JavaExec> {
     "--token", "../open-source-bundle/dev-localhost/err0-strapi-20221207-82bf8921-763f-11ed-8b95-4401bb8de3b3.json", "--analyse", "--dirty", "../open-source-bundle/strapi", // javascript
     "--token", "../open-source-bundle/dev-localhost/err0-cerbos-20221207-33d4bf05-763f-11ed-8b95-4401bb8de3b3.json", "--analyse", "--dirty", "../open-source-bundle/cerbos", // go
     "--token", "../open-source-bundle/dev-localhost/err0-mender-20221207-5b47787b-763f-11ed-8b95-4401bb8de3b3.json", "--analyse", "--dirty", "../open-source-bundle/mender", // go
-
+    "--token", "../open-source-bundle/dev-localhost/err0-rails-20230723-82c92bf1-1997-11ee-8025-305a3ac84b71.json", "--analyse", "--dirty", "../open-source-bundle/rails", // Ruby
   )
 
- */
   //args = listOf("--version", "--help")
 }
