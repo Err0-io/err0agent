@@ -197,6 +197,9 @@ public class JavaSourceCodeParse extends SourceCodeParse {
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenClassification.SOURCE_CODE;
+                        inAnnotation = false;
+                        annotationBracketDepth = 0;
+                        inAnnotationString = false;
                         currentToken.depth = depth;
                         currentToken.startLineNumber = lineNumber;
                     } else {
@@ -212,6 +215,9 @@ public class JavaSourceCodeParse extends SourceCodeParse {
                             parse.tokenList.add(currentToken.finish(lineNumber));
                             currentToken = new Token(n++, currentToken);
                             currentToken.type = TokenClassification.SOURCE_CODE;
+                            inAnnotation = false;
+                            annotationBracketDepth = 0;
+                            inAnnotationString = false;
                             currentToken.depth = depth;
                             currentToken.startLineNumber = lineNumber;
                             ++i;
@@ -228,6 +234,9 @@ public class JavaSourceCodeParse extends SourceCodeParse {
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenClassification.SOURCE_CODE;
+                        inAnnotation = false;
+                        annotationBracketDepth = 0;
+                        inAnnotationString = false;
                         currentToken.depth = depth;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == '\\') {
@@ -244,6 +253,9 @@ public class JavaSourceCodeParse extends SourceCodeParse {
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenClassification.SOURCE_CODE;
+                        inAnnotation = false;
+                        annotationBracketDepth = 0;
+                        inAnnotationString = false;
                         currentToken.depth = depth;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == '\\') {
@@ -263,6 +275,9 @@ public class JavaSourceCodeParse extends SourceCodeParse {
                             parse.tokenList.add(currentToken.finish(lineNumber));
                             currentToken = new Token(n++, currentToken);
                             currentToken.type = TokenClassification.SOURCE_CODE;
+                            inAnnotation = false;
+                            annotationBracketDepth = 0;
+                            inAnnotationString = false;
                             currentToken.depth = depth;
                             currentToken.startLineNumber = lineNumber;
                         } else {
