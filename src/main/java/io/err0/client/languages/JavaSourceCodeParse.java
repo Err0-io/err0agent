@@ -47,9 +47,9 @@ public class JavaSourceCodeParse extends SourceCodeParse {
         reFluentSlf4jLevel = Pattern.compile("\\.at(" + pattern + ")\\(\\)\\.", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE); // group #1 is the level
     }
 
-    private static Pattern reMethod = Pattern.compile("\\s*(([^){};]+?)\\([^)]*?\\)(\\s+throws\\s+[^;{(]+?)?)\\s*$");
+    private static Pattern reMethod = Pattern.compile("\\s*(([^){};]+?)\\(.*?\\)(\\s+throws\\s+[^;{(]+?)?)\\s*$");
     private static Pattern reLambda = Pattern.compile("\\s*(([^){};,=]+?)\\([^)]*?\\)\\s+->\\s*)\\s*$");
-    private static Pattern reClass = Pattern.compile("\\s*(([^){};]+?)\\s+class\\s+(\\S+)[^;{(]+?)\\s*$");
+    private static Pattern reClass = Pattern.compile("\\s*(([^){};]*\\s+)?class\\s+(\\S+)[^;{(]+?)\\s*$");
     private Pattern reLogger = null;
     private Pattern reLoggerLevel = null;
     private static Pattern reFluentSlf4j = Pattern.compile("\\.log\\s*\\(\\s*$");
@@ -66,6 +66,8 @@ public class JavaSourceCodeParse extends SourceCodeParse {
         int lineNumber = 1;
         currentToken.startLineNumber = lineNumber;
         final char chars[] = sourceCode.toCharArray();
+        boolean inAnnotation = false;
+        int annotationBracketDepth = 0;
         for (int i = 0, l = chars.length; i < l; ++i) {
             int depth = currentToken.depth;
             final char ch = chars[i];
@@ -74,76 +76,97 @@ public class JavaSourceCodeParse extends SourceCodeParse {
             }
             switch (currentToken.type) {
                 case SOURCE_CODE:
-                    if (ch == '{') {
-                        parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
-                        currentToken.sourceCode.append(ch);
-                        currentToken.depth = depth + 1;
-                        currentToken.startLineNumber = lineNumber;
-                    } else if (ch == '}') {
-                        currentToken.sourceCode.append(ch);
-                        parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
-                        currentToken.depth = depth - 1;
-                        currentToken.startLineNumber = lineNumber;
-                    } else if (ch == ';') {
-                        currentToken.sourceCode.append(ch);
-                        parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
-                        currentToken.depth = depth;
-                        currentToken.startLineNumber = lineNumber;
-                    } else if (ch == '\'') {
-                        parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.APOS_LITERAL;
-                        currentToken.sourceCode.append(ch);
-                        currentToken.depth = depth;
-                        currentToken.startLineNumber = lineNumber;
-                    } else if (ch == '\"') {
-                        parse.tokenList.add(currentToken.finish(lineNumber));
-                        if (i < l - 2 && chars[i+1] == '\"' && chars[i+2] == '\"') {
-                            currentToken = new Token(n++, currentToken);
-                            currentToken.type = TokenClassification.QUOT3_LITERAL;
+                    if (inAnnotation) {
+                        if (annotationBracketDepth > 0) {
+                            if (ch == ')') {
+                                --annotationBracketDepth;
+                            }
                             currentToken.sourceCode.append(ch);
-                            currentToken.sourceCode.append(chars[++i]);
-                            currentToken.sourceCode.append(chars[++i]);
-                            currentToken.depth = depth;
-                            currentToken.startLineNumber = lineNumber;
                         } else {
-                            currentToken = new Token(n++, currentToken);
-                            currentToken.type = TokenClassification.QUOT_LITERAL;
-                            currentToken.sourceCode.append(ch);
-                            currentToken.depth = depth;
-                            currentToken.startLineNumber = lineNumber;
-                        }
-                    } else if (i < l - 1 && ch == '/') {
-                        final char ch2 = chars[i+1];
-                        if (ch2 == '*') {
-                            parse.tokenList.add(currentToken.finish(lineNumber));
-                            currentToken = new Token(n++, currentToken);
-                            currentToken.type = TokenClassification.COMMENT_BLOCK;
-                            currentToken.sourceCode.append(ch);
-                            currentToken.sourceCode.append(ch2);
-                            currentToken.depth = depth;
-                            currentToken.startLineNumber = lineNumber;
-                            ++i;
-                        } else if (ch2 == '/') {
-                            parse.tokenList.add(currentToken.finish(lineNumber));
-                            currentToken = new Token(n++, currentToken);
-                            currentToken.type = TokenClassification.COMMENT_LINE;
-                            currentToken.sourceCode.append(ch);
-                            currentToken.sourceCode.append(ch2);
-                            currentToken.depth = depth;
-                            currentToken.startLineNumber = lineNumber;
-                            ++i;
-                        } else {
+                            if (ch == '(') {
+                                ++annotationBracketDepth;
+                            }
+                            if (Character.isWhitespace(ch)) {
+                                inAnnotation = false;
+                            }
                             currentToken.sourceCode.append(ch);
                         }
                     } else {
-                        currentToken.sourceCode.append(ch);
+                        if (ch == '@') {
+                            inAnnotation = true;
+                            annotationBracketDepth = 0;
+                            currentToken.sourceCode.append(ch);
+                        } else if (ch == '{') {
+                            parse.tokenList.add(currentToken.finish(lineNumber));
+                            currentToken = new Token(n++, currentToken);
+                            currentToken.type = TokenClassification.SOURCE_CODE;
+                            currentToken.sourceCode.append(ch);
+                            currentToken.depth = depth + 1;
+                            currentToken.startLineNumber = lineNumber;
+                        } else if (ch == '}') {
+                            currentToken.sourceCode.append(ch);
+                            parse.tokenList.add(currentToken.finish(lineNumber));
+                            currentToken = new Token(n++, currentToken);
+                            currentToken.type = TokenClassification.SOURCE_CODE;
+                            currentToken.depth = depth - 1;
+                            currentToken.startLineNumber = lineNumber;
+                        } else if (ch == ';') {
+                            currentToken.sourceCode.append(ch);
+                            parse.tokenList.add(currentToken.finish(lineNumber));
+                            currentToken = new Token(n++, currentToken);
+                            currentToken.type = TokenClassification.SOURCE_CODE;
+                            currentToken.depth = depth;
+                            currentToken.startLineNumber = lineNumber;
+                        } else if (ch == '\'') {
+                            parse.tokenList.add(currentToken.finish(lineNumber));
+                            currentToken = new Token(n++, currentToken);
+                            currentToken.type = TokenClassification.APOS_LITERAL;
+                            currentToken.sourceCode.append(ch);
+                            currentToken.depth = depth;
+                            currentToken.startLineNumber = lineNumber;
+                        } else if (ch == '\"') {
+                            parse.tokenList.add(currentToken.finish(lineNumber));
+                            if (i < l - 2 && chars[i + 1] == '\"' && chars[i + 2] == '\"') {
+                                currentToken = new Token(n++, currentToken);
+                                currentToken.type = TokenClassification.QUOT3_LITERAL;
+                                currentToken.sourceCode.append(ch);
+                                currentToken.sourceCode.append(chars[++i]);
+                                currentToken.sourceCode.append(chars[++i]);
+                                currentToken.depth = depth;
+                                currentToken.startLineNumber = lineNumber;
+                            } else {
+                                currentToken = new Token(n++, currentToken);
+                                currentToken.type = TokenClassification.QUOT_LITERAL;
+                                currentToken.sourceCode.append(ch);
+                                currentToken.depth = depth;
+                                currentToken.startLineNumber = lineNumber;
+                            }
+                        } else if (i < l - 1 && ch == '/') {
+                            final char ch2 = chars[i + 1];
+                            if (ch2 == '*') {
+                                parse.tokenList.add(currentToken.finish(lineNumber));
+                                currentToken = new Token(n++, currentToken);
+                                currentToken.type = TokenClassification.COMMENT_BLOCK;
+                                currentToken.sourceCode.append(ch);
+                                currentToken.sourceCode.append(ch2);
+                                currentToken.depth = depth;
+                                currentToken.startLineNumber = lineNumber;
+                                ++i;
+                            } else if (ch2 == '/') {
+                                parse.tokenList.add(currentToken.finish(lineNumber));
+                                currentToken = new Token(n++, currentToken);
+                                currentToken.type = TokenClassification.COMMENT_LINE;
+                                currentToken.sourceCode.append(ch);
+                                currentToken.sourceCode.append(ch2);
+                                currentToken.depth = depth;
+                                currentToken.startLineNumber = lineNumber;
+                                ++i;
+                            } else {
+                                currentToken.sourceCode.append(ch);
+                            }
+                        } else {
+                            currentToken.sourceCode.append(ch);
+                        }
                     }
                     break;
                 case COMMENT_LINE:
