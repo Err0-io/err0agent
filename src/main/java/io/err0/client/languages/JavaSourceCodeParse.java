@@ -68,6 +68,7 @@ public class JavaSourceCodeParse extends SourceCodeParse {
         final char chars[] = sourceCode.toCharArray();
         boolean inAnnotation = false;
         int annotationBracketDepth = 0;
+        boolean inAnnotationString = false;
         for (int i = 0, l = chars.length; i < l; ++i) {
             int depth = currentToken.depth;
             final char ch = chars[i];
@@ -80,10 +81,30 @@ public class JavaSourceCodeParse extends SourceCodeParse {
                         if (annotationBracketDepth > 0) {
                             if (ch == ')') {
                                 --annotationBracketDepth;
+                            } else if (ch == '(') {
+                                ++annotationBracketDepth;
                             }
                             currentToken.sourceCode.append(ch);
+                            if (inAnnotationString) {
+                                if (ch == '\\') {
+                                    currentToken.sourceCode.append(chars[++i]);
+                                } else if (ch == '"') {
+                                    inAnnotationString = false;
+                                }
+                            } else if (ch == '"') {
+                                inAnnotationString = true;
+                            } else if (ch == '\'') {
+                                char ch2 = chars[++i];
+                                currentToken.sourceCode.append(ch2);
+                                if (ch2 == '\\') {
+                                    currentToken.sourceCode.append(chars[++i]);
+                                }
+                                currentToken.sourceCode.append(chars[++i]); // closing '
+                            }
                         } else {
-                            if (ch == '(') {
+                            if (ch == ')') {
+                                --annotationBracketDepth;
+                            } else if (ch == '(') {
                                 ++annotationBracketDepth;
                             }
                             if (Character.isWhitespace(ch)) {
@@ -95,6 +116,7 @@ public class JavaSourceCodeParse extends SourceCodeParse {
                         if (ch == '@') {
                             inAnnotation = true;
                             annotationBracketDepth = 0;
+                            inAnnotationString = false;
                             currentToken.sourceCode.append(ch);
                         } else if (ch == '{') {
                             parse.tokenList.add(currentToken.finish(lineNumber));

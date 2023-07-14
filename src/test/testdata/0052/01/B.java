@@ -11,4 +11,9 @@ class B {
     B exampleMethod(String parameter) {
         throw new RuntimeException("An error...");
     }
+
+    @Example('\"')
+    void exampleMethod2() {
+        throw new RuntimeException("An error...");
+    }
 }
