@@ -88,6 +88,31 @@ public class PythonSourceCodeParse extends SourceCodeParse {
                         currentToken.depth = indentNumber;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == '\'') {
+                        if (i+1<l) {
+                            final char ch1 = chars[i+1];
+                            if (ch1 == '\'') {
+                                if (i+2<l) {
+                                    final char ch2 = chars[i+2];
+                                    if (ch2 == '\'') {
+                                        // comment literal """ <<comment>> """
+                                        parse.tokenList.add(currentToken.finish(lineNumber));
+                                        currentToken = new Token(n++, currentToken);
+                                        currentToken.type = TokenClassification.APOS3_LITERAL;
+                                        currentToken.sourceCode.append(ch);
+                                        currentToken.sourceCode.append(ch1);
+                                        currentToken.sourceCode.append(ch2);
+                                        currentToken.depth = indentNumber;
+                                        currentToken.startLineNumber = lineNumber;
+                                        ++i;
+                                        ++i;
+
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
+                        // otherwise, it is an apos literal
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenClassification.APOS_LITERAL;
@@ -192,6 +217,40 @@ public class PythonSourceCodeParse extends SourceCodeParse {
                         currentToken.sourceCode.append(ch);
                     }
                     break;
+                case APOS3_LITERAL:
+                    if (ch == '\'') {
+                        if (i+1<l) {
+                            final char ch1 = chars[i+1];
+                            if (ch1 == '\'') {
+                                if (i+2<l) {
+                                    final char ch2 = chars[i+2];
+                                    if (ch2 == '\'') {
+                                        // apos string literal ''' <<comment>> '''
+                                        currentToken.sourceCode.append(ch);
+                                        currentToken.sourceCode.append(ch1);
+                                        currentToken.sourceCode.append(ch2);
+                                        parse.tokenList.add(currentToken.finish(lineNumber));
+                                        currentToken = new Token(n++, currentToken);
+                                        currentToken.type = TokenClassification.SOURCE_CODE;
+                                        currentToken.depth = indentNumber;
+                                        currentToken.startLineNumber = lineNumber;
+                                        i+=2;
+
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    // behaves like any string
+                    if (ch == '\\') {
+                        currentToken.sourceCode.append(ch);
+                        final char ch2 = chars[++i];
+                        currentToken.sourceCode.append(ch2);
+                    } else {
+                        currentToken.sourceCode.append(ch);
+                    }
+                    break;
                 case APOS_LITERAL:
                     if (ch == '\'') {
                         currentToken.sourceCode.append(ch);
@@ -247,7 +306,7 @@ public class PythonSourceCodeParse extends SourceCodeParse {
 
     @Override
     public boolean couldContainErrorNumber(Token token) {
-        return token.type == TokenClassification.APOS_LITERAL || token.type == TokenClassification.BACKTICK_LITERAL || token.type == TokenClassification.QUOT_LITERAL;
+        return token.type == TokenClassification.APOS3_LITERAL || token.type == TokenClassification.APOS_LITERAL || token.type == TokenClassification.QUOT3_LITERAL || token.type == TokenClassification.QUOT_LITERAL;
     }
 
     @Override
@@ -255,6 +314,7 @@ public class PythonSourceCodeParse extends SourceCodeParse {
         if (token.classification == Token.Classification.NOT_CLASSIFIED_YET) {
             switch (token.type) {
                 case APOS_LITERAL:
+                case APOS3_LITERAL:
                 case QUOT_LITERAL:
                 case QUOT3_LITERAL:
                 {
@@ -300,7 +360,7 @@ public class PythonSourceCodeParse extends SourceCodeParse {
                 {
                     token.classification = Token.Classification.NOT_FULLY_CLASSIFIED;
                     Token next = token.next();
-                    if (next != null && (next.type == TokenClassification.QUOT_LITERAL || next.type == TokenClassification.APOS_LITERAL || next.type == TokenClassification.QUOT3_LITERAL)) {
+                    if (next != null && (next.type == TokenClassification.QUOT_LITERAL || next.type == TokenClassification.APOS_LITERAL || next.type == TokenClassification.QUOT3_LITERAL || next.type == TokenClassification.APOS3_LITERAL)) {
                         // rule 0 - this code must be followed by a string literal
                         if (null != languageCodePolicy && languageCodePolicy.rules.size() > 0) {
                             // classify according to rules.

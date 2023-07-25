@@ -19,3 +19,9 @@ class Example:
 
     def method(list=()):
         raise RuntimeError(", ".join("%s" % x for x in list)
+
+    def method2():
+        raise RuntimeError('''[E-2] This is an error''')
+
+    def method3():
+        raise RuntimeError("""[E-3] This is an error""")
