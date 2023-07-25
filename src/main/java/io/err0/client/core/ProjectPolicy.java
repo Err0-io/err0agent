@@ -306,7 +306,7 @@ public class ProjectPolicy {
     private Pattern reErrorNumber_py = null;
     public Pattern getReErrorNumber_py() {
         if (null == reErrorNumber_py) {
-            reErrorNumber_py = Pattern.compile("^('|\"\"\"|\")\\[" + getErrorPrefix() + "-(\\d+)\\]\\s*");
+            reErrorNumber_py = Pattern.compile("^('|'''|\"\"\"|\")\\[" + getErrorPrefix() + "-(\\d+)\\]\\s*");
         }
         return reErrorNumber_py;
     }

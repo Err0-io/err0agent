@@ -34,42 +34,71 @@ public class Test0010Python {
     @Test
     public void t0001InjectErrorCodes() {
 
-        final String sourceDir = "src/test/testdata/0010/01";
-        final String assertDir = "src/test/testdata/0010/01-assert";
+        UnitTestApiProvider.UnitTestState previousState = null;
 
-        final ProjectPolicy policy = TestPolicy.getPolicy();
-        assertNotNull(policy);
+        // pass #1 - insert codes
+        {
 
-        final GlobalState globalState = new GlobalState();
-        assertNotNull(globalState);
+            final String sourceDir = "src/test/testdata/0010/01";
+            final String assertDir = "src/test/testdata/0010/01-assert";
 
-        final UnitTestApiProvider apiProvider = new UnitTestApiProvider();
-        final ResultDriver driver = apiProvider.getDriver();
+            final ProjectPolicy policy = TestPolicy.getPolicy();
+            assertNotNull(policy);
 
-        Main.scan(policy, globalState, sourceDir, apiProvider, false);
-        Main._import(apiProvider, globalState, policy);
-        Main.runInsert(apiProvider, globalState, policy, driver, apiProvider.createRun(policy), new StatisticsGatherer());
+            final GlobalState globalState = new GlobalState();
+            assertNotNull(globalState);
 
-        // output the results to 01-assert
-        // apiProvider.writeResultsTo(assertDir);
+            final UnitTestApiProvider apiProvider = new UnitTestApiProvider();
+            final ResultDriver driver = apiProvider.getDriver();
 
-        apiProvider.resultStorage.forEach((filename, result) -> {
-            try {
-                final String expectedSourceCode = Utils.readString(Utils.pathOf(assertDir + "/" + filename));
-                assertEquals(expectedSourceCode, result.sourceCode, filename);
-            }
-            catch (IOException e) {
-                fail(e);
-            }
-        });
+            Main.scan(policy, globalState, sourceDir, apiProvider, false);
+            Main._import(apiProvider, globalState, policy);
+            Main.runInsert(apiProvider, globalState, policy, driver, apiProvider.createRun(policy), new StatisticsGatherer());
 
-        assertEquals(globalState.files.size(), apiProvider.resultStorage.size());
+            // output the results to 01-assert
+            // apiProvider.writeResultsTo(assertDir);
 
-        // assert regarding problem_function
-        //UnitTestApiProvider.MetaData r1 = apiProvider.metaDataStorage.get(5l);
-        //assertNotNull(r1);
-        //JsonArray array = r1.metaData.getAsJsonArray("methods");
-        //assertEquals(2, array.size());
-        //assertEquals("public function problem_function($param1 = 'default')", array.get(1).getAsJsonObject().get("c").getAsString());
+            apiProvider.resultStorage.forEach((filename, result) -> {
+                try {
+                    final String expectedSourceCode = Utils.readString(Utils.pathOf(assertDir + "/" + filename));
+                    assertEquals(expectedSourceCode, result.sourceCode, filename);
+                } catch (IOException e) {
+                    fail(e);
+                }
+            });
+
+            assertEquals(globalState.files.size(), apiProvider.resultStorage.size());
+
+            previousState = apiProvider.getState();
+        }
+
+        // pass #2 - scan and report (no changes)
+        {
+
+            final String sourceDir = "src/test/testdata/0010/02";
+
+            final ProjectPolicy policy = TestPolicy.getPolicy();
+            assertNotNull(policy);
+
+            final GlobalState globalState = new GlobalState();
+            assertNotNull(globalState);
+
+            final UnitTestApiProvider apiProvider = new UnitTestApiProvider();
+
+            previousState.transferSignatures(globalState);
+            apiProvider.setNextErrorNumber(policy, previousState.currentErrorNumber + 1);
+
+            final ResultDriver driver = apiProvider.getDriver();
+
+            Main.scan(policy, globalState, sourceDir, apiProvider, false);
+            Main._import(apiProvider, globalState, policy);
+            boolean wouldChangeAFile = Main.runAnalyse(apiProvider, globalState, policy, driver, apiProvider.createRun(policy), new StatisticsGatherer());
+
+            assertFalse(wouldChangeAFile);
+
+            previousState = apiProvider.getState();
+
+            assertEquals(3, previousState.metaDataStorage.size());
+        }
     }
 }
