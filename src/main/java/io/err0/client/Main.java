@@ -1026,7 +1026,7 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                     for (int i = 0, l = n_exclude_patterns; i < l; ++i) {
                         if (projectPolicy.excludeFilePatterns.get(i).matcher(newFile).find()) return;
                     }
-                    if (! Files.isDirectory(p)) {
+                    if (! Files.isDirectory(p) && ! Files.isSymbolicLink(p)) {
                         if (!newFile.startsWith(finalPath)) {
                             System.err.println("[AGENT-000047] Oops! [" + newFile + "] does not start with [" + finalPath + "]");
                             System.exit(-1);
