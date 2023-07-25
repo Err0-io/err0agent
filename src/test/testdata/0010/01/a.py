@@ -1,3 +1,8 @@
+import logging
+
+log = logging.getLogger("0010")
+log.setLevel(logging.DEBUG)
+
 class Apps:
     """
     A registry that stores the configuration of installed applications.
@@ -35,3 +40,7 @@ class Example:
         raise RuntimeError("""
             This is a test of another syntax.
             """);
+
+    def logging1():
+        log.info("----- Example ----")
+        log.warning("Another example!")
