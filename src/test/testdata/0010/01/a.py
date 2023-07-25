@@ -25,3 +25,13 @@ class Example:
 
     def method3():
         raise RuntimeError("""This is an error""")
+
+    def method4():
+        raise RuntimeError('''
+            This is a test of another syntax.
+            ''');
+
+    def method4():
+        raise RuntimeError("""
+            This is a test of another syntax.
+            """);

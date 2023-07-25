@@ -98,7 +98,7 @@ public class Test0010Python {
 
             previousState = apiProvider.getState();
 
-            assertEquals(3, previousState.metaDataStorage.size());
+            assertEquals(5, previousState.metaDataStorage.size());
         }
     }
 }

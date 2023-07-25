@@ -418,7 +418,7 @@ public class ProjectPolicy {
     private Pattern reErrorNumber_py = null;
     public Pattern getReErrorNumber_py() {
         if (null == reErrorNumber_py) {
-            reErrorNumber_py = Pattern.compile("^('|'''|\"\"\"|\")\\[" + getErrorPrefix() + "-(\\d+)\\]\\s*");
+            reErrorNumber_py = Pattern.compile("^('|\")\\[" + getErrorPrefix() + "-(\\d+)\\]\\s*");
         }
         return reErrorNumber_py;
     }
@@ -430,12 +430,20 @@ public class ProjectPolicy {
             if (!codePolicy.enablePlaceholder) {
                 throw new RuntimeException("[AGENT-000112] Unable to search for placeholder");
             }
-            reErrorNumber_py_placeholder = Pattern.compile("^('|\"\"\"|\")(" + codePolicy.placeholderValue + "|" + getErrorPrefix() + "-(\\d+))\\1$");
+            reErrorNumber_py_placeholder = Pattern.compile("^('|'''|\"\"\"|\")(" + codePolicy.placeholderValue + "|" + getErrorPrefix() + "-(\\d+))\\1$");
         }
         return reErrorNumber_py_placeholder;
     }
     public final int reErrorNumber_py_placeholder_open_close_group = 1;
     public final int reErrorNumber_py_placeholder_number_group = 3;
+
+    private Pattern reErrorNumber_py_textblocks = null;
+    public Pattern getReErrorNumber_py_textblocks() {
+        if (null == reErrorNumber_py_textblocks) {
+            reErrorNumber_py_textblocks = Pattern.compile("^('''|\"\"\")(\\s*)\\[" + getErrorPrefix() + "-(\\d+)\\]\\s*");
+        }
+        return reErrorNumber_py_textblocks;
+    }
 
     private Pattern reErrorNumber_lua = null;
     public Pattern getReErrorNumber_lua() {
