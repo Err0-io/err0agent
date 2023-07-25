@@ -314,9 +314,7 @@ public class PythonSourceCodeParse extends SourceCodeParse {
         if (token.classification == Token.Classification.NOT_CLASSIFIED_YET) {
             switch (token.type) {
                 case APOS_LITERAL:
-                case APOS3_LITERAL:
                 case QUOT_LITERAL:
-                case QUOT3_LITERAL:
                 {
                     // 1) Strip '[ERR-nnnnnn] ' from string literals for re-injection
                     Matcher matcherErrorNumber = policy.getReErrorNumber_py().matcher(token.source);
@@ -349,6 +347,49 @@ public class PythonSourceCodeParse extends SourceCodeParse {
                             }
                         } else {
                             token.sourceNoErrorCode = token.source = quot + token.source.substring(matcherErrorNumber.end());
+                        }
+                    } else {
+                        token.classification = Token.Classification.POTENTIAL_ERROR_NUMBER;
+                        token.sourceNoErrorCode = token.source;
+                    }
+                }
+                break;
+                case APOS3_LITERAL:
+                case QUOT3_LITERAL:
+                {
+                    // 1) Strip '[ERR-nnnnnn] ' from string literals for re-injection
+                    Matcher matcherErrorNumber = policy.getReErrorNumber_py_textblocks().matcher(token.source);
+                    boolean found = matcherErrorNumber.find();
+
+                    // Is this in fact a function of a literal, e.g. ", ".join(...)?
+                    Token next = token.next();
+                    if (null != next) {
+                        if (reFunctionOfLiteral.matcher(next.source).find()) {
+                            if (found) {
+                                final String quot = matcherErrorNumber.group(1);
+                                final String whitespace = matcherErrorNumber.group(2);
+                                token.sourceNoErrorCode = token.source = quot + whitespace + token.source.substring(matcherErrorNumber.end());
+                            }
+                            token.classification = Token.Classification.NO_MATCH;
+                            return;
+                        }
+                    }
+
+                    if (found) {
+                        token.classification = Token.Classification.ERROR_NUMBER;
+                        final String quot = matcherErrorNumber.group(1);
+                        final String whitespace = matcherErrorNumber.group(2);
+                        long errorOrdinal = Long.parseLong(matcherErrorNumber.group(3));
+                        if (apiProvider.validErrorNumber(policy, errorOrdinal)) {
+                            if (globalState.store(errorOrdinal, stateItem, token)) {
+                                token.keepErrorCode = true;
+                                token.errorOrdinal = errorOrdinal;
+                                token.sourceNoErrorCode = quot + whitespace + token.source.substring(matcherErrorNumber.end());
+                            } else {
+                                token.sourceNoErrorCode = token.source = quot + whitespace + token.source.substring(matcherErrorNumber.end());
+                            }
+                        } else {
+                            token.sourceNoErrorCode = token.source = quot + whitespace + token.source.substring(matcherErrorNumber.end());
                         }
                     } else {
                         token.classification = Token.Classification.POTENTIAL_ERROR_NUMBER;
