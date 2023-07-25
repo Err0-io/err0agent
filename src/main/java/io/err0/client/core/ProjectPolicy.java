@@ -418,7 +418,7 @@ public class ProjectPolicy {
     private Pattern reErrorNumber_py = null;
     public Pattern getReErrorNumber_py() {
         if (null == reErrorNumber_py) {
-            reErrorNumber_py = Pattern.compile("^('|\")\\[" + getErrorPrefix() + "-(\\d+)\\]\\s*");
+            reErrorNumber_py = Pattern.compile("^(['\"])\\[" + getErrorPrefix() + "-(\\d+)\\]\\s*");
         }
         return reErrorNumber_py;
     }
@@ -430,7 +430,7 @@ public class ProjectPolicy {
             if (!codePolicy.enablePlaceholder) {
                 throw new RuntimeException("[AGENT-000112] Unable to search for placeholder");
             }
-            reErrorNumber_py_placeholder = Pattern.compile("^('|'''|\"\"\"|\")(" + codePolicy.placeholderValue + "|" + getErrorPrefix() + "-(\\d+))\\1$");
+            reErrorNumber_py_placeholder = Pattern.compile("^(['\"]|'''|\"\"\")(" + codePolicy.placeholderValue + "|" + getErrorPrefix() + "-(\\d+))\\1$");
         }
         return reErrorNumber_py_placeholder;
     }
