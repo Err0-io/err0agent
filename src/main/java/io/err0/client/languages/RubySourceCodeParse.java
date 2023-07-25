@@ -20,10 +20,8 @@ import com.google.gson.JsonArray;
 import io.err0.client.Main;
 import io.err0.client.core.*;
 import io.err0.client.languages.ext.RubyExtendedInformation;
-import jdk.nashorn.internal.parser.TokenType;
 
 import java.util.LinkedList;
-import java.util.Queue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
