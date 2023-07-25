@@ -67,6 +67,8 @@ public class Token {
                 return s.length() > 2 ? s.substring(1, s.length() - 2) : "";
             case APOS_LITERAL:
                 return s.length() > 2 ? s.substring(1, s.length() - 2) : "";
+            case APOS3_LITERAL:
+                return s.length() > 6 ? s.substring(3, s.length() - 6) : "";
             case QUOT3_LITERAL:
                 return s.length() > 6 ? s.substring(3, s.length() - 6) : "";
             case BACKTICK_LITERAL:
@@ -89,6 +91,7 @@ public class Token {
             case APOS_LITERAL:
             case BACKTICK_LITERAL:
                 return 1;
+            case APOS3_LITERAL:
             case QUOT3_LITERAL:
                 return 3;
             case LONGBRACKET_LITERAL:

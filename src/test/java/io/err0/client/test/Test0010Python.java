@@ -51,7 +51,7 @@ public class Test0010Python {
         Main.runInsert(apiProvider, globalState, policy, driver, apiProvider.createRun(policy), new StatisticsGatherer());
 
         // output the results to 01-assert
-        //apiProvider.writeResultsTo(assertDir);
+        // apiProvider.writeResultsTo(assertDir);
 
         apiProvider.resultStorage.forEach((filename, result) -> {
             try {

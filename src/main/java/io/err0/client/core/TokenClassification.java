@@ -22,6 +22,7 @@ public enum TokenClassification {
     COMMENT_LINE,
     COMMENT_BLOCK,
     APOS_LITERAL,
+    APOS3_LITERAL,
     QUOT_LITERAL,
     QUOT3_LITERAL,
     BACKTICK_LITERAL,
