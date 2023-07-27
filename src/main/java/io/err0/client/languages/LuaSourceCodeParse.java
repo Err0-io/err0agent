@@ -43,7 +43,7 @@ public class LuaSourceCodeParse extends SourceCodeParse {
         reLoggerLevel = Pattern.compile("\\.(" + pattern + ")\\s*\\(\\s*?$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE); // group #1 is the level
     }
 
-    private static Pattern reMethod = Pattern.compile("^(\\s*)(function|if|for|while)\\s+.*$");
+    private static Pattern reMethod = Pattern.compile("^(\\s*)((local\\s+)?function|if|for|while)\\s+.*$");
     private Pattern reLogger = null;
     private Pattern reLoggerLevel = null;
     private static Pattern reException = Pattern.compile("(^|\\s+|;)error\\s*\\($");
