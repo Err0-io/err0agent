@@ -100,9 +100,7 @@ public class Test0010Python {
 
             previousState = apiProvider.getState();
 
-            assertEquals(8, previousState.metaDataStorage.size());
-
-            // assert regarding typed_function
+            assertEquals(9, previousState.metaDataStorage.size());
             {
                 UnitTestApiProvider.MetaData r1 = apiProvider.metaDataStorage.get(8l);
                 assertNotNull(r1);
@@ -110,6 +108,13 @@ public class Test0010Python {
                 assertEquals(2, array.size());
                 assertEquals("class Example:", array.get(0).getAsJsonObject().get("c").getAsString());
                 assertEquals("def continuation(", array.get(1).getAsJsonObject().get("c").getAsString());
+            }
+            {
+                UnitTestApiProvider.MetaData r1 = apiProvider.metaDataStorage.get(9l);
+                assertNotNull(r1);
+                JsonArray array = r1.metaData.getAsJsonArray("methods");
+                assertEquals(1, array.size());
+                assertEquals("def another_continuation(", array.get(0).getAsJsonObject().get("c").getAsString());
             }
         }
     }

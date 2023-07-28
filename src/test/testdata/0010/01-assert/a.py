@@ -49,3 +49,8 @@ class Example:
         param
     ):
         log.info("[E-8] Call stack helper")
+
+def another_continuation(
+    param
+):
+    log.warning("[E-9] Continuation of function definition at depth = 0")

@@ -17,13 +17,14 @@ public class IndentCallStackLogic implements CallStackLogic {
             if (tok.depth >= depth) continue;
             depth = tok.depth;
 
-            if (k > 0 && depth > 0) {
+            if (k > 0) {
                 int save = k;
                 while (--k > 0) {
                     Token t = parse.tokenList.get(k);
                     if (t.type != TokenType.SOURCE_CODE) continue;
                     if (reWhitespace.matcher(t.source).matches()) {
-                        continue; // skip whitespace
+                        k = save;
+                        break;
                     }
                     if (t.depth > depth) continue;
                     if (t.depth < depth) {
