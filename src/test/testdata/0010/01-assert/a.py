@@ -61,3 +61,6 @@ class NotSpaced(object):
             device.test()
         else:
             log.warning("[E-10] Call stack issue to fix")
+    def trouble():
+        """This is not a comment"""
+        log.warning("[E-11] Strings as comments?")

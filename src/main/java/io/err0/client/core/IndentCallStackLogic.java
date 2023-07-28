@@ -11,7 +11,7 @@ public class IndentCallStackLogic implements CallStackLogic {
         Pattern lineContinuationPattern = null;
         switch (parse.language) {
             case PYTHON:
-                lineContinuationPattern = Pattern.compile("\\):\\s*$");
+                lineContinuationPattern = Pattern.compile("^\\s*\\):\\s*$");
                 break;
             case RUBY:
                 lineContinuationPattern = Pattern.compile("[+\\\\]\\s*$");

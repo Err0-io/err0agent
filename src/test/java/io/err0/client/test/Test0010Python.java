@@ -100,7 +100,7 @@ public class Test0010Python {
 
             previousState = apiProvider.getState();
 
-            assertEquals(10, previousState.metaDataStorage.size());
+            assertEquals(11, previousState.metaDataStorage.size());
             {
                 UnitTestApiProvider.MetaData r1 = apiProvider.metaDataStorage.get(8L);
                 assertNotNull(r1);
@@ -129,6 +129,16 @@ public class Test0010Python {
                 assertEquals(59L, array.get(1).getAsJsonObject().get("l").getAsLong());
                 assertEquals("else:", array.get(2).getAsJsonObject().get("c").getAsString());
                 assertEquals(62L, array.get(2).getAsJsonObject().get("l").getAsLong());
+            }
+            {
+                UnitTestApiProvider.MetaData r1 = apiProvider.metaDataStorage.get(11L);
+                assertNotNull(r1);
+                JsonArray array = r1.metaData.getAsJsonArray("methods");
+                assertEquals(2, array.size());
+                assertEquals("class NotSpaced(object):", array.get(0).getAsJsonObject().get("c").getAsString());
+                assertEquals(58L, array.get(0).getAsJsonObject().get("l").getAsLong());
+                assertEquals("def trouble():", array.get(1).getAsJsonObject().get("c").getAsString());
+                assertEquals(64L, array.get(1).getAsJsonObject().get("l").getAsLong());
             }
         }
     }
