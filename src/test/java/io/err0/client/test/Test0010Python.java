@@ -107,7 +107,9 @@ public class Test0010Python {
                 JsonArray array = r1.metaData.getAsJsonArray("methods");
                 assertEquals(2, array.size());
                 assertEquals("class Example:", array.get(0).getAsJsonObject().get("c").getAsString());
+                assertEquals(23L, array.get(0).getAsJsonObject().get("l").getAsLong());
                 assertEquals("def continuation(", array.get(1).getAsJsonObject().get("c").getAsString());
+                assertEquals(48L, array.get(1).getAsJsonObject().get("l").getAsLong());
             }
             {
                 UnitTestApiProvider.MetaData r1 = apiProvider.metaDataStorage.get(9l);

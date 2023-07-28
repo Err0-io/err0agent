@@ -44,7 +44,7 @@ public class IndentCallStackLogic implements CallStackLogic {
                     tok.classification == Token.Classification.METHOD_SIGNATURE ||
                     tok.classification == Token.Classification.LAMBDA_SIGNATURE
             ) {
-                callStackReversed.add(new MethodData(tok.lastLineNumber, tok.extractedCode));
+                callStackReversed.add(new MethodData(tok.startLineNumber, tok.extractedCode));
                 if (depth == 0) break;
             }
 
