@@ -118,7 +118,7 @@ public class RubySourceCodeParse extends SourceCodeParse {
                     currentHereDoc = null;
                     parse.tokenList.add(currentToken.finish(lineNumber));
                     currentToken = new Token(n++, currentToken);
-                    currentToken.type = TokenType.SOURCE_CODE;
+                    currentToken.type = TokenType.COMMENT_LINE;
                     currentToken.depth = indentNumber;
                     currentToken.startLineNumber = lineNumber;
                     currentToken.sourceCode.append(line);

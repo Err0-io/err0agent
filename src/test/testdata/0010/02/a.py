@@ -36,7 +36,7 @@ class Example:
             [E-4] This is a test of another syntax.
             ''');
 
-    def method4():
+    def method5():
         raise RuntimeError("""
             [E-5] This is a test of another syntax.
             """);

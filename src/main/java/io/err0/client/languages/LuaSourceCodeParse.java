@@ -58,14 +58,20 @@ public class LuaSourceCodeParse extends SourceCodeParse {
         int lineNumber = 1;
         int indentNumber = 0;
         boolean countIndent = true;
+        boolean countNextIndent = false;
         currentToken.startLineNumber = lineNumber;
         final char chars[] = sourceCode.toCharArray();
         for (int i = 0, l = chars.length; i < l; ++i) {
+            if (countNextIndent) {
+                countIndent = true;
+                countNextIndent = false;
+            }
             final char ch = chars[i];
             boolean precedingCharactersAreIndent = countIndent;
             if (ch == '\n') {
                 ++lineNumber;
                 indentNumber = 0;
+                countNextIndent = true;
             } else if (ch == '\t' && countIndent) {
                 indentNumber = ((indentNumber / 8) + 1) * 8; // tab is 8 spaces
             } else if (ch == ' ' && countIndent) {
@@ -83,7 +89,6 @@ public class LuaSourceCodeParse extends SourceCodeParse {
                 case SOURCE_CODE:
                     if (ch == '\n') {
                         currentToken.sourceCode.append(ch);
-                        countIndent = true;
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenType.SOURCE_CODE;
@@ -144,7 +149,6 @@ public class LuaSourceCodeParse extends SourceCodeParse {
                 case COMMENT_LINE:
                     if (ch == '\n') {
                         currentToken.sourceCode.append(ch);
-                        countIndent = true;
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenType.SOURCE_CODE;
@@ -157,7 +161,6 @@ public class LuaSourceCodeParse extends SourceCodeParse {
                 case COMMENT_BLOCK:
                     if (ch == '\n') {
                         currentToken.sourceCode.append(ch);
-                        countIndent = true;
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenType.COMMENT_BLOCK;
