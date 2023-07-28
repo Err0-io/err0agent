@@ -9,13 +9,33 @@ public class IndentCallStackLogic implements CallStackLogic {
     public ArrayList<MethodData> reversed(final int j, final SourceCodeParse parse, final Token currentToken) {
         ArrayList<MethodData> callStackReversed = new ArrayList<>();
         for (int k = j - 1, depth = Integer.MAX_VALUE; k >= 0; --k) {
-            final Token tok = parse.tokenList.get(k);
+            Token tok = parse.tokenList.get(k);
             if (reWhitespace.matcher(tok.source).matches()) {
                 continue; // skip whitespace
             }
             if (tok.type != TokenType.SOURCE_CODE) continue;
             if (tok.depth >= depth) continue;
             depth = tok.depth;
+
+            if (k > 0 && depth > 0) {
+                int save = k;
+                while (--k > 0) {
+                    Token t = parse.tokenList.get(k);
+                    if (t.type != TokenType.SOURCE_CODE) continue;
+                    if (reWhitespace.matcher(t.source).matches()) {
+                        continue; // skip whitespace
+                    }
+                    if (t.depth > depth) continue;
+                    if (t.depth < depth) {
+                        k = save;
+                        break;
+                    }
+                    // t.depth == depth
+                    k = save;
+                    tok = t;
+                    break;
+                }
+            }
 
             parse.classifyForCallStack(tok);
 
