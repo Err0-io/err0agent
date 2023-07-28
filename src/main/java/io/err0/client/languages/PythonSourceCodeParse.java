@@ -43,7 +43,7 @@ public class PythonSourceCodeParse extends SourceCodeParse {
         reLoggerLevel = Pattern.compile("\\.(" + pattern + ")\\s*\\(\\s*f?$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE); // group #1 is the level
     }
 
-    private static Pattern reMethod = Pattern.compile("^(\\s*)(def|class|(el)?if|else:|for|while|try:|except)\\s+.*$");
+    private static Pattern reMethod = Pattern.compile("^(\\s*)(def\\s+.*|class\\s+.*|(el)?if\\s+.*|else:|for\\s+.*|while\\s+.*|try:|except\\s+.*)\\s*$");
     private Pattern reLogger = null;
     private Pattern reLoggerLevel = null;
     private static Pattern reException = Pattern.compile("(^|\\s+)raise\\s([^\\s\\(]*)\\s*\\(*.+$");

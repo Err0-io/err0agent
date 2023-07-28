@@ -54,3 +54,10 @@ def another_continuation(
     param
 ):
     log.warning("Continuation of function definition at depth = 0")
+
+class NotSpaced(object):
+    def __init__(self, mode, device, dtype):
+        if mode == "test":
+            device.test()
+        else:
+            log.warning("Call stack issue to fix")

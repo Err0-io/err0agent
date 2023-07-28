@@ -100,9 +100,9 @@ public class Test0010Python {
 
             previousState = apiProvider.getState();
 
-            assertEquals(9, previousState.metaDataStorage.size());
+            assertEquals(10, previousState.metaDataStorage.size());
             {
-                UnitTestApiProvider.MetaData r1 = apiProvider.metaDataStorage.get(8l);
+                UnitTestApiProvider.MetaData r1 = apiProvider.metaDataStorage.get(8L);
                 assertNotNull(r1);
                 JsonArray array = r1.metaData.getAsJsonArray("methods");
                 assertEquals(2, array.size());
@@ -112,11 +112,23 @@ public class Test0010Python {
                 assertEquals(48L, array.get(1).getAsJsonObject().get("l").getAsLong());
             }
             {
-                UnitTestApiProvider.MetaData r1 = apiProvider.metaDataStorage.get(9l);
+                UnitTestApiProvider.MetaData r1 = apiProvider.metaDataStorage.get(9L);
                 assertNotNull(r1);
                 JsonArray array = r1.metaData.getAsJsonArray("methods");
                 assertEquals(1, array.size());
                 assertEquals("def another_continuation(", array.get(0).getAsJsonObject().get("c").getAsString());
+            }
+            {
+                UnitTestApiProvider.MetaData r1 = apiProvider.metaDataStorage.get(10L);
+                assertNotNull(r1);
+                JsonArray array = r1.metaData.getAsJsonArray("methods");
+                assertEquals(3, array.size());
+                assertEquals("class NotSpaced(object):", array.get(0).getAsJsonObject().get("c").getAsString());
+                assertEquals(58L, array.get(0).getAsJsonObject().get("l").getAsLong());
+                assertEquals("def __init__(self, mode, device, dtype):", array.get(1).getAsJsonObject().get("c").getAsString());
+                assertEquals(59L, array.get(1).getAsJsonObject().get("l").getAsLong());
+                assertEquals("else:", array.get(2).getAsJsonObject().get("c").getAsString());
+                assertEquals(62L, array.get(2).getAsJsonObject().get("l").getAsLong());
             }
         }
     }

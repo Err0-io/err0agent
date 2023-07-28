@@ -1,12 +1,28 @@
 package io.err0.client.core;
 
 import java.util.ArrayList;
+import java.util.regex.Pattern;
 
 import static io.err0.client.Main.reWhitespace;
 
 public class IndentCallStackLogic implements CallStackLogic {
     @Override
     public ArrayList<MethodData> reversed(final int j, final SourceCodeParse parse, final Token currentToken) {
+        Pattern lineContinuationPattern = null;
+        switch (parse.language) {
+            case PYTHON:
+                lineContinuationPattern = Pattern.compile("\\):\\s*$");
+                break;
+            case RUBY:
+                lineContinuationPattern = Pattern.compile("[+\\\\]\\s*$");
+                break;
+            case LUA:
+                lineContinuationPattern = Pattern.compile("\\)\\s*$");
+                break;
+            default:
+                throw new RuntimeException("[AGENT-000115] Unexpected language");
+        }
+
         ArrayList<MethodData> callStackReversed = new ArrayList<>();
         for (int k = j - 1, depth = Integer.MAX_VALUE; k >= 0; --k) {
             Token tok = parse.tokenList.get(k);
@@ -17,7 +33,7 @@ public class IndentCallStackLogic implements CallStackLogic {
             if (tok.depth >= depth) continue;
             depth = tok.depth;
 
-            if (k > 0) {
+            if (k > 0 && lineContinuationPattern.matcher(tok.source).find()) {
                 int save = k;
                 while (--k > 0) {
                     Token t = parse.tokenList.get(k);
@@ -32,7 +48,6 @@ public class IndentCallStackLogic implements CallStackLogic {
                         break;
                     }
                     // t.depth == depth
-                    k = save;
                     tok = t;
                     break;
                 }
