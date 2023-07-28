@@ -54,7 +54,7 @@ public class LuaSourceCodeParse extends SourceCodeParse {
         int n = 0;
         LuaSourceCodeParse parse = new LuaSourceCodeParse(policy);
         Token currentToken = new Token(n++, null);
-        currentToken.type = TokenClassification.SOURCE_CODE;
+        currentToken.type = TokenType.SOURCE_CODE;
         int lineNumber = 1;
         int indentNumber = 0;
         boolean countIndent = true;
@@ -86,13 +86,13 @@ public class LuaSourceCodeParse extends SourceCodeParse {
                         countIndent = true;
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
+                        currentToken.type = TokenType.SOURCE_CODE;
                         currentToken.depth = indentNumber;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == '\'') {
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.APOS_LITERAL;
+                        currentToken.type = TokenType.APOS_LITERAL;
                         currentToken.sourceCode.append(ch);
                         currentToken.depth = indentNumber;
                         currentToken.startLineNumber = lineNumber;
@@ -100,14 +100,14 @@ public class LuaSourceCodeParse extends SourceCodeParse {
                         // otherwise, it is a quot literal.
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.QUOT_LITERAL;
+                        currentToken.type = TokenType.QUOT_LITERAL;
                         currentToken.sourceCode.append(ch);
                         currentToken.depth = indentNumber;
                         currentToken.startLineNumber = lineNumber;
                     } else if ((longBracketLevel = isOpeningLongBracket(chars, i)) >= 0) {
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.LONGBRACKET_LITERAL;
+                        currentToken.type = TokenType.LONGBRACKET_LITERAL;
                         currentToken.longBracketLevel = longBracketLevel;
                         currentToken.sourceCode.append(ch);
                         currentToken.sourceCode.append(chars[++i]);
@@ -120,7 +120,7 @@ public class LuaSourceCodeParse extends SourceCodeParse {
                             if (chars[i+2] == '[' && chars[i+3] == '[') {
                                 parse.tokenList.add(currentToken.finish(lineNumber));
                                 currentToken = new Token(n++, currentToken);
-                                currentToken.type = TokenClassification.COMMENT_BLOCK;
+                                currentToken.type = TokenType.COMMENT_BLOCK;
                                 currentToken.sourceCode.append(ch);
                                 currentToken.sourceCode.append(chars[++i]);
                                 currentToken.sourceCode.append(chars[++i]);
@@ -132,7 +132,7 @@ public class LuaSourceCodeParse extends SourceCodeParse {
                         }
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.COMMENT_LINE;
+                        currentToken.type = TokenType.COMMENT_LINE;
                         currentToken.sourceCode.append(ch);
                         currentToken.sourceCode.append(chars[++i]);
                         currentToken.depth = indentNumber;
@@ -147,7 +147,7 @@ public class LuaSourceCodeParse extends SourceCodeParse {
                         countIndent = true;
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
+                        currentToken.type = TokenType.SOURCE_CODE;
                         currentToken.depth = indentNumber;
                         currentToken.startLineNumber = lineNumber;
                     } else {
@@ -160,7 +160,7 @@ public class LuaSourceCodeParse extends SourceCodeParse {
                         countIndent = true;
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.COMMENT_BLOCK;
+                        currentToken.type = TokenType.COMMENT_BLOCK;
                         currentToken.depth = indentNumber;
                         currentToken.startLineNumber = lineNumber;
                     } else if (reWhitespace.matcher(currentToken.sourceCode).matches() && l > i + 3 && ch == '-' && chars[i+1] == '-' && chars[i+2] == ']' && chars[i+3] == ']') {
@@ -170,7 +170,7 @@ public class LuaSourceCodeParse extends SourceCodeParse {
                         currentToken.sourceCode.append(chars[++i]);
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
+                        currentToken.type = TokenType.SOURCE_CODE;
                         currentToken.depth = indentNumber;
                         currentToken.startLineNumber = lineNumber;
                     } else {
@@ -182,7 +182,7 @@ public class LuaSourceCodeParse extends SourceCodeParse {
                         currentToken.sourceCode.append(ch);
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
+                        currentToken.type = TokenType.SOURCE_CODE;
                         currentToken.depth = indentNumber;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == '\\') {
@@ -198,7 +198,7 @@ public class LuaSourceCodeParse extends SourceCodeParse {
                         currentToken.sourceCode.append(ch);
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
+                        currentToken.type = TokenType.SOURCE_CODE;
                         currentToken.depth = indentNumber;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == '\\') {
@@ -217,7 +217,7 @@ public class LuaSourceCodeParse extends SourceCodeParse {
                             currentToken.sourceCode.append(chars[++i]);
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
+                        currentToken.type = TokenType.SOURCE_CODE;
                         currentToken.depth = indentNumber;
                         currentToken.startLineNumber = lineNumber;
                     } else {
@@ -260,7 +260,7 @@ public class LuaSourceCodeParse extends SourceCodeParse {
 
     @Override
     public boolean couldContainErrorNumber(Token token) {
-        return token.type == TokenClassification.APOS_LITERAL || token.type == TokenClassification.QUOT_LITERAL || token.type == TokenClassification.LONGBRACKET_LITERAL;
+        return token.type == TokenType.APOS_LITERAL || token.type == TokenType.QUOT_LITERAL || token.type == TokenType.LONGBRACKET_LITERAL;
     }
 
     @Override
@@ -289,7 +289,7 @@ public class LuaSourceCodeParse extends SourceCodeParse {
                         } else {
                             token.sourceNoErrorCode = token.source = quot + token.source.substring(matcherErrorNumber.end());
                         }
-                    } else if (policy.getCodePolicy().getEnablePlaceholder() && (token.type != TokenClassification.LONGBRACKET_LITERAL)) {
+                    } else if (policy.getCodePolicy().getEnablePlaceholder() && (token.type != TokenType.LONGBRACKET_LITERAL)) {
                         Matcher matcherPlaceholder = policy.getReErrorNumber_lua_placeholder().matcher(token.source);
                         if (matcherPlaceholder.matches()) {
                             token.classification = Token.Classification.PLACEHOLDER;
@@ -324,7 +324,7 @@ public class LuaSourceCodeParse extends SourceCodeParse {
                 {
                     token.classification = Token.Classification.NOT_FULLY_CLASSIFIED;
                     Token next = token.next();
-                    if (next != null && (next.type == TokenClassification.QUOT_LITERAL || next.type == TokenClassification.APOS_LITERAL || next.type == TokenClassification.LONGBRACKET_LITERAL)) {
+                    if (next != null && (next.type == TokenType.QUOT_LITERAL || next.type == TokenType.APOS_LITERAL || next.type == TokenType.LONGBRACKET_LITERAL)) {
                         // rule 0 - this code must be followed by a string literal
                         if (null != languageCodePolicy && languageCodePolicy.rules.size() > 0) {
                             // classify according to rules.
@@ -441,7 +441,7 @@ public class LuaSourceCodeParse extends SourceCodeParse {
     @Override
     public void classifyForCallStack(Token token) {
         if (token.classification == Token.Classification.NOT_CLASSIFIED_YET || token.classification == Token.Classification.NOT_FULLY_CLASSIFIED) {
-            if (token.type == TokenClassification.SOURCE_CODE) {
+            if (token.type == TokenType.SOURCE_CODE) {
                 Matcher matcherMethod = reMethod.matcher(token.source);
                 if (matcherMethod.find()) {
                     final String code = matcherMethod.group();

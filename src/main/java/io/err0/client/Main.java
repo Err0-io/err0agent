@@ -926,9 +926,9 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                 lastToken = currentToken;
                 currentToken = parse.tokenList.get(j);
                 if (parse.language == SourceCodeParse.Language.RUBY) {
-                    if (null != lastToken && lastToken.type == TokenClassification.SOURCE_CODE) {
+                    if (null != lastToken && lastToken.type == TokenType.SOURCE_CODE) {
                         Matcher matcher = reWhitespace.matcher(lastToken.source);
-                        while (matcher.matches() && lastToken.prev != null && lastToken.prev.type == TokenClassification.SOURCE_CODE) {
+                        while (matcher.matches() && lastToken.prev != null && lastToken.prev.type == TokenType.SOURCE_CODE) {
                             lastToken = lastToken.prev;
                             matcher = reWhitespace.matcher(lastToken.source);
                         }
@@ -939,7 +939,7 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                         parse.couldContainErrorNumber(currentToken)
                 ) &&
                         null != lastToken &&
-                        lastToken.type == TokenClassification.SOURCE_CODE
+                        lastToken.type == TokenType.SOURCE_CODE
                 ) {
                     // run, if needed, classification logic on these tokens
                     parse.classifyForErrorCode(apiProvider, globalState, policy, stateItem, currentToken);
@@ -1232,9 +1232,9 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                 Token lastToken = j > 0 ? parse.tokenList.get(j - 1) : null;
                 final Token currentToken = parse.tokenList.get(j);
                 if (parse.language == SourceCodeParse.Language.RUBY) {
-                    if (null != lastToken && lastToken.type == TokenClassification.SOURCE_CODE) {
+                    if (null != lastToken && lastToken.type == TokenType.SOURCE_CODE) {
                         Matcher matcher = reWhitespace.matcher(lastToken.source);
-                        while (matcher.matches() && lastToken.prev != null && lastToken.prev.type == TokenClassification.SOURCE_CODE) {
+                        while (matcher.matches() && lastToken.prev != null && lastToken.prev.type == TokenType.SOURCE_CODE) {
                             lastToken = lastToken.prev;
                             matcher = reWhitespace.matcher(lastToken.source);
                         }
@@ -1245,7 +1245,7 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                         parse.couldContainErrorNumber(currentToken)
                 ) &&
                         null != lastToken &&
-                        lastToken.type == TokenClassification.SOURCE_CODE
+                        lastToken.type == TokenType.SOURCE_CODE
                 ) {
                     // run, if needed, classification logic on these tokens
                     parse.classifyForErrorCode(apiProvider, globalState, policy, stateItem, currentToken);
@@ -1301,8 +1301,8 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                             for (int k = j - 1; k >= 0; --k) {
                                 final Token tok = parse.tokenList.get(k);
                                 if (tok.depth == currentToken.depth) {
-                                    if (tok.type == TokenClassification.COMMENT_LINE ||
-                                            tok.type == TokenClassification.COMMENT_BLOCK
+                                    if (tok.type == TokenType.COMMENT_LINE ||
+                                            tok.type == TokenType.COMMENT_BLOCK
                                     ) {
                                         commentsReversed.add(tok);
                                     }

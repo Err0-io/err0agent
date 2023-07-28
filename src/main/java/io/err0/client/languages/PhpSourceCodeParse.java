@@ -57,7 +57,7 @@ public class PhpSourceCodeParse extends SourceCodeParse {
         int n = 0;
         PhpSourceCodeParse parse = new PhpSourceCodeParse(policy);
         Token currentToken = new Token(n++, null);
-        currentToken.type = TokenClassification.CONTENT;
+        currentToken.type = TokenType.CONTENT;
         int lineNumber = 1;
         currentToken.startLineNumber = lineNumber;
         final char chars[] = sourceCode.toCharArray();
@@ -72,7 +72,7 @@ public class PhpSourceCodeParse extends SourceCodeParse {
                     if (ch == '<' && i < l - 1 && chars[i + 1] == '?') {
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
+                        currentToken.type = TokenType.SOURCE_CODE;
                         currentToken.sourceCode.append(ch);
                         currentToken.sourceCode.append(chars[i + 1]);
                         ++i;
@@ -89,13 +89,13 @@ public class PhpSourceCodeParse extends SourceCodeParse {
                         ++i;
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.CONTENT;
+                        currentToken.type = TokenType.CONTENT;
                         currentToken.depth = depth;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == '{') {
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
+                        currentToken.type = TokenType.SOURCE_CODE;
                         currentToken.sourceCode.append(ch);
                         currentToken.depth = depth + 1;
                         currentToken.startLineNumber = lineNumber;
@@ -103,27 +103,27 @@ public class PhpSourceCodeParse extends SourceCodeParse {
                         currentToken.sourceCode.append(ch);
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
+                        currentToken.type = TokenType.SOURCE_CODE;
                         currentToken.depth = depth - 1;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == ';') {
                         currentToken.sourceCode.append(ch);
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
+                        currentToken.type = TokenType.SOURCE_CODE;
                         currentToken.depth = depth;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == '\'') {
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.APOS_LITERAL;
+                        currentToken.type = TokenType.APOS_LITERAL;
                         currentToken.sourceCode.append(ch);
                         currentToken.depth = depth;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == '\"') {
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.QUOT_LITERAL;
+                        currentToken.type = TokenType.QUOT_LITERAL;
                         currentToken.sourceCode.append(ch);
                         currentToken.depth = depth;
                         currentToken.startLineNumber = lineNumber;
@@ -132,7 +132,7 @@ public class PhpSourceCodeParse extends SourceCodeParse {
                         if (ch2 == '*') {
                             parse.tokenList.add(currentToken.finish(lineNumber));
                             currentToken = new Token(n++, currentToken);
-                            currentToken.type = TokenClassification.COMMENT_BLOCK;
+                            currentToken.type = TokenType.COMMENT_BLOCK;
                             currentToken.sourceCode.append(ch);
                             currentToken.sourceCode.append(ch2);
                             currentToken.depth = depth;
@@ -141,7 +141,7 @@ public class PhpSourceCodeParse extends SourceCodeParse {
                         } else if (ch2 == '/') {
                             parse.tokenList.add(currentToken.finish(lineNumber));
                             currentToken = new Token(n++, currentToken);
-                            currentToken.type = TokenClassification.COMMENT_LINE;
+                            currentToken.type = TokenType.COMMENT_LINE;
                             currentToken.sourceCode.append(ch);
                             currentToken.sourceCode.append(ch2);
                             currentToken.depth = depth;
@@ -159,7 +159,7 @@ public class PhpSourceCodeParse extends SourceCodeParse {
                         currentToken.sourceCode.append(ch);
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
+                        currentToken.type = TokenType.SOURCE_CODE;
                         currentToken.depth = depth;
                         currentToken.startLineNumber = lineNumber;
                     } else {
@@ -174,7 +174,7 @@ public class PhpSourceCodeParse extends SourceCodeParse {
                             currentToken.sourceCode.append(ch2);
                             parse.tokenList.add(currentToken.finish(lineNumber));
                             currentToken = new Token(n++, currentToken);
-                            currentToken.type = TokenClassification.SOURCE_CODE;
+                            currentToken.type = TokenType.SOURCE_CODE;
                             currentToken.depth = depth;
                             currentToken.startLineNumber = lineNumber;
                             ++i;
@@ -190,7 +190,7 @@ public class PhpSourceCodeParse extends SourceCodeParse {
                         currentToken.sourceCode.append(ch);
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
+                        currentToken.type = TokenType.SOURCE_CODE;
                         currentToken.depth = depth;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == '\\') {
@@ -206,7 +206,7 @@ public class PhpSourceCodeParse extends SourceCodeParse {
                         currentToken.sourceCode.append(ch);
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
+                        currentToken.type = TokenType.SOURCE_CODE;
                         currentToken.depth = depth;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == '\\') {
@@ -225,7 +225,7 @@ public class PhpSourceCodeParse extends SourceCodeParse {
 
     @Override
     public boolean couldContainErrorNumber(Token token) {
-        return token.type == TokenClassification.APOS_LITERAL || token.type == TokenClassification.QUOT_LITERAL;
+        return token.type == TokenType.APOS_LITERAL || token.type == TokenType.QUOT_LITERAL;
     }
 
     @Override
@@ -286,7 +286,7 @@ public class PhpSourceCodeParse extends SourceCodeParse {
                 {
                     token.classification = Token.Classification.NOT_FULLY_CLASSIFIED;
                     Token next = token.next();
-                    if (next != null && (next.type == TokenClassification.QUOT_LITERAL || next.type == TokenClassification.APOS_LITERAL)) {
+                    if (next != null && (next.type == TokenType.QUOT_LITERAL || next.type == TokenType.APOS_LITERAL)) {
                         // rule 0 - this code must be followed by a string literal
                         if (null != languageCodePolicy && languageCodePolicy.rules.size() > 0) {
                             // classify according to rules.
@@ -373,7 +373,7 @@ public class PhpSourceCodeParse extends SourceCodeParse {
                                     case COMMENT_LINE:
                                         break;
                                     default:
-                                        if (current.type == TokenClassification.QUOT_LITERAL) {
+                                        if (current.type == TokenType.QUOT_LITERAL) {
                                             if (reVariableInString.matcher(sourceCode).find()) {
                                                 staticLiteral = false;
                                             }
@@ -409,11 +409,11 @@ public class PhpSourceCodeParse extends SourceCodeParse {
         Stack<Character> stack = new Stack<>();
         for (int i = n, j = startIndex; !abort && i > 0; j = tokenList.get(--i).source.length() - 1) {
             Token currentToken = tokenList.get(i);
-            if (currentToken.type == TokenClassification.COMMENT_BLOCK || currentToken.type == TokenClassification.COMMENT_LINE || currentToken.type == TokenClassification.CONTENT)
+            if (currentToken.type == TokenType.COMMENT_BLOCK || currentToken.type == TokenType.COMMENT_LINE || currentToken.type == TokenType.CONTENT)
                 continue;
             for (; !abort && j >= 0; --j) {
                 char ch = currentToken.source.charAt(j);
-                if (currentToken.type == TokenClassification.SOURCE_CODE) {
+                if (currentToken.type == TokenType.SOURCE_CODE) {
                     if (stack.empty()) {
                         if (ch == ',' || ch == ';' || ch == '{' || ch == '(' || ch == '}') {
                             abort = true;
@@ -449,7 +449,7 @@ public class PhpSourceCodeParse extends SourceCodeParse {
     @Override
     public void classifyForCallStack(Token token) {
         if (token.classification == Token.Classification.NOT_CLASSIFIED_YET || token.classification == Token.Classification.NOT_FULLY_CLASSIFIED) {
-            if (token.type == TokenClassification.SOURCE_CODE) {
+            if (token.type == TokenType.SOURCE_CODE) {
                 boolean foundMethod = false;
                 Matcher matcherMethodPerhaps = reMethodPerhaps.matcher(token.source);
                 if (matcherMethodPerhaps.find()) {

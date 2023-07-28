@@ -16,7 +16,7 @@ limitations under the License.
 
 package io.err0.client.core;
 
-public enum TokenClassification {
+public enum TokenType {
     CONTENT,
     SOURCE_CODE,
     COMMENT_LINE,

@@ -10,21 +10,22 @@ public class CurlyCallStackLogic implements CallStackLogic {
         ArrayList<MethodData> callStackReversed = new ArrayList<>();
         for (int k = j - 1, depth = currentToken.depth; k >= 0; --k) {
             final Token tok = parse.tokenList.get(k);
-            if (tok.type == TokenClassification.SOURCE_CODE) {
+            if (tok.type == TokenType.SOURCE_CODE) {
                 if (reWhitespace.matcher(tok.source).matches()) {
                     continue; // skip whitespace
                 }
             }
             if (tok.depth >= depth) continue;
-            if (tok.type == TokenClassification.CONTENT) continue;
+            if (tok.type == TokenType.CONTENT) continue;
             depth = tok.depth;
             Token nextTok = null;
             for (int x = k + 1; x < j; ++x) {
                 nextTok = parse.tokenList.get(x);
-                if (nextTok.type != TokenClassification.CONTENT) break;
+                if (nextTok.type == TokenType.CONTENT) continue;
+                break;
             }
 
-            if (tok.type == TokenClassification.SOURCE_CODE && null != nextTok && nextTok.type == TokenClassification.SOURCE_CODE && tok.depth < nextTok.depth) {
+            if (tok.type == TokenType.SOURCE_CODE && null != nextTok && nextTok.type == TokenType.SOURCE_CODE && tok.depth < nextTok.depth) {
                 parse.classifyForCallStack(tok);
 
                 if (tok.classification == Token.Classification.CLASS_SIGNATURE ||

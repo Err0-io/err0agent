@@ -44,3 +44,8 @@ class Example:
     def logging1():
         log.info("----- Example ----")
         log.warning("Another example!")
+
+    def continuation(
+        param
+    ):
+        log.info("Call stack helper")

@@ -36,7 +36,7 @@ public class Token {
     private void setNext(Token next) { this.next = next; }
     public Token next() { return this.next; }
 
-    public TokenClassification type;
+    public TokenType type;
     public int longBracketLevel = 0;
     public StringBuilder sourceCode = new StringBuilder();
     public String initialSource = null;

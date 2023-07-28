@@ -56,7 +56,7 @@ public class RubySourceCodeParse extends SourceCodeParse {
         int n = 0;
         RubySourceCodeParse parse = new RubySourceCodeParse(policy);
         Token currentToken = new Token(n++, null);
-        currentToken.type = TokenClassification.SOURCE_CODE;
+        currentToken.type = TokenType.SOURCE_CODE;
         int lineNumber = 1;
         int indentNumber = 0;
         boolean countIndent = true;
@@ -69,14 +69,14 @@ public class RubySourceCodeParse extends SourceCodeParse {
             if (ch == '\n') {
                 ++lineNumber;
                 indentNumber = 0;
-                if (currentToken.type == TokenClassification.SOURCE_CODE) {
+                if (currentToken.type == TokenType.SOURCE_CODE) {
                     if (null == currentHereDoc && ! queuedHereDocs.isEmpty()) {
                         currentHereDoc = queuedHereDocs.pop();
                         currentToken.sourceCode.append(ch);
                         countIndent = true;
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = currentHereDoc.interpolated() ? TokenClassification.QUOT_LITERAL : TokenClassification.APOS_LITERAL;
+                        currentToken.type = currentHereDoc.interpolated() ? TokenType.QUOT_LITERAL : TokenType.APOS_LITERAL;
                         currentToken.depth = indentNumber;
                         currentToken.startLineNumber = lineNumber;
                         RubyExtendedInformation extendedInformation = new RubyExtendedInformation(currentToken);
@@ -118,7 +118,7 @@ public class RubySourceCodeParse extends SourceCodeParse {
                     currentHereDoc = null;
                     parse.tokenList.add(currentToken.finish(lineNumber));
                     currentToken = new Token(n++, currentToken);
-                    currentToken.type = TokenClassification.SOURCE_CODE;
+                    currentToken.type = TokenType.SOURCE_CODE;
                     currentToken.depth = indentNumber;
                     currentToken.startLineNumber = lineNumber;
                     currentToken.sourceCode.append(line);
@@ -138,13 +138,13 @@ public class RubySourceCodeParse extends SourceCodeParse {
                         countIndent = true;
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
+                        currentToken.type = TokenType.SOURCE_CODE;
                         currentToken.depth = indentNumber;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == '\'') {
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.APOS_LITERAL;
+                        currentToken.type = TokenType.APOS_LITERAL;
                         currentToken.sourceCode.append(ch);
                         currentToken.depth = indentNumber;
                         currentToken.startLineNumber = lineNumber;
@@ -152,14 +152,14 @@ public class RubySourceCodeParse extends SourceCodeParse {
                         // otherwise, it is a quot literal.
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.QUOT_LITERAL;
+                        currentToken.type = TokenType.QUOT_LITERAL;
                         currentToken.sourceCode.append(ch);
                         currentToken.depth = indentNumber;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == '#') {
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.COMMENT_LINE;
+                        currentToken.type = TokenType.COMMENT_LINE;
                         currentToken.sourceCode.append(ch);
                         currentToken.depth = indentNumber;
                         currentToken.startLineNumber = lineNumber;
@@ -256,7 +256,7 @@ public class RubySourceCodeParse extends SourceCodeParse {
                                 if (opening != 0 && closing != 0) {
                                     parse.tokenList.add(currentToken.finish(lineNumber));
                                     currentToken = new Token(n++, currentToken);
-                                    currentToken.type = found == 'q' ? TokenClassification.APOS_LITERAL : TokenClassification.QUOT_LITERAL;
+                                    currentToken.type = found == 'q' ? TokenType.APOS_LITERAL : TokenType.QUOT_LITERAL;
                                     currentToken.sourceCode.append(ch);
                                     currentToken.sourceCode.append(chars[++i]);
                                     if (found != 0) {
@@ -283,7 +283,7 @@ public class RubySourceCodeParse extends SourceCodeParse {
                         countIndent = true;
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
+                        currentToken.type = TokenType.SOURCE_CODE;
                         currentToken.depth = indentNumber;
                         currentToken.startLineNumber = lineNumber;
                     } else {
@@ -298,7 +298,7 @@ public class RubySourceCodeParse extends SourceCodeParse {
                                 currentToken.sourceCode.append(ch);
                                 parse.tokenList.add(currentToken.finish(lineNumber));
                                 currentToken = new Token(n++, currentToken);
-                                currentToken.type = TokenClassification.SOURCE_CODE;
+                                currentToken.type = TokenType.SOURCE_CODE;
                                 currentToken.depth = indentNumber;
                                 currentToken.startLineNumber = lineNumber;
                             } else {
@@ -312,7 +312,7 @@ public class RubySourceCodeParse extends SourceCodeParse {
                             currentToken.sourceCode.append(ch);
                             parse.tokenList.add(currentToken.finish(lineNumber));
                             currentToken = new Token(n++, currentToken);
-                            currentToken.type = TokenClassification.SOURCE_CODE;
+                            currentToken.type = TokenType.SOURCE_CODE;
                             currentToken.depth = indentNumber;
                             currentToken.startLineNumber = lineNumber;
                         } else {
@@ -338,7 +338,7 @@ public class RubySourceCodeParse extends SourceCodeParse {
                                 currentToken.sourceCode.append(ch);
                                 parse.tokenList.add(currentToken.finish(lineNumber));
                                 currentToken = new Token(n++, currentToken);
-                                currentToken.type = TokenClassification.SOURCE_CODE;
+                                currentToken.type = TokenType.SOURCE_CODE;
                                 currentToken.depth = indentNumber;
                                 currentToken.startLineNumber = lineNumber;
                             } else {
@@ -352,7 +352,7 @@ public class RubySourceCodeParse extends SourceCodeParse {
                             currentToken.sourceCode.append(ch);
                             parse.tokenList.add(currentToken.finish(lineNumber));
                             currentToken = new Token(n++, currentToken);
-                            currentToken.type = TokenClassification.SOURCE_CODE;
+                            currentToken.type = TokenType.SOURCE_CODE;
                             currentToken.depth = indentNumber;
                             currentToken.startLineNumber = lineNumber;
                         } else if (ch == '\\') {
@@ -372,7 +372,7 @@ public class RubySourceCodeParse extends SourceCodeParse {
 
     @Override
     public boolean couldContainErrorNumber(Token token) {
-        return token.type == TokenClassification.APOS_LITERAL || token.type == TokenClassification.QUOT_LITERAL;
+        return token.type == TokenType.APOS_LITERAL || token.type == TokenType.QUOT_LITERAL;
     }
 
     private static Pattern reContinuation = Pattern.compile("\\\\$");
@@ -472,10 +472,10 @@ public class RubySourceCodeParse extends SourceCodeParse {
                 {
                     token.classification = Token.Classification.NOT_FULLY_CLASSIFIED;
                     Token next = token.next();
-                    while (null != next && next.type == TokenClassification.SOURCE_CODE && Main.reWhitespace.matcher(next.source).matches()) {
+                    while (null != next && next.type == TokenType.SOURCE_CODE && Main.reWhitespace.matcher(next.source).matches()) {
                         next = next.next();
                     }
-                    if (next != null && (next.type == TokenClassification.QUOT_LITERAL || next.type == TokenClassification.APOS_LITERAL)) {
+                    if (next != null && (next.type == TokenType.QUOT_LITERAL || next.type == TokenType.APOS_LITERAL)) {
                         // rule 0 - this code must be followed by a string literal
                         if (null != languageCodePolicy && languageCodePolicy.rules.size() > 0) {
                             // classify according to rules.
@@ -544,7 +544,7 @@ public class RubySourceCodeParse extends SourceCodeParse {
                             // note token current is a type of string literal.
                             boolean staticLiteral = true;
                             Token current = token.next();
-                            while (current != null && current.type == TokenClassification.SOURCE_CODE && Main.reWhitespace.matcher(current.source).matches()) {
+                            while (current != null && current.type == TokenType.SOURCE_CODE && Main.reWhitespace.matcher(current.source).matches()) {
                                 current = current.next();
                             }
                             if (null != current) {
@@ -617,7 +617,7 @@ public class RubySourceCodeParse extends SourceCodeParse {
     @Override
     public void classifyForCallStack(Token token) {
         if (token.classification == Token.Classification.NOT_CLASSIFIED_YET || token.classification == Token.Classification.NOT_FULLY_CLASSIFIED) {
-            if (token.type == TokenClassification.SOURCE_CODE) {
+            if (token.type == TokenType.SOURCE_CODE) {
                 Matcher matcherMethod = reMethod.matcher(token.source);
                 if (matcherMethod.find()) {
                     final String code = matcherMethod.group();

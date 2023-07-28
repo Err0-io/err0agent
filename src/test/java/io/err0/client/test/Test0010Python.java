@@ -16,6 +16,7 @@ limitations under the License.
 
 package io.err0.client.test;
 
+import com.google.gson.JsonArray;
 import io.err0.client.Main;
 import io.err0.client.core.ProjectPolicy;
 import io.err0.client.core.GlobalState;
@@ -57,6 +58,7 @@ public class Test0010Python {
 
             // output the results to 01-assert
             // apiProvider.writeResultsTo(assertDir);
+            // System.exit(-1);
 
             apiProvider.resultStorage.forEach((filename, result) -> {
                 try {
@@ -98,7 +100,17 @@ public class Test0010Python {
 
             previousState = apiProvider.getState();
 
-            assertEquals(7, previousState.metaDataStorage.size());
+            assertEquals(8, previousState.metaDataStorage.size());
+
+            // assert regarding typed_function
+            /*{
+                UnitTestApiProvider.MetaData r1 = apiProvider.metaDataStorage.get(8l);
+                assertNotNull(r1);
+                JsonArray array = r1.metaData.getAsJsonArray("methods");
+                assertEquals(2, array.size());
+                assertEquals("class Example:", array.get(0).getAsJsonObject().get("c").getAsString());
+                assertEquals("def continuation(", array.get(1).getAsJsonObject().get("c").getAsString());
+            }*/
         }
     }
 }
