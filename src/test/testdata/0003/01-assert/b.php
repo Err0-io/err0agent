@@ -3,8 +3,8 @@
 function not_object_orientated()
 {
 
-    error_log("[E-6] This is an error.");
-    error_log('[E-7] This is an error.');
+    error_log("[E-8] This is an error.");
+    error_log('[E-9] This is an error.');
 
 }
 
@@ -16,11 +16,11 @@ function not_object_orientated()
 
     not_object_orientated();
 
-    error_log("[E-8] Finished.");
-    error_log('[E-9] Finished.');
+    error_log("[E-10] Finished.");
+    error_log('[E-11] Finished.');
 
-    throw new Exception("[E-10] An exception.");
-    throw new Error("[E-11] An error.");
+    throw new Exception("[E-12] An exception.");
+    throw new Error("[E-13] An error.");
 
     ?>
     </body>

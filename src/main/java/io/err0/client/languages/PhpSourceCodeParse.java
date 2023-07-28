@@ -44,8 +44,8 @@ public class PhpSourceCodeParse extends SourceCodeParse {
         reLoggerLevel = Pattern.compile("(\\\\|::|->)(" + pattern + ")\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE); // group #2 is our match
     }
 
-    private static Pattern reMethodPerhaps = Pattern.compile("\\)\\s*$");
-    private static Pattern reMethod = Pattern.compile("\\s*(([^){};]+?)\\([^)]*?\\)?(\\s*use\\s*\\([^)]+?\\))?)\\s*$");
+    private static Pattern reMethodPerhaps = Pattern.compile("\\)(\\s*:\\s*\\S.*?)?\\s*$");
+    private static Pattern reMethod = Pattern.compile("\\s*(([^){};]+?)\\([^)]*?\\)?(\\s*use\\s*\\([^)]+?\\))?(\\s*:\\s*\\S.*?)?)\\s*$");
     private static Pattern reClass = Pattern.compile("\\s*(([^){};]+?\\s+?)?class\\s+(\\S+)[^;{(]+?)\\s*$");
     private Pattern reLogger = null;
     private Pattern reLoggerLevel = null;
