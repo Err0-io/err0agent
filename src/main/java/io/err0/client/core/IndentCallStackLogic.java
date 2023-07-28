@@ -17,7 +17,6 @@ public class IndentCallStackLogic implements CallStackLogic {
                 lineContinuationPattern = Pattern.compile("[+\\\\]\\s*$");
                 break;
             case LUA:
-                lineContinuationPattern = Pattern.compile("\\)\\s*$");
                 break;
             default:
                 throw new RuntimeException("[AGENT-000115] Unexpected language");
@@ -33,7 +32,7 @@ public class IndentCallStackLogic implements CallStackLogic {
             if (tok.depth >= depth) continue;
             depth = tok.depth;
 
-            if (k > 0 && lineContinuationPattern.matcher(tok.source).find()) {
+            if (k > 0 && null != lineContinuationPattern && lineContinuationPattern.matcher(tok.source).find()) {
                 int save = k;
                 while (--k > 0) {
                     Token t = parse.tokenList.get(k);
