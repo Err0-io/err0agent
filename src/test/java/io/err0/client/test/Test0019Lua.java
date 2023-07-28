@@ -51,6 +51,7 @@ public class Test0019Lua {
 
             // output the results to 01-assert
             // apiProvider.writeResultsTo(assertDir);
+            // System.exit(-1);
 
             apiProvider.resultStorage.forEach((filename, result) -> {
                 try {
@@ -92,7 +93,7 @@ public class Test0019Lua {
 
             previousState = apiProvider.getState();
 
-            assertEquals(4, previousState.metaDataStorage.size());
+            assertEquals(5, previousState.metaDataStorage.size());
         }
     }
 }

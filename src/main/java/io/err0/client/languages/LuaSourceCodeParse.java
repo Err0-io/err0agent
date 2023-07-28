@@ -23,6 +23,8 @@ import io.err0.client.core.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static io.err0.client.Main.reWhitespace;
+
 public class LuaSourceCodeParse extends SourceCodeParse {
 
     public LuaSourceCodeParse(final CodePolicy policy)
@@ -114,6 +116,20 @@ public class LuaSourceCodeParse extends SourceCodeParse {
                         currentToken.depth = indentNumber;
                         currentToken.startLineNumber = lineNumber;
                     } else if (precedingCharactersAreIndent && ch == '-' && (i+1 < l && chars[i+1] == '-')) {
+                        if (l > i + 3) {
+                            if (chars[i+2] == '[' && chars[i+3] == '[') {
+                                parse.tokenList.add(currentToken.finish(lineNumber));
+                                currentToken = new Token(n++, currentToken);
+                                currentToken.type = TokenClassification.COMMENT_BLOCK;
+                                currentToken.sourceCode.append(ch);
+                                currentToken.sourceCode.append(chars[++i]);
+                                currentToken.sourceCode.append(chars[++i]);
+                                currentToken.sourceCode.append(chars[++i]);
+                                currentToken.depth = indentNumber;
+                                currentToken.startLineNumber = lineNumber;
+                                break;
+                            }
+                        }
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenClassification.COMMENT_LINE;
@@ -129,6 +145,29 @@ public class LuaSourceCodeParse extends SourceCodeParse {
                     if (ch == '\n') {
                         currentToken.sourceCode.append(ch);
                         countIndent = true;
+                        parse.tokenList.add(currentToken.finish(lineNumber));
+                        currentToken = new Token(n++, currentToken);
+                        currentToken.type = TokenClassification.SOURCE_CODE;
+                        currentToken.depth = indentNumber;
+                        currentToken.startLineNumber = lineNumber;
+                    } else {
+                        currentToken.sourceCode.append(ch);
+                    }
+                    break;
+                case COMMENT_BLOCK:
+                    if (ch == '\n') {
+                        currentToken.sourceCode.append(ch);
+                        countIndent = true;
+                        parse.tokenList.add(currentToken.finish(lineNumber));
+                        currentToken = new Token(n++, currentToken);
+                        currentToken.type = TokenClassification.COMMENT_BLOCK;
+                        currentToken.depth = indentNumber;
+                        currentToken.startLineNumber = lineNumber;
+                    } else if (reWhitespace.matcher(currentToken.sourceCode).matches() && l > i + 3 && ch == '-' && chars[i+1] == '-' && chars[i+2] == ']' && chars[i+3] == ']') {
+                        currentToken.sourceCode.append(ch);
+                        currentToken.sourceCode.append(chars[++i]);
+                        currentToken.sourceCode.append(chars[++i]);
+                        currentToken.sourceCode.append(chars[++i]);
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenClassification.SOURCE_CODE;
