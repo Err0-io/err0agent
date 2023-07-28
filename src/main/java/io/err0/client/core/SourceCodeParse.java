@@ -48,6 +48,17 @@ public abstract class SourceCodeParse {
         RUBY,
     }
 
+    public final CallStackLogic callStackLogic() {
+        switch (language) {
+            case RUBY:
+            case PYTHON:
+            case LUA:
+                return new IndentCallStackLogic();
+            default:
+                return new CurlyCallStackLogic();
+        }
+    }
+
     public final ArrayList<Token> tokenList = new ArrayList<>();
 
     public static Pattern reLeadingWhitespace = Pattern.compile("^\\s+", Pattern.MULTILINE);
