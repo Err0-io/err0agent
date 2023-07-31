@@ -45,7 +45,8 @@ public class LuaSourceCodeParse extends SourceCodeParse {
         reLoggerLevel = Pattern.compile("\\.(" + pattern + ")\\s*\\(\\s*?$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE); // group #1 is the level
     }
 
-    private static Pattern reMethod = Pattern.compile("^(\\s*)((.*\\s+=\\s+)?(local\\s+)?function|if|for|while)\\s+.*$");
+    private static Pattern reMethod = Pattern.compile("^(\\s*)((.*\\s+=\\s+)?(local\\s+)?function|(else)?if|else|for|while|repeat|until)\\s+.*$");
+    private static Pattern reControl = Pattern.compile("(^|\\s+)((else)?if|else|for|while|repeat|until)(|\\s|$)", Pattern.MULTILINE);
     private Pattern reLogger = null;
     private Pattern reLoggerLevel = null;
     private static Pattern reException = Pattern.compile("(^|\\s+|;)error\\s*\\($");
@@ -452,6 +453,9 @@ public class LuaSourceCodeParse extends SourceCodeParse {
                     //    continue;
                     token.classification = Token.Classification.METHOD_SIGNATURE;
                     token.extractedCode = code;
+                    if (reControl.matcher(token.extractedCode).find()) {
+                        token.classification = Token.Classification.CONTROL_SIGNATURE;
+                    }
                 } else {
                     token.classification = Token.Classification.NO_MATCH;
                 }

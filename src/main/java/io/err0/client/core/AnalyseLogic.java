@@ -30,6 +30,9 @@ public interface AnalyseLogic {
 
     void pass4ProcessResult(StateItem stateItem, String filename, SourceCodeParse parse);
 
+    /**
+     * @return true if a file changed, or should change
+     */
     boolean returnValue();
 
 }

@@ -47,7 +47,8 @@ public class JavaSourceCodeParse extends SourceCodeParse {
         reFluentSlf4jLevel = Pattern.compile("\\.at(" + pattern + ")\\(\\)\\.", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE); // group #1 is the level
     }
 
-    private static Pattern reMethod = Pattern.compile("\\s*(([^){};]+?)\\(.*?\\)(\\s+throws\\s+[^;{(]+?)?)\\s*$", Pattern.DOTALL);
+    private static Pattern reMethod = Pattern.compile("\\s*(([^(){};]+?)\\(.*?\\)(\\s+throws\\s+[^;{()]+?)?)\\s*$", Pattern.DOTALL);
+    private static Pattern reControl = Pattern.compile("(^|\\s+)(for|if|else(\\s+if)?|do|while|switch|try|catch|finally|synchronized)(\\(|\\{|\\s|$)", Pattern.MULTILINE);
     private static Pattern reLambda = Pattern.compile("\\s*(([^){};,=]+?)\\([^)]*?\\)\\s+->\\s*)\\s*$");
     private static Pattern reClass = Pattern.compile("\\s*(([^){};]*\\s+)?class\\s+(\\S+)[^;{(]+?)\\s*$");
     private Pattern reLogger = null;
@@ -503,10 +504,17 @@ public class JavaSourceCodeParse extends SourceCodeParse {
 
     private String codeWithAnnotations(int n, int startIndex, String code) {
         // Go backwards from matcherMethod.start(1) through previous blocks
-        boolean useBackwardsCode = false;
         boolean abort = false;
         StringBuilder backwardsCode = new StringBuilder();
         Stack<Character> stack = new Stack<>();
+        for (int i = code.length() - 1; i >= 0; --i) {
+            char ch = code.charAt(i);
+            if (ch == ')' || ch == '}') {
+                stack.push(ch);
+            } else if (! stack.empty() && (ch == '(' || ch == '{')) {
+                stack.pop();
+            }
+        }
         for (int i = n, j = startIndex; !abort && i > 0; j = tokenList.get(--i).source.length() - 1) {
             Token currentToken = tokenList.get(i);
             if (currentToken.type == TokenType.COMMENT_BLOCK || currentToken.type == TokenType.COMMENT_LINE || currentToken.type == TokenType.CONTENT)
@@ -520,7 +528,6 @@ public class JavaSourceCodeParse extends SourceCodeParse {
                             break;
                         } else if (ch == ')') {
                             stack.push(ch);
-                            useBackwardsCode = true;
                         }
                         backwardsCode.append(ch);
                     } else {
@@ -537,13 +544,10 @@ public class JavaSourceCodeParse extends SourceCodeParse {
             }
         }
 
-        if (useBackwardsCode) {
-            backwardsCode.reverse();
-            backwardsCode.append(code);
-            code = backwardsCode.toString();
-        }
+        backwardsCode.reverse();
+        backwardsCode.append(code);
 
-        return code;
+        return backwardsCode.toString();
     }
 
     @Override
@@ -557,6 +561,9 @@ public class JavaSourceCodeParse extends SourceCodeParse {
                     //    continue;
                     token.classification = Token.Classification.METHOD_SIGNATURE;
                     token.extractedCode = codeWithAnnotations(token.n, matcherMethod.start(1) - 1, code);
+                    if (reControl.matcher(token.extractedCode).find()) {
+                        token.classification = Token.Classification.CONTROL_SIGNATURE;
+                    }
                 } else {
                     Matcher matcherClass = reClass.matcher(token.source);
                     if (matcherClass.find()) {

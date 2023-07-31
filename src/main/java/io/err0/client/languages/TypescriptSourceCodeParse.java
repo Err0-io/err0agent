@@ -20,6 +20,7 @@ import com.google.gson.JsonArray;
 import io.err0.client.Main;
 import io.err0.client.core.*;
 
+import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,7 +44,8 @@ public class TypescriptSourceCodeParse extends SourceCodeParse {
         reLoggerLevel = Pattern.compile("\\.(" + pattern + ")\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
     }
 
-    private static Pattern reMethod = Pattern.compile("\\s*(([^){};]+?)\\([^)]*?\\)(:[^;{(]+?)?)\\s*$");
+    private static Pattern reMethod = Pattern.compile("\\s*(([^(){};]+?)\\(.*?\\)(:[^;{(]+?)?)\\s*$", Pattern.DOTALL);
+    private static Pattern reControl = Pattern.compile("(^|\\s+)(for|if|else(\\s+if)?|do|while|switch|try|catch|finally)(\\(|\\{|\\s|$)", Pattern.MULTILINE);
     private static Pattern reLambda = Pattern.compile("\\s*(([^){};,]+?)\\([^)]*?\\)\\s+=>\\s*)\\s*$");
     private static Pattern reClass = Pattern.compile("\\s*(([^){};]+?)\\s+class\\s+(\\S+)[^;{(]+?)\\s*$");
     private Pattern reLogger = null;
@@ -398,22 +400,73 @@ public class TypescriptSourceCodeParse extends SourceCodeParse {
         }
     }
 
+    private String codeWithAnnotations(int n, int startIndex, String code) {
+        // Go backwards from matcherMethod.start(1) through previous blocks
+        boolean abort = false;
+        StringBuilder backwardsCode = new StringBuilder();
+        Stack<Character> stack = new Stack<>();
+        for (int i = code.length() - 1; i >= 0; --i) {
+            char ch = code.charAt(i);
+            if (ch == ')' || ch == '}') {
+                stack.push(ch);
+            } else if (! stack.empty() && (ch == '(' || ch == '{')) {
+                stack.pop();
+            }
+        }
+        for (int i = n, j = startIndex; !abort && i > 0; j = tokenList.get(--i).source.length() - 1) {
+            Token currentToken = tokenList.get(i);
+            if (currentToken.type == TokenType.COMMENT_BLOCK || currentToken.type == TokenType.COMMENT_LINE || currentToken.type == TokenType.CONTENT)
+                continue;
+            for (; !abort && j >= 0; --j) {
+                char ch = currentToken.source.charAt(j);
+                if (currentToken.type == TokenType.SOURCE_CODE) {
+                    if (stack.empty()) {
+                        if (ch == ',' || ch == ';' || ch == '{' || ch == '(' || ch == '}') {
+                            abort = true;
+                            break;
+                        } else if (ch == ')') {
+                            stack.push(ch);
+                        }
+                        backwardsCode.append(ch);
+                    } else {
+                        if (ch == ')' || ch == '}') {
+                            stack.push(ch);
+                        } else if (ch == '(' || ch == '{') {
+                            stack.pop();
+                        }
+                        backwardsCode.append(ch);
+                    }
+                } else {
+                    backwardsCode.append(ch);
+                }
+            }
+        }
+
+        backwardsCode.reverse();
+        backwardsCode.append(code);
+
+        return backwardsCode.toString();
+    }
+
     @Override
     public void classifyForCallStack(Token token) {
         if (token.classification == Token.Classification.NOT_CLASSIFIED_YET || token.classification == Token.Classification.NOT_FULLY_CLASSIFIED) {
             if (token.type == TokenType.SOURCE_CODE) {
                 Matcher matcherMethod = reMethod.matcher(token.source);
                 if (matcherMethod.find()) {
-                    final String code = matcherMethod.group(1);
+                    String code = matcherMethod.group(1);
                     //if (reMethodIgnore.matcher(code).find())
                     //    continue;
                     token.classification = Token.Classification.METHOD_SIGNATURE;
-                    token.extractedCode = code;
+                    token.extractedCode = codeWithAnnotations(token.n, matcherMethod.start(1) - 1, code);
+                    if (reControl.matcher(token.extractedCode).find()) {
+                        token.classification = Token.Classification.CONTROL_SIGNATURE;
+                    }
                 } else {
                     Matcher matcherClass = reClass.matcher(token.source);
                     if (matcherClass.find()) {
                         token.classification = Token.Classification.CLASS_SIGNATURE;
-                        token.extractedCode = matcherClass.group(1);
+                        token.extractedCode = codeWithAnnotations(token.n, matcherClass.start(1) - 1, matcherClass.group(1));
                     } else {
                         Matcher matcherLambda = reLambda.matcher(token.source);
                         if (matcherLambda.find()) {

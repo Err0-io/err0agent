@@ -44,7 +44,8 @@ public class CCPPSourceCodeParse extends SourceCodeParse {
     }
 
     private static Pattern reMethodPerhaps = Pattern.compile("\\)\\s*$");
-    private static Pattern reMethod = Pattern.compile("\\s*(([^{};]+?)\\([^)]*?\\)(\\s+throws\\s+[^;{(]+?)?)\\s*$");
+    private static Pattern reMethod = Pattern.compile("\\s*(([^(){};]+?)\\(.*?\\)(\\s+throws\\s+[^;{()]+?)?)\\s*$", Pattern.DOTALL);
+    private static Pattern reControl = Pattern.compile("(^|\\s+)(for|if|else(\\s+if)?|do|while|switch|try|catch|finally)(\\(|\\{|\\s|$)", Pattern.MULTILINE);
     private static Pattern reClass = Pattern.compile("\\s*(([^){\\[\\]};]+?)\\s+class\\s+(\\S+)[^;{(]+?)\\s*$");
     private Pattern reBuiltInLogger = Pattern.compile("\\s*(v?syslog)\\s*\\(.*$");
     private Pattern reBuiltInLoggerLevel = Pattern.compile("LOG_(EMERG|ALERT|CRIT|ERR|WARNING|NOTICE|INFO|DEBUG)");
@@ -387,10 +388,17 @@ public class CCPPSourceCodeParse extends SourceCodeParse {
 
     private String codeWithAnnotations(int n, int startIndex, String code) {
         // Go backwards from matcherMethod.start(1) through previous blocks
-        boolean useBackwardsCode = false;
         boolean abort = false;
         StringBuilder backwardsCode = new StringBuilder();
         Stack<Character> stack = new Stack<>();
+        for (int i = code.length() - 1; i >= 0; --i) {
+            char ch = code.charAt(i);
+            if (ch == ')' || ch == '}') {
+                stack.push(ch);
+            } else if (! stack.empty() && (ch == '(' || ch == '{')) {
+                stack.pop();
+            }
+        }
         for (int i = n, j = startIndex; !abort && i > 0; j = tokenList.get(--i).source.length() - 1) {
             Token currentToken = tokenList.get(i);
             if (currentToken.type == TokenType.COMMENT_BLOCK || currentToken.type == TokenType.COMMENT_LINE || currentToken.type == TokenType.CONTENT)
@@ -399,18 +407,17 @@ public class CCPPSourceCodeParse extends SourceCodeParse {
                 char ch = currentToken.source.charAt(j);
                 if (currentToken.type == TokenType.SOURCE_CODE) {
                     if (stack.empty()) {
-                        if (/*ch == ',' || */ch == ';' || ch == '{' || ch == '(' || ch == '}') {
+                        if (/*ch == ',' ||*/ ch == ';' || ch == '{' || ch == '(' || ch == '}') {
                             abort = true;
                             break;
-                        } else if (ch == ']' || ch == ')') {
+                        } else if (ch == ')') {
                             stack.push(ch);
-                            useBackwardsCode = true;
                         }
                         backwardsCode.append(ch);
                     } else {
-                        if (ch == ')' || ch == '}' || ch == ']') {
+                        if (ch == ')' || ch == '}') {
                             stack.push(ch);
-                        } else if (ch == '(' || ch == '{' || ch == '[') {
+                        } else if (ch == '(' || ch == '{') {
                             stack.pop();
                         }
                         backwardsCode.append(ch);
@@ -421,13 +428,10 @@ public class CCPPSourceCodeParse extends SourceCodeParse {
             }
         }
 
-        if (useBackwardsCode) {
-            backwardsCode.reverse();
-            backwardsCode.append(code);
-            code = backwardsCode.toString();
-        }
+        backwardsCode.reverse();
+        backwardsCode.append(code);
 
-        return code;
+        return backwardsCode.toString();
     }
 
     @Override
@@ -448,11 +452,13 @@ public class CCPPSourceCodeParse extends SourceCodeParse {
                             mPreprocessor = rePreprocessor.matcher(code);
                         }
 
-                        //if (reMethodIgnore.matcher(code).find())
-                        //    continue;
                         token.classification = Token.Classification.METHOD_SIGNATURE;
                         token.extractedCode = code;
                         foundMethod = true;
+
+                        if (reControl.matcher(token.extractedCode).find()) {
+                            token.classification = Token.Classification.CONTROL_SIGNATURE;
+                        }
                     }
                 }
                 if (!foundMethod) {

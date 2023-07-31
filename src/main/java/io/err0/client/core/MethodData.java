@@ -21,11 +21,27 @@ import java.util.regex.Pattern;
 public class MethodData {
     private static Pattern reWhitespace = Pattern.compile("\\s+");
 
-    public MethodData(final int line, final String code) {
+    public MethodData(final int line, final String code, final Token.Classification classification) {
         this.line = line;
         this.code = reWhitespace.matcher(code.trim()).replaceAll(" ");
+        this.classification = classification;
     }
 
     public final int line;
     public final String code;
+    public final Token.Classification classification;
+
+    public String getType() {
+        switch (classification) {
+            case CLASS_SIGNATURE:
+                return "class";
+            case METHOD_SIGNATURE:
+                return "method";
+            case CONTROL_SIGNATURE:
+                return "control";
+            case LAMBDA_SIGNATURE:
+                return "lambda";
+        }
+        throw new RuntimeException("Incorrect classification.");
+    }
 }
