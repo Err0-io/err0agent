@@ -42,6 +42,6 @@ public class MethodData {
             case LAMBDA_SIGNATURE:
                 return "lambda";
         }
-        throw new RuntimeException("Incorrect classification.");
+        throw new RuntimeException("[AGENT-000116] Incorrect classification.");
     }
 }
