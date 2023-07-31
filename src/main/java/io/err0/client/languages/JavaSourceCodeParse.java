@@ -47,7 +47,7 @@ public class JavaSourceCodeParse extends SourceCodeParse {
         reFluentSlf4jLevel = Pattern.compile("\\.at(" + pattern + ")\\(\\)\\.", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE); // group #1 is the level
     }
 
-    private static Pattern reMethod = Pattern.compile("\\s*(([^){};]+?)\\(.*?\\)(\\s+throws\\s+[^;{(]+?)?)\\s*$");
+    private static Pattern reMethod = Pattern.compile("\\s*(([^){};]+?)\\(.*?\\)(\\s+throws\\s+[^;{(]+?)?)\\s*$", Pattern.DOTALL);
     private static Pattern reLambda = Pattern.compile("\\s*(([^){};,=]+?)\\([^)]*?\\)\\s+->\\s*)\\s*$");
     private static Pattern reClass = Pattern.compile("\\s*(([^){};]*\\s+)?class\\s+(\\S+)[^;{(]+?)\\s*$");
     private Pattern reLogger = null;

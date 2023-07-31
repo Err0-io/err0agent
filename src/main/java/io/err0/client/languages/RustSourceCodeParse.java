@@ -42,7 +42,7 @@ public class RustSourceCodeParse extends SourceCodeParse {
         reLoggerLevel = Pattern.compile("(\\.|::)(" + pattern + ")!?\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
     }
 
-    private static Pattern reMethod = Pattern.compile("(^|\\s+)(pub\\s+)?fn\\s+(.*)?$", Pattern.MULTILINE);
+    private static Pattern reMethod = Pattern.compile("(^|\\s+)(pub\\s+)?fn\\s+(.*)?$", Pattern.DOTALL);
     private Pattern reLogger = null;
     private Pattern reLoggerLevel = null;
     private static Pattern reException = Pattern.compile("(panic)!\\s*\\(\\s*$");

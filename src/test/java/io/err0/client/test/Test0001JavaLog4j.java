@@ -18,6 +18,7 @@ package io.err0.client.test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.google.gson.JsonArray;
 import io.err0.client.core.ProjectPolicy;
 import io.err0.client.core.GlobalState;
 import io.err0.client.Main;
@@ -55,6 +56,7 @@ public class Test0001JavaLog4j {
 
             // output the results to 01-assert
             // apiProvider.writeResultsTo(assertDir);
+            // System.exit(-1);
 
             apiProvider.resultStorage.forEach((filename, result) -> {
                 try {
@@ -96,7 +98,20 @@ public class Test0001JavaLog4j {
 
             previousState = apiProvider.getState();
 
-            assertEquals(6, previousState.metaDataStorage.size());
+            assertEquals(7, previousState.metaDataStorage.size());
+
+            previousState = apiProvider.getState();
+
+            {
+                UnitTestApiProvider.MetaData r1 = apiProvider.metaDataStorage.get(7L);
+                assertNotNull(r1);
+                JsonArray array = r1.metaData.getAsJsonArray("methods");
+                assertEquals(2, array.size());
+                assertEquals("public class A", array.get(0).getAsJsonObject().get("c").getAsString());
+                assertEquals(9L, array.get(0).getAsJsonObject().get("l").getAsLong());
+                assertEquals("void method2( String parameter )", array.get(1).getAsJsonObject().get("c").getAsString());
+                assertEquals(46L, array.get(1).getAsJsonObject().get("l").getAsLong());
+            }
         }
 
         // pass #3 - scan and report (changes)
@@ -125,7 +140,7 @@ public class Test0001JavaLog4j {
 
             previousState = apiProvider.getState();
 
-            assertEquals(6, previousState.metaDataStorage.size());
+            assertEquals(7, previousState.metaDataStorage.size());
         }
     }
 }

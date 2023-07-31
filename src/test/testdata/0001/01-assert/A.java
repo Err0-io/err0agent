@@ -40,4 +40,10 @@ public class A {
 
         logger.trace("Finishing...");
     }
+
+    void method2(
+            String parameter
+    ) {
+        logger.info("[E-7] A log")
+    }
 }
