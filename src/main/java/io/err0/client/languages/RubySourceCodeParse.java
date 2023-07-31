@@ -45,7 +45,9 @@ public class RubySourceCodeParse extends SourceCodeParse {
         reLoggerLevel = Pattern.compile("\\.(" + pattern + ")\\s+$", Pattern.CASE_INSENSITIVE); // group #1 is the level
     }
 
-    private static Pattern reMethod = Pattern.compile("^(\\s*)(def|class|if|unless|for|while|except)\\s+.*$");
+    private static Pattern reClass = Pattern.compile("(^|\\s+)(class)(\\s|$)", Pattern.MULTILINE);
+    private static Pattern reMethod = Pattern.compile("^(\\s*)(def|class|(els)?if|else|case|when|while|except)\\s+.*$");
+    private static Pattern reControl = Pattern.compile("(^|\\s+)((els)?if|else|case|when|while|except)(\\s|$)", Pattern.MULTILINE);
     private Pattern reLogger = null;
     private Pattern reLoggerLevel = null;
     private static Pattern reException = Pattern.compile("(^|\\s+)raise\\s(\\S+),\\s+$");
@@ -625,6 +627,11 @@ public class RubySourceCodeParse extends SourceCodeParse {
                     //    continue;
                     token.classification = Token.Classification.METHOD_SIGNATURE;
                     token.extractedCode = code;
+                    if (reClass.matcher(token.extractedCode).find()) {
+                        token.classification = Token.Classification.CLASS_SIGNATURE;
+                    } else if (reControl.matcher(token.extractedCode).find()) {
+                        token.classification = Token.Classification.CONTROL_SIGNATURE;
+                    }
                 } else {
                     token.classification = Token.Classification.NO_MATCH;
                 }
