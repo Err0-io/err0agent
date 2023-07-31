@@ -80,18 +80,10 @@ public class Main {
         JsonObject branches = new JsonObject();
         JsonObject tags = new JsonObject();
         JsonObject tag_annotations = new JsonObject();
-        /*
-        JsonObject branch_tags = new JsonObject();
-        JsonObject tag_branches = new JsonObject();
-         */
         appGitMetadata.add("remotes", remotes);
         appGitMetadata.add("branches", branches);
         appGitMetadata.add("tags", tags);
         appGitMetadata.add("tag_annotations", tag_annotations);
-        /*
-        appGitMetadata.add("branch_tags", branch_tags);
-        appGitMetadata.add("tag_branches", tag_branches);
-         */
 
         Path gitpath = Utils.pathOf(checkoutDir + "/.git");
         if (Files.isRegularFile(gitpath)) {
@@ -169,34 +161,6 @@ public class Main {
                         annotation.addProperty("tz_offset", tagger.getTimeZoneOffset());
                         tag_annotations.add(tagName, annotation);
                     }
-
-                    /*
-                    DISABLED: too much information, also slow, also gets slower each iteration of the soak test.
-
-                    List<Ref> refs = git.branchList().setContains(tagObjectId).setListMode(ListBranchCommand.ListMode.ALL).call();
-                    refs.forEach(branchRef -> {
-                        final String fullBranchName = branchRef.getName();
-                        if (fullBranchName.startsWith("refs/heads/")) {
-                            final String branchName = fullBranchName.substring(11);
-                            JsonArray a = null;
-                            if (branch_tags.has(branchName)) {
-                                a = branch_tags.getAsJsonArray(branchName);
-                            } else {
-                                a = new JsonArray();
-                                branch_tags.add(branchName, a);
-                            }
-                            a.add(tagName);
-                            a = null;
-                            if (tag_branches.has(tagName)) {
-                                a = tag_branches.getAsJsonArray(tagName);
-                            } else {
-                                a = new JsonArray();
-                                tag_branches.add(tagName, a);
-                            }
-                            a.add(branchName);
-                        }
-                    });
-                     */
                 }
             }
             HashSet<String> dedupe = new HashSet<>();
@@ -447,7 +411,6 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                 }
 
                 JsonObject runMetadata = statisticsGatherer.toRunMetadata(true);
-                //System.out.println("Statistics:\n" + runMetadata.toString());
                 apiProvider.updateRun(projectPolicy, run_uuid, runGitMetadata, runMetadata);
 
                 if (metricsReport || errorCodeData) {
@@ -534,7 +497,6 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                 }
 
                 JsonObject runMetadata = statisticsGatherer.toRunMetadata(! wouldChangeAFile);
-                //System.out.println("Statistics:\n" + runMetadata.toString());
                 apiProvider.updateRun(projectPolicy, run_uuid, runGitMetadata, runMetadata);
 
                 if (! wouldChangeAFile) {
@@ -756,7 +718,6 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                     }
 
                     JsonObject runMetadata = statisticsGatherer.toRunMetadata(true);
-                    //System.out.println("Statistics:\n" + runMetadata.toString());
                     apiProvider.updateRun(projectPolicy, run_uuid, runGitMetadata, runMetadata);
 
                     if (metricsReport || errorCodeData) {
@@ -848,7 +809,6 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                     }
 
                     JsonObject runMetadata = statisticsGatherer.toRunMetadata(! wouldChangeAFile);
-                    //System.out.println("Statistics:\n" + runMetadata.toString());
                     apiProvider.updateRun(projectPolicy, run_uuid, runGitMetadata, runMetadata);
 
                     if (! wouldChangeAFile) {
@@ -1290,14 +1250,7 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                             JsonArray commentsArray = new JsonArray();
                             JsonArray methodsArray = new JsonArray();
 
-                            // TODO: package name
-
-                            // TODO: method/stack of comments, to go with the "call stack" information
-
-                            // comment immediately preceding
-
                             ArrayList<Token> commentsReversed = new ArrayList<>();
-                            //StringBuilder sbComments = new StringBuilder();
                             for (int k = j - 1; k >= 0; --k) {
                                 final Token tok = parse.tokenList.get(k);
                                 if (tok.depth == currentToken.depth) {
@@ -1313,36 +1266,20 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                             for (int x = 0, z = commentsReversed.size(); x < z; ++x) {
                                 final Token tok = commentsReversed.get(z - x - 1);
                                 final String commentTrimmed = SourceCodeParse.reLeadingWhitespace.matcher(tok.source).replaceAll("").trim();
-                                //sbComments.append(commentTrimmed);
-                                //if (tok.type == TokenClassification.COMMENT_BLOCK) {
-                                //    sbComments.append('\n');
-                                //}
                                 commentsArray.add(commentTrimmed);
                             }
-                            //final String comments = sbComments.toString();
 
                             // figure out a call stack of sorts class method inner code
-
                             ArrayList<MethodData> callStackReversed = parse.callStackLogic().reversed(j, parse, currentToken);
 
-                            //final StringBuilder callStackBuilder = new StringBuilder();
                             for (int x = 0, z = callStackReversed.size(); x < z; ++x) {
                                 final MethodData methodData = callStackReversed.get(z - x - 1);
-                                //callStackBuilder.append(methodData.line).append(":");
-                                //for (int y = 8 - Integer.toString(methodData.line).length(); y > 0; --y) callStackBuilder.append(' ');
-                                //for (int y = x; y > 0; --y) callStackBuilder.append(' '); // indent pretty print console output
-                                //callStackBuilder.append(methodData.code);
-                                //callStackBuilder.append("\n");
                                 final JsonObject methodObject = new JsonObject();
                                 methodObject.addProperty("l", methodData.line);
                                 methodObject.addProperty("c", methodData.code);
+                                methodObject.addProperty("t", methodData.getType());
                                 methodsArray.add(methodObject);
                             }
-                            //final String callStack = callStackBuilder.toString();
-
-                            //System.out.println(filename + ":" + currentToken.startLineNumber + " depth=" + currentToken.depth + " ERR-" + currentErrorNumber);
-
-                            //final String errorCode = policy.getErrorCodeFormatter().formatErrorCodeOnly(currentToken.errorOrdinal);
 
                             metaData.addProperty("language", stateItem.parse.language.name());
                             metaData.addProperty("type", lastToken.classification.toString());
@@ -1459,8 +1396,6 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                     }
                 }
             }
-
-            //driver.processResult(stateItem.changed, filename, parse);
         }
 
         // pass 2 - go through all the tokens with error codes... where there are multiple candidates to
@@ -1567,8 +1502,6 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
             }
         });
 
-        //boolean didChangeAFile = false;
-
         ArrayList<Token> forNewErrorNumbers = new ArrayList<>();
         ArrayList<Token> forUpdatingErrorNumbers = new ArrayList<>();
         ArrayList<ApiProvider.ForInsert> forBulkInsert = new ArrayList<>();
@@ -1620,8 +1553,6 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
 
                         // Actually, now, insert the error code...
                         if (!currentToken.keepErrorCode) {
-                            // log match
-                            //currentToken.errorOrdinal = apiProvider.nextErrorNumber();
                             final int width = currentToken.getStringQuoteWidth();
                             String start = currentToken.sourceNoErrorCode.substring(0, width);
                             final String remainder = Utils.stripLeading(currentToken.sourceNoErrorCode.substring(width));
@@ -1663,8 +1594,6 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                             }
                         }
 
-                        //System.out.println(stateItem.localToCheckoutLower);
-
                         StringBuilder commentsBuilder = new StringBuilder();
                         JsonArray commentsAry = currentToken.metaData.getAsJsonArray("comments");
                         for (int k = 0, n = commentsAry.size(); k < n; ++k) {
@@ -1698,11 +1627,9 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                         if (doNotAssignNewNumbers) {
                             if (currentToken.errorOrdinal > 0) {
                                 forBulkInsert.add(new ApiProvider.ForInsert(errorCode, currentToken.errorOrdinal, currentToken.metaData, insertType));
-                                // was: apiProvider.deprecatedInsertMetaData(policy, run_uuid, errorCode, policy.getErrorPrefix(), currentToken.errorOrdinal, currentToken.metaData);
                             }
                         } else {
                             forBulkInsert.add(new ApiProvider.ForInsert(errorCode, currentToken.errorOrdinal, currentToken.metaData, insertType));
-                            // was: apiProvider.deprecatedInsertMetaData(policy, run_uuid, errorCode, policy.getErrorPrefix(), currentToken.errorOrdinal, currentToken.metaData);
                         }
                     };
 
@@ -1775,12 +1702,12 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
             final StateItem stateItem = globalState.files.get(filename);
             final SourceCodeParse parse = stateItem.parse;
 
-            logic.pass4CheckIfFileChanged(stateItem); // if (stateItem.changed && !didChangeAFile) { didChangeAFile = true; }
+            logic.pass4CheckIfFileChanged(stateItem);
 
-            logic.pass4ProcessResult(stateItem, filename, parse); // driver.processResult(stateItem.changed, filename, parse);
+            logic.pass4ProcessResult(stateItem, filename, parse);
         }
 
-        return logic.returnValue(); //return didChangeAFile;
+        return logic.returnValue();
     }
 
 }

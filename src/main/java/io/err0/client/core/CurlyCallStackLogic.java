@@ -30,9 +30,10 @@ public class CurlyCallStackLogic implements CallStackLogic {
 
                 if (tok.classification == Token.Classification.CLASS_SIGNATURE ||
                         tok.classification == Token.Classification.METHOD_SIGNATURE ||
-                        tok.classification == Token.Classification.LAMBDA_SIGNATURE
+                        tok.classification == Token.Classification.LAMBDA_SIGNATURE ||
+                        tok.classification == Token.Classification.CLASS_SIGNATURE
                 ) {
-                    callStackReversed.add(new MethodData(tok.lastLineNumber, tok.extractedCode));
+                    callStackReversed.add(new MethodData(tok.lastLineNumber, tok.extractedCode, tok.classification));
                 }
             }
         }

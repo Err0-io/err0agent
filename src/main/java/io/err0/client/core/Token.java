@@ -121,6 +121,7 @@ public class Token {
         CLASS_SIGNATURE,
         METHOD_SIGNATURE,
         LAMBDA_SIGNATURE,
+        CONTROL_SIGNATURE,
         PLACEHOLDER,
     }
 
