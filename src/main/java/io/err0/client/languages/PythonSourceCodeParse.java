@@ -17,6 +17,7 @@ limitations under the License.
 package io.err0.client.languages;
 
 import com.google.gson.JsonArray;
+import com.sun.org.apache.xerces.internal.impl.xpath.regex.Match;
 import io.err0.client.Main;
 import io.err0.client.core.*;
 
@@ -43,7 +44,9 @@ public class PythonSourceCodeParse extends SourceCodeParse {
         reLoggerLevel = Pattern.compile("\\.(" + pattern + ")\\s*\\(\\s*f?$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE); // group #1 is the level
     }
 
+    private static Pattern reClass = Pattern.compile("(^|\\s+)(class\\s+(.*?):)(\\s|$)", Pattern.MULTILINE);
     private static Pattern reMethod = Pattern.compile("^(\\s*)(def\\s+.*|class\\s+.*|(el)?if\\s+.*|else:|for\\s+.*|while\\s+.*|try:|except\\s+.*)\\s*$");
+    private static Pattern reControl = Pattern.compile("(^|\\s+)((el)?if\\s+.*|else:|for\\s+.*|while\\s+.*|try:|except\\s+.*)(\\s|$)", Pattern.MULTILINE);
     private Pattern reLogger = null;
     private Pattern reLoggerLevel = null;
     private static Pattern reException = Pattern.compile("(^|\\s+)raise\\s([^\\s\\(]*)\\s*\\(*.+$");
@@ -555,10 +558,13 @@ public class PythonSourceCodeParse extends SourceCodeParse {
                 Matcher matcherMethod = reMethod.matcher(token.source);
                 if (matcherMethod.find()) {
                     final String code = matcherMethod.group();
-                    //if (reMethodIgnore.matcher(code).find())
-                    //    continue;
                     token.classification = Token.Classification.METHOD_SIGNATURE;
                     token.extractedCode = code;
+                    if (reClass.matcher(token.extractedCode).find()) {
+                        token.classification = Token.Classification.CLASS_SIGNATURE;
+                    } else if (reControl.matcher(token.extractedCode).find()) {
+                        token.classification = Token.Classification.CONTROL_SIGNATURE;
+                    }
                 } else {
                     token.classification = Token.Classification.NO_MATCH;
                 }
