@@ -41,7 +41,7 @@ public class GolangSourceCodeParse extends SourceCodeParse {
         reLoggerLevel = Pattern.compile("\\.(" + pattern + ")f?\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
     }
 
-    private static Pattern reMethod = Pattern.compile("(^|\\s+)func\\s+(.*)?$", Pattern.MULTILINE);
+    private static Pattern reMethod = Pattern.compile("(^|\\s+)func\\s+(.*)?$", Pattern.DOTALL);
     private Pattern reLogger = null;
     private Pattern reLoggerLevel = null;
     private static Pattern reException = Pattern.compile("(fmt\\.Errorf|errors\\.New)\\s*\\(\\s*$");
