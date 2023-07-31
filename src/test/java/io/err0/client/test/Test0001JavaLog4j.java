@@ -98,7 +98,7 @@ public class Test0001JavaLog4j {
 
             previousState = apiProvider.getState();
 
-            assertEquals(7, previousState.metaDataStorage.size());
+            assertEquals(8, previousState.metaDataStorage.size());
 
             previousState = apiProvider.getState();
 
@@ -111,6 +111,24 @@ public class Test0001JavaLog4j {
                 assertEquals(9L, array.get(0).getAsJsonObject().get("l").getAsLong());
                 assertEquals("void method2( String parameter )", array.get(1).getAsJsonObject().get("c").getAsString());
                 assertEquals(46L, array.get(1).getAsJsonObject().get("l").getAsLong());
+            }
+            {
+                UnitTestApiProvider.MetaData r1 = apiProvider.metaDataStorage.get(8L);
+                assertNotNull(r1);
+                JsonArray array = r1.metaData.getAsJsonArray("methods");
+                assertEquals(4, array.size());
+                assertEquals("public class A", array.get(0).getAsJsonObject().get("c").getAsString());
+                assertEquals(9L, array.get(0).getAsJsonObject().get("l").getAsLong());
+                assertEquals("class", array.get(0).getAsJsonObject().get("t").getAsString());
+                assertEquals("protected void checkParameter(String param)", array.get(1).getAsJsonObject().get("c").getAsString());
+                assertEquals(50L, array.get(1).getAsJsonObject().get("l").getAsLong());
+                assertEquals("method", array.get(1).getAsJsonObject().get("t").getAsString());
+                assertEquals("if (\"const\".equals(param))", array.get(2).getAsJsonObject().get("c").getAsString());
+                assertEquals(52L, array.get(2).getAsJsonObject().get("l").getAsLong());
+                assertEquals("control", array.get(2).getAsJsonObject().get("t").getAsString());
+                assertEquals("if (a == null && b == null)", array.get(3).getAsJsonObject().get("c").getAsString());
+                assertEquals(53L, array.get(3).getAsJsonObject().get("l").getAsLong());
+                assertEquals("control", array.get(3).getAsJsonObject().get("t").getAsString());
             }
         }
 
@@ -140,7 +158,7 @@ public class Test0001JavaLog4j {
 
             previousState = apiProvider.getState();
 
-            assertEquals(7, previousState.metaDataStorage.size());
+            assertEquals(8, previousState.metaDataStorage.size());
         }
     }
 }
