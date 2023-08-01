@@ -41,6 +41,8 @@ public class CSharpSourceCodeParse extends SourceCodeParse {
 
         final String pattern = policy.mode == CodePolicy.CodePolicyMode.DEFAULTS ? "(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)" : policy.easyModeMethodPattern();
         reLoggerLevel = Pattern.compile("\\.(" + pattern + ")(<[^>]+>)?\\s*\\([^\")]*\\s*(\\$?@)?$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+
+        reDotNetCoreILogger = Pattern.compile("(^|\\s+)(m?_?)*log(ger)?\\.Log(Critical|Error|Warning|Information)\\s*\\([^\")]*\\s*(\\$?@)?$", Pattern.MULTILINE);
     }
 
     private static Pattern reMethodPerhaps = Pattern.compile("\\)\\s*$");
@@ -49,6 +51,8 @@ public class CSharpSourceCodeParse extends SourceCodeParse {
     private static Pattern reLambda = Pattern.compile("\\s*(([^){\\[\\]};,]+?)\\([^)]*?\\)\\s+=>\\s*)\\s*$");
     private static Pattern reClass = Pattern.compile("\\s*(([^){\\[\\]};]+?)\\s+class\\s+(\\S+)[^;{(]+?)\\s*$");
     private Pattern reLogger = null;
+    private Pattern reDotNetCoreILogger = null;
+    private static int reDotNetCoreILoggerLevelGroup = 4;
     private Pattern reLoggerLevel = null;
     private static Pattern reException = Pattern.compile("throw\\s+new\\s+([^\\s(]*)\\s*\\(\\s*$");
     private static int reException_group_class = 1;
@@ -284,6 +288,14 @@ public class CSharpSourceCodeParse extends SourceCodeParse {
                         }
                     } else {
                         token.classification = Token.Classification.NO_MATCH;
+                    }
+
+                    if ((token.classification == Token.Classification.NOT_FULLY_CLASSIFIED || token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) && (null == languageCodePolicy || !languageCodePolicy.disable_builtin_log_detection) && (!codePolicy.getDisableLogs())) {
+                        Matcher matcherLogger = reDotNetCoreILogger.matcher(token.source);
+                        if (matcherLogger.find()) {
+                            token.classification = Token.Classification.LOG_OUTPUT;
+                            token.loggerLevel = matcherLogger.group(reDotNetCoreILoggerLevelGroup);
+                        }
                     }
 
                     if ((token.classification == Token.Classification.NOT_FULLY_CLASSIFIED || token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) && (null == languageCodePolicy || !languageCodePolicy.disable_builtin_log_detection) && (!codePolicy.getDisableLogs())) {
