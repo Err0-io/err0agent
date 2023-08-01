@@ -100,8 +100,6 @@ public class Test0001JavaLog4j {
 
             assertEquals(8, previousState.metaDataStorage.size());
 
-            previousState = apiProvider.getState();
-
             {
                 UnitTestApiProvider.MetaData r1 = apiProvider.metaDataStorage.get(7L);
                 assertNotNull(r1);
