@@ -1,5 +1,5 @@
 /*
-Copyright 2022 BlueTrailSoftware, Holding Inc.
+Copyright 2023 ERR0 LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ limitations under the License.
 package io.err0.client.core;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
@@ -37,6 +38,9 @@ public class StatisticsGatherer {
 
     public final HashSet<Long> newErrorOrdinalsInException = new HashSet<>();
     public final HashSet<Long> existingErrorOrdinalsInException = new HashSet<>();
+
+    public final HashSet<Long> newErrorOrdinalsInPlaceholder = new HashSet<>();
+    public final HashSet<Long> existingErrorOrdinalsInPlaceholder = new HashSet<>();
 
     public final HashSet<Long> abandonedErrorOrdinals = new HashSet<>();
 
@@ -71,7 +75,7 @@ public class StatisticsGatherer {
         final String cleanedMessage = result.metaData.has("cleaned_message") ? result.metaData.get("cleaned_message").getAsString() : null;
         if (null != cleanedMessage) {
             duplicateCheck.compute(cleanedMessage, (msg, n) -> {
-                long _n = null != n ? n.longValue() : 0;
+                long _n = null != n ? n : 0;
                 _n = _n + 1;
                 return _n;
             });
@@ -84,7 +88,7 @@ public class StatisticsGatherer {
             final String logLevel = result.metaData.has("logger_level") ? result.metaData.get("logger_level").getAsString() : null;
             if (null != logLevel) {
                 logByLogLevel.compute(logLevel, (lvl, n) -> {
-                    long _n = null != n ? n.longValue() : 0;
+                    long _n = null != n ? n : 0;
                     _n = _n + 1;
                     return _n;
                 });
@@ -107,14 +111,17 @@ public class StatisticsGatherer {
 
     public final void processResults() {
         results.forEach(result -> {
-            long n = duplicateCheck.get(result.metaData.get("cleaned_message").getAsString()).longValue();
-            final String type = result.metaData.get("type").getAsString();
+            JsonElement cleanedMessage = result.metaData.get("cleaned_message");
+            if (null != cleanedMessage) {
+                long n = duplicateCheck.get(cleanedMessage.getAsString());
+                final String type = result.metaData.get("type").getAsString();
 
-            if (n > 1) {
-                if ("LOG_OUTPUT".equals(type)) {
-                    ++n_log_duplicate;
-                } else if ("EXCEPTION_THROW".equals(type)) {
-                    ++n_exception_duplicate;
+                if (n > 1) {
+                    if ("LOG_OUTPUT".equals(type)) {
+                        ++n_log_duplicate;
+                    } else if ("EXCEPTION_THROW".equals(type)) {
+                        ++n_exception_duplicate;
+                    }
                 }
             }
         });
@@ -136,6 +143,9 @@ public class StatisticsGatherer {
 
         long n_new_ex = newErrorOrdinalsInException.size();
         long n_existing_ex = existingErrorOrdinalsInException.size();
+        
+        long n_new_ph = newErrorOrdinalsInPlaceholder.size();
+        long n_existing_ph = existingErrorOrdinalsInPlaceholder.size();
 
         runMetadata.addProperty("n_new", n_new);
         runMetadata.addProperty("n_existing", n_existing);
@@ -164,6 +174,10 @@ public class StatisticsGatherer {
         runMetadata.addProperty("n_new_ex", n_new_ex);
         runMetadata.addProperty("n_existing_ex", n_existing_ex);
         runMetadata.addProperty("n_total_ex", n_new_ex + n_existing_ex);
+
+        runMetadata.addProperty("n_new_ph", n_new_ph);
+        runMetadata.addProperty("n_existing_ph", n_existing_ph);
+        runMetadata.addProperty("n_total_ph", n_new_ph + n_existing_ph);
 
         // average # codes per file
         AtomicLong i = new AtomicLong();

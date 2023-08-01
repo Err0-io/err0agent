@@ -1,5 +1,5 @@
 /*
-Copyright 2022 BlueTrailSoftware, Holding Inc.
+Copyright 2023 ERR0 LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -53,13 +53,13 @@ public class Test0003PHP {
 
         // output the results to 01-assert
         //apiProvider.writeResultsTo(assertDir);
+        //System.exit(-1);
 
         apiProvider.resultStorage.forEach((filename, result) -> {
             try {
                 final String expectedSourceCode = Utils.readString(Utils.pathOf(assertDir + "/" + filename));
                 assertEquals(expectedSourceCode, result.sourceCode, filename);
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 fail(e);
             }
         });
@@ -67,11 +67,31 @@ public class Test0003PHP {
         assertEquals(globalState.files.size(), apiProvider.resultStorage.size());
 
         // assert regarding problem_function
-        UnitTestApiProvider.MetaData r1 = apiProvider.metaDataStorage.get(5l);
-        assertNotNull(r1);
-        JsonArray array = r1.metaData.getAsJsonArray("methods");
-        assertEquals(2, array.size());
-        assertEquals("public function problem_function($param1 = 'default')", array.get(1).getAsJsonObject().get("c").getAsString());
+        {
+            UnitTestApiProvider.MetaData r1 = apiProvider.metaDataStorage.get(5l);
+            assertNotNull(r1);
+            JsonArray array = r1.metaData.getAsJsonArray("methods");
+            assertEquals(2, array.size());
+            assertEquals("public function problem_function($param1 = 'default')", array.get(1).getAsJsonObject().get("c").getAsString());
+        }
+
+        // assert regarding typed_function
+        {
+            UnitTestApiProvider.MetaData r1 = apiProvider.metaDataStorage.get(6l);
+            assertNotNull(r1);
+            JsonArray array = r1.metaData.getAsJsonArray("methods");
+            assertEquals(2, array.size());
+            assertEquals("public function typed_function(string $param1 = 'this') : string", array.get(1).getAsJsonObject().get("c").getAsString());
+        }
+
+        // assert regarding another_typed_function
+        {
+            UnitTestApiProvider.MetaData r1 = apiProvider.metaDataStorage.get(7l);
+            assertNotNull(r1);
+            JsonArray array = r1.metaData.getAsJsonArray("methods");
+            assertEquals(2, array.size());
+            assertEquals("private function another_typed_function(bool $truth):bool", array.get(1).getAsJsonObject().get("c").getAsString());
+        }
     }
 
     @Test

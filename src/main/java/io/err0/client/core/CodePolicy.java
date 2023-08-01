@@ -1,5 +1,5 @@
 /*
-Copyright 2022 BlueTrailSoftware, Holding Inc.
+Copyright 2023 ERR0 LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -45,39 +45,61 @@ public class CodePolicy {
                 break;
             case 1:
                 this.mode = CodePolicyMode.EASY_CONFIGURATION;
+                this.disableLogs = GsonHelper.asBoolean(this.codePolicyJson, "disable_logs", false);
+                this.disableExceptions = GsonHelper.asBoolean(this.codePolicyJson, "disable_exceptions", false);
+                this.enablePlaceholder = GsonHelper.asBoolean(this.codePolicyJson, "enable_placeholder", false);
+                this.placeholderValue = GsonHelper.asString(this.codePolicyJson, "placeholder_value", null);
                 break;
             case 2:
                 this.mode = CodePolicyMode.ADVANCED_CONFIGURATION;
+                this.disableLogs = GsonHelper.asBoolean(this.codePolicyJson, "disable_logs", false);
+                this.disableExceptions = GsonHelper.asBoolean(this.codePolicyJson, "disable_exceptions", false);
+                this.enablePlaceholder = GsonHelper.asBoolean(this.codePolicyJson, "enable_placeholder", false);
+                this.placeholderValue = GsonHelper.asString(this.codePolicyJson, "placeholder_value", null);
                 JsonElement e = codePolicyJson.get("adv_csharp");
-                this.adv_csharp = null == e ? new LanguageCodePolicy(new JsonObject()) : new LanguageCodePolicy(e.getAsJsonObject());
+                this.adv_csharp = null == e ? new LanguageCodePolicy(new JsonObject(), this) : new LanguageCodePolicy(e.getAsJsonObject(), this);
                 e = codePolicyJson.get("adv_golang");
-                this.adv_golang = null == e ? new LanguageCodePolicy(new JsonObject()) : new LanguageCodePolicy(e.getAsJsonObject());
+                this.adv_golang = null == e ? new LanguageCodePolicy(new JsonObject(), this) : new LanguageCodePolicy(e.getAsJsonObject(), this);
                 e = codePolicyJson.get("adv_java");
-                this.adv_java = null == e ? new LanguageCodePolicy(new JsonObject()) : new LanguageCodePolicy(e.getAsJsonObject());
+                this.adv_java = null == e ? new LanguageCodePolicy(new JsonObject(), this) : new LanguageCodePolicy(e.getAsJsonObject(), this);
                 e = codePolicyJson.get("adv_js");
-                this.adv_js = null == e ? new LanguageCodePolicy(new JsonObject()) : new LanguageCodePolicy(e.getAsJsonObject());
+                this.adv_js = null == e ? new LanguageCodePolicy(new JsonObject(), this) : new LanguageCodePolicy(e.getAsJsonObject(), this);
                 e = codePolicyJson.get("adv_php");
-                this.adv_php = null == e ? new LanguageCodePolicy(new JsonObject()) : new LanguageCodePolicy(e.getAsJsonObject());
+                this.adv_php = null == e ? new LanguageCodePolicy(new JsonObject(), this) : new LanguageCodePolicy(e.getAsJsonObject(), this);
                 e = codePolicyJson.get("adv_python");
-                this.adv_python = null == e ? new LanguageCodePolicy(new JsonObject()) : new LanguageCodePolicy(e.getAsJsonObject());
+                this.adv_python = null == e ? new LanguageCodePolicy(new JsonObject(), this) : new LanguageCodePolicy(e.getAsJsonObject(), this);
                 e = codePolicyJson.get("adv_ts");
-                this.adv_ts = null == e ? new LanguageCodePolicy(new JsonObject()) : new LanguageCodePolicy(e.getAsJsonObject());
+                this.adv_ts = null == e ? new LanguageCodePolicy(new JsonObject(), this) : new LanguageCodePolicy(e.getAsJsonObject(), this);
                 e = codePolicyJson.get("adv_ccpp");
-                this.adv_ccpp = null == e ? new LanguageCodePolicy(new JsonObject()) : new LanguageCodePolicy(e.getAsJsonObject());
+                this.adv_ccpp = null == e ? new LanguageCodePolicy(new JsonObject(), this) : new LanguageCodePolicy(e.getAsJsonObject(), this);
                 e = codePolicyJson.get("adv_rust");
-                this.adv_rust = null == e ? new LanguageCodePolicy(new JsonObject()) : new LanguageCodePolicy(e.getAsJsonObject());
+                this.adv_rust = null == e ? new LanguageCodePolicy(new JsonObject(), this) : new LanguageCodePolicy(e.getAsJsonObject(), this);
                 e = codePolicyJson.get("adv_lua");
-                this.adv_lua = null == e ? new LanguageCodePolicy(new JsonObject()) : new LanguageCodePolicy(e.getAsJsonObject());
+                this.adv_lua = null == e ? new LanguageCodePolicy(new JsonObject(), this) : new LanguageCodePolicy(e.getAsJsonObject(), this);
                 e = codePolicyJson.get("adv_ruby");
-                this.adv_ruby = null == e ? new LanguageCodePolicy(new JsonObject()) : new LanguageCodePolicy(e.getAsJsonObject());
+                this.adv_ruby = null == e ? new LanguageCodePolicy(new JsonObject(), this) : new LanguageCodePolicy(e.getAsJsonObject(), this);
                 break;
             default:
                 throw new RuntimeException("[AGENT-000009] Unknown mode");
+        }
+
+        if (this.enablePlaceholder && (null == this.placeholderValue || "".equals(this.placeholderValue))) {
+            throw new RuntimeException("[AGENT-000102] Invalid placeholder settings.");
         }
     }
 
     final JsonObject codePolicyJson;
     public final CodePolicyMode mode;
+
+    boolean disableLogs = false;
+    boolean disableExceptions = false;
+    boolean enablePlaceholder = false;
+    String placeholderValue = null;
+
+    public boolean getDisableLogs() { return this.disableLogs; }
+    public boolean getDisableExceptions() { return this.disableExceptions; }
+    public boolean getEnablePlaceholder() { return this.enablePlaceholder; }
+    public String getPlaceholderValue() { return this.placeholderValue; }
 
     public LanguageCodePolicy adv_csharp;
     public LanguageCodePolicy adv_golang;

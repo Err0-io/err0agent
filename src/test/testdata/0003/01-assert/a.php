@@ -22,4 +22,14 @@ class example extends \nonexistant {
         error_log('[E-5] This is an error.');
     }
 
+    public function typed_function(string $param1 = 'this') : string {
+        error_log('[E-6] A log');
+        return $param1;
+    }
+
+    private function another_typed_function(bool $truth):bool{
+        error_log('[E-7] Another log');
+        return $truth;
+    }
+
 }

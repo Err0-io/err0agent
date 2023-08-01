@@ -4,8 +4,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 /**
- * Comparing with 02/A.java - a report pass on this file should
- * report that it wants to add a new error code.
+ * A class to test the log4j api, java parser.
  */
 public class A {
 
@@ -42,5 +41,20 @@ public class A {
         }
 
         logger.trace("Finishing...");
+    }
+
+    void method2(
+            String parameter
+    ) {
+        logger.info("[E-7] A log")
+    }
+
+    protected void checkParameter(String param) {
+        String a = null, b = null;
+        if ("const".equals(param)) {
+            if (a == null && b == null) {
+                throw new RuntimeException("[E-8] Example call stack issue.");
+            }
+        }
     }
 }

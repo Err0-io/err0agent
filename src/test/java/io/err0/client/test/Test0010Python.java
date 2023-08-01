@@ -1,5 +1,5 @@
 /*
-Copyright 2022 BlueTrailSoftware, Holding Inc.
+Copyright 2023 ERR0 LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@ limitations under the License.
 
 package io.err0.client.test;
 
+import com.google.gson.JsonArray;
 import io.err0.client.Main;
 import io.err0.client.core.ProjectPolicy;
 import io.err0.client.core.GlobalState;
@@ -57,6 +58,7 @@ public class Test0010Python {
 
             // output the results to 01-assert
             // apiProvider.writeResultsTo(assertDir);
+            // System.exit(-1);
 
             apiProvider.resultStorage.forEach((filename, result) -> {
                 try {
@@ -98,7 +100,46 @@ public class Test0010Python {
 
             previousState = apiProvider.getState();
 
-            assertEquals(5, previousState.metaDataStorage.size());
+            assertEquals(11, previousState.metaDataStorage.size());
+            {
+                UnitTestApiProvider.MetaData r1 = apiProvider.metaDataStorage.get(8L);
+                assertNotNull(r1);
+                JsonArray array = r1.metaData.getAsJsonArray("methods");
+                assertEquals(2, array.size());
+                assertEquals("class Example:", array.get(0).getAsJsonObject().get("c").getAsString());
+                assertEquals(23L, array.get(0).getAsJsonObject().get("l").getAsLong());
+                assertEquals("def continuation(", array.get(1).getAsJsonObject().get("c").getAsString());
+                assertEquals(48L, array.get(1).getAsJsonObject().get("l").getAsLong());
+            }
+            {
+                UnitTestApiProvider.MetaData r1 = apiProvider.metaDataStorage.get(9L);
+                assertNotNull(r1);
+                JsonArray array = r1.metaData.getAsJsonArray("methods");
+                assertEquals(1, array.size());
+                assertEquals("def another_continuation(", array.get(0).getAsJsonObject().get("c").getAsString());
+            }
+            {
+                UnitTestApiProvider.MetaData r1 = apiProvider.metaDataStorage.get(10L);
+                assertNotNull(r1);
+                JsonArray array = r1.metaData.getAsJsonArray("methods");
+                assertEquals(3, array.size());
+                assertEquals("class NotSpaced(object):", array.get(0).getAsJsonObject().get("c").getAsString());
+                assertEquals(58L, array.get(0).getAsJsonObject().get("l").getAsLong());
+                assertEquals("def __init__(self, mode, device, dtype):", array.get(1).getAsJsonObject().get("c").getAsString());
+                assertEquals(59L, array.get(1).getAsJsonObject().get("l").getAsLong());
+                assertEquals("else:", array.get(2).getAsJsonObject().get("c").getAsString());
+                assertEquals(62L, array.get(2).getAsJsonObject().get("l").getAsLong());
+            }
+            {
+                UnitTestApiProvider.MetaData r1 = apiProvider.metaDataStorage.get(11L);
+                assertNotNull(r1);
+                JsonArray array = r1.metaData.getAsJsonArray("methods");
+                assertEquals(2, array.size());
+                assertEquals("class NotSpaced(object):", array.get(0).getAsJsonObject().get("c").getAsString());
+                assertEquals(58L, array.get(0).getAsJsonObject().get("l").getAsLong());
+                assertEquals("def trouble():", array.get(1).getAsJsonObject().get("c").getAsString());
+                assertEquals(64L, array.get(1).getAsJsonObject().get("l").getAsLong());
+            }
         }
     }
 }

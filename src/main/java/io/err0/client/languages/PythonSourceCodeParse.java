@@ -1,5 +1,5 @@
 /*
-Copyright 2022 BlueTrailSoftware, Holding Inc.
+Copyright 2023 ERR0 LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ limitations under the License.
 package io.err0.client.languages;
 
 import com.google.gson.JsonArray;
+import com.sun.org.apache.xerces.internal.impl.xpath.regex.Match;
 import io.err0.client.Main;
 import io.err0.client.core.*;
 
@@ -43,7 +44,9 @@ public class PythonSourceCodeParse extends SourceCodeParse {
         reLoggerLevel = Pattern.compile("\\.(" + pattern + ")\\s*\\(\\s*f?$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE); // group #1 is the level
     }
 
-    private static Pattern reMethod = Pattern.compile("^(\\s*)(def|class|if|for|while|except)\\s+.*$");
+    private static Pattern reClass = Pattern.compile("(^|\\s+)(class\\s+(.*?):)(\\s|$)", Pattern.MULTILINE);
+    private static Pattern reMethod = Pattern.compile("^(\\s*)(def\\s+.*|class\\s+.*|(el)?if\\s+.*|else:|for\\s+.*|while\\s+.*|try:|except\\s+.*)\\s*$");
+    private static Pattern reControl = Pattern.compile("(^|\\s+)((el)?if\\s+.*|else:|for\\s+.*|while\\s+.*|try:|except\\s+.*)(\\s|$)", Pattern.MULTILINE);
     private Pattern reLogger = null;
     private Pattern reLoggerLevel = null;
     private static Pattern reException = Pattern.compile("(^|\\s+)raise\\s([^\\s\\(]*)\\s*\\(*.+$");
@@ -54,17 +57,23 @@ public class PythonSourceCodeParse extends SourceCodeParse {
         int n = 0;
         PythonSourceCodeParse parse = new PythonSourceCodeParse(policy);
         Token currentToken = new Token(n++, null);
-        currentToken.type = TokenClassification.SOURCE_CODE;
+        currentToken.type = TokenType.SOURCE_CODE;
         int lineNumber = 1;
         int indentNumber = 0;
         boolean countIndent = true;
+        boolean countNextIndent = false;
         currentToken.startLineNumber = lineNumber;
         final char chars[] = sourceCode.toCharArray();
         for (int i = 0, l = chars.length; i < l; ++i) {
+            if (countNextIndent) {
+                countIndent = true;
+                countNextIndent = false;
+            }
             final char ch = chars[i];
             if (ch == '\n') {
                 ++lineNumber;
                 indentNumber = 0;
+                countNextIndent = true;
             } else if (ch == '\t' && countIndent) {
                 indentNumber = ((indentNumber/8)+1)*8; // tab is 8 spaces
             } else if (ch == ' ' && countIndent) {
@@ -81,10 +90,9 @@ public class PythonSourceCodeParse extends SourceCodeParse {
                 case SOURCE_CODE:
                     if (ch == '\n') {
                         currentToken.sourceCode.append(ch);
-                        countIndent = true;
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
+                        currentToken.type = TokenType.SOURCE_CODE;
                         currentToken.depth = indentNumber;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == '\'') {
@@ -97,7 +105,7 @@ public class PythonSourceCodeParse extends SourceCodeParse {
                                         // comment literal """ <<comment>> """
                                         parse.tokenList.add(currentToken.finish(lineNumber));
                                         currentToken = new Token(n++, currentToken);
-                                        currentToken.type = TokenClassification.APOS3_LITERAL;
+                                        currentToken.type = TokenType.APOS3_LITERAL;
                                         currentToken.sourceCode.append(ch);
                                         currentToken.sourceCode.append(ch1);
                                         currentToken.sourceCode.append(ch2);
@@ -115,7 +123,7 @@ public class PythonSourceCodeParse extends SourceCodeParse {
                         // otherwise, it is an apos literal
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.APOS_LITERAL;
+                        currentToken.type = TokenType.APOS_LITERAL;
                         currentToken.sourceCode.append(ch);
                         currentToken.depth = indentNumber;
                         currentToken.startLineNumber = lineNumber;
@@ -129,7 +137,7 @@ public class PythonSourceCodeParse extends SourceCodeParse {
                                         // comment literal """ <<comment>> """
                                         parse.tokenList.add(currentToken.finish(lineNumber));
                                         currentToken = new Token(n++, currentToken);
-                                        currentToken.type = TokenClassification.QUOT3_LITERAL;
+                                        currentToken.type = TokenType.QUOT3_LITERAL;
                                         currentToken.sourceCode.append(ch);
                                         currentToken.sourceCode.append(ch1);
                                         currentToken.sourceCode.append(ch2);
@@ -147,36 +155,27 @@ public class PythonSourceCodeParse extends SourceCodeParse {
                         // otherwise, it is a quot literal.
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.QUOT_LITERAL;
+                        currentToken.type = TokenType.QUOT_LITERAL;
                         currentToken.sourceCode.append(ch);
                         currentToken.depth = indentNumber;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == '#') {
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.COMMENT_LINE;
+                        currentToken.type = TokenType.COMMENT_LINE;
                         currentToken.sourceCode.append(ch);
                         currentToken.depth = indentNumber;
                         currentToken.startLineNumber = lineNumber;
-                    } /*else if (ch == '`') {
-                        parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++);
-                        currentToken.type = TokenClassification.BACKTICK_LITERAL;
-                        currentToken.sourceCode.append(ch);
-                        currentToken.depth = indentNumber;
-                        currentToken.startLineNumber = lineNumber;
-                        currentToken.startIndentNumber = indentNumber;
-                    }*/ else {
+                    } else {
                         currentToken.sourceCode.append(ch);
                     }
                     break;
                 case COMMENT_LINE:
                     if (ch == '\n') {
                         currentToken.sourceCode.append(ch);
-                        countIndent = true;
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
+                        currentToken.type = TokenType.SOURCE_CODE;
                         currentToken.depth = indentNumber;
                         currentToken.startLineNumber = lineNumber;
                     } else {
@@ -197,7 +196,7 @@ public class PythonSourceCodeParse extends SourceCodeParse {
                                         currentToken.sourceCode.append(ch2);
                                         parse.tokenList.add(currentToken.finish(lineNumber));
                                         currentToken = new Token(n++, currentToken);
-                                        currentToken.type = TokenClassification.SOURCE_CODE;
+                                        currentToken.type = TokenType.SOURCE_CODE;
                                         currentToken.depth = indentNumber;
                                         currentToken.startLineNumber = lineNumber;
                                         i+=2;
@@ -231,7 +230,7 @@ public class PythonSourceCodeParse extends SourceCodeParse {
                                         currentToken.sourceCode.append(ch2);
                                         parse.tokenList.add(currentToken.finish(lineNumber));
                                         currentToken = new Token(n++, currentToken);
-                                        currentToken.type = TokenClassification.SOURCE_CODE;
+                                        currentToken.type = TokenType.SOURCE_CODE;
                                         currentToken.depth = indentNumber;
                                         currentToken.startLineNumber = lineNumber;
                                         i+=2;
@@ -256,7 +255,7 @@ public class PythonSourceCodeParse extends SourceCodeParse {
                         currentToken.sourceCode.append(ch);
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
+                        currentToken.type = TokenType.SOURCE_CODE;
                         currentToken.depth = indentNumber;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == '\\') {
@@ -272,7 +271,7 @@ public class PythonSourceCodeParse extends SourceCodeParse {
                         currentToken.sourceCode.append(ch);
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
+                        currentToken.type = TokenType.SOURCE_CODE;
                         currentToken.depth = indentNumber;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == '\\') {
@@ -283,21 +282,6 @@ public class PythonSourceCodeParse extends SourceCodeParse {
                         currentToken.sourceCode.append(ch);
                     }
                     break;
-                    /*
-                case BACKTICK_LITERAL:
-                    if (ch == '`') {
-                        currentToken.sourceCode.append(ch);
-                        parse.tokenList.add(currentToken.finish(lineNumber));
-                        currentToken = new Token(n++);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
-                        currentToken.depth = indentNumber;
-                        currentToken.startLineNumber = lineNumber;
-                        currentToken.startIndentNumber = indentNumber;
-                    } else {
-                        currentToken.sourceCode.append(ch);
-                    }
-                    break;
-                    */
             }
         }
         parse.tokenList.add(currentToken.finish(lineNumber));
@@ -306,7 +290,7 @@ public class PythonSourceCodeParse extends SourceCodeParse {
 
     @Override
     public boolean couldContainErrorNumber(Token token) {
-        return token.type == TokenClassification.APOS3_LITERAL || token.type == TokenClassification.APOS_LITERAL || token.type == TokenClassification.QUOT3_LITERAL || token.type == TokenClassification.QUOT_LITERAL;
+        return token.type == TokenType.APOS3_LITERAL || token.type == TokenType.APOS_LITERAL || token.type == TokenType.QUOT3_LITERAL || token.type == TokenType.QUOT_LITERAL;
     }
 
     @Override
@@ -347,6 +331,31 @@ public class PythonSourceCodeParse extends SourceCodeParse {
                             }
                         } else {
                             token.sourceNoErrorCode = token.source = quot + token.source.substring(matcherErrorNumber.end());
+                        }
+                    } else if (policy.getCodePolicy().getEnablePlaceholder()) {
+                        Matcher matcherPlaceholder = policy.getReErrorNumber_py_placeholder().matcher(token.source);
+                        if (matcherPlaceholder.matches()) {
+                            token.classification = Token.Classification.PLACEHOLDER;
+                            String number = matcherPlaceholder.group(policy.reErrorNumber_py_placeholder_number_group);
+                            if (null != number && ! "".equals(number)) {
+                                long errorOrdinal = Long.parseLong(number);
+                                if (apiProvider.validErrorNumber(policy, errorOrdinal)) {
+                                    if (globalState.store(errorOrdinal, stateItem, token)) {
+                                        token.keepErrorCode = true;
+                                        token.errorOrdinal = errorOrdinal;
+                                        token.sourceNoErrorCode = matcherPlaceholder.group(policy.reErrorNumber_py_placeholder_open_close_group) + matcherPlaceholder.group(policy.reErrorNumber_py_placeholder_open_close_group);
+                                    } else {
+                                        token.sourceNoErrorCode = token.source = matcherPlaceholder.group(policy.reErrorNumber_py_placeholder_open_close_group) + matcherPlaceholder.group(policy.reErrorNumber_py_placeholder_open_close_group);
+                                    }
+                                } else {
+                                    token.sourceNoErrorCode = token.source = matcherPlaceholder.group(policy.reErrorNumber_py_placeholder_open_close_group) + matcherPlaceholder.group(policy.reErrorNumber_py_placeholder_open_close_group);
+                                }
+                            } else {
+                                token.sourceNoErrorCode = token.source = matcherPlaceholder.group(policy.reErrorNumber_py_placeholder_open_close_group) + matcherPlaceholder.group(policy.reErrorNumber_py_placeholder_open_close_group);
+                            }
+                        } else {
+                            token.classification = Token.Classification.POTENTIAL_ERROR_NUMBER;
+                            token.sourceNoErrorCode = token.source;
                         }
                     } else {
                         token.classification = Token.Classification.POTENTIAL_ERROR_NUMBER;
@@ -391,6 +400,31 @@ public class PythonSourceCodeParse extends SourceCodeParse {
                         } else {
                             token.sourceNoErrorCode = token.source = quot + whitespace + token.source.substring(matcherErrorNumber.end());
                         }
+                    } else if (policy.getCodePolicy().getEnablePlaceholder()) {
+                        Matcher matcherPlaceholder = policy.getReErrorNumber_py_placeholder().matcher(token.source);
+                        if (matcherPlaceholder.matches()) {
+                            token.classification = Token.Classification.PLACEHOLDER;
+                            String number = matcherPlaceholder.group(policy.reErrorNumber_py_placeholder_number_group);
+                            if (null != number && ! "".equals(number)) {
+                                long errorOrdinal = Long.parseLong(number);
+                                if (apiProvider.validErrorNumber(policy, errorOrdinal)) {
+                                    if (globalState.store(errorOrdinal, stateItem, token)) {
+                                        token.keepErrorCode = true;
+                                        token.errorOrdinal = errorOrdinal;
+                                        token.sourceNoErrorCode = matcherPlaceholder.group(policy.reErrorNumber_py_placeholder_open_close_group) + matcherPlaceholder.group(policy.reErrorNumber_py_placeholder_open_close_group);
+                                    } else {
+                                        token.sourceNoErrorCode = token.source = matcherPlaceholder.group(policy.reErrorNumber_py_placeholder_open_close_group) + matcherPlaceholder.group(policy.reErrorNumber_py_placeholder_open_close_group);
+                                    }
+                                } else {
+                                    token.sourceNoErrorCode = token.source = matcherPlaceholder.group(policy.reErrorNumber_py_placeholder_open_close_group) + matcherPlaceholder.group(policy.reErrorNumber_py_placeholder_open_close_group);
+                                }
+                            } else {
+                                token.sourceNoErrorCode = token.source = matcherPlaceholder.group(policy.reErrorNumber_py_placeholder_open_close_group) + matcherPlaceholder.group(policy.reErrorNumber_py_placeholder_open_close_group);
+                            }
+                        } else {
+                            token.classification = Token.Classification.POTENTIAL_ERROR_NUMBER;
+                            token.sourceNoErrorCode = token.source;
+                        }
                     } else {
                         token.classification = Token.Classification.POTENTIAL_ERROR_NUMBER;
                         token.sourceNoErrorCode = token.source;
@@ -401,7 +435,7 @@ public class PythonSourceCodeParse extends SourceCodeParse {
                 {
                     token.classification = Token.Classification.NOT_FULLY_CLASSIFIED;
                     Token next = token.next();
-                    if (next != null && (next.type == TokenClassification.QUOT_LITERAL || next.type == TokenClassification.APOS_LITERAL || next.type == TokenClassification.QUOT3_LITERAL || next.type == TokenClassification.APOS3_LITERAL)) {
+                    if (next != null && (next.type == TokenType.QUOT_LITERAL || next.type == TokenType.APOS_LITERAL || next.type == TokenType.QUOT3_LITERAL || next.type == TokenType.APOS3_LITERAL)) {
                         // rule 0 - this code must be followed by a string literal
                         if (null != languageCodePolicy && languageCodePolicy.rules.size() > 0) {
                             // classify according to rules.
@@ -424,7 +458,7 @@ public class PythonSourceCodeParse extends SourceCodeParse {
                         token.classification = Token.Classification.NO_MATCH;
                     }
 
-                    if ((token.classification == Token.Classification.NOT_FULLY_CLASSIFIED || token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) && (null == languageCodePolicy || !languageCodePolicy.disable_builtin_log_detection)) {
+                    if ((token.classification == Token.Classification.NOT_FULLY_CLASSIFIED || token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) && (null == languageCodePolicy || !languageCodePolicy.disable_builtin_log_detection) && (!codePolicy.getDisableLogs())) {
                         Matcher matcherLogger = reLogger.matcher(token.source);
                         if (matcherLogger.find()) {
                             token.classification = Token.Classification.LOG_OUTPUT;
@@ -436,7 +470,7 @@ public class PythonSourceCodeParse extends SourceCodeParse {
                         }
                     }
 
-                    if (token.classification == Token.Classification.NOT_FULLY_CLASSIFIED || token.classification == Token.Classification.NOT_LOG_OUTPUT || token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) {
+                    if ((token.classification == Token.Classification.NOT_FULLY_CLASSIFIED || token.classification == Token.Classification.NOT_LOG_OUTPUT || token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) && (!codePolicy.getDisableExceptions())) {
                         Matcher matcherException = reException.matcher(token.source);
                         if (matcherException.find()) {
                             token.classification = Token.Classification.EXCEPTION_THROW;
@@ -444,7 +478,7 @@ public class PythonSourceCodeParse extends SourceCodeParse {
                         }
                     }
 
-                    if (token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) token.classification = Token.Classification.LOG_OUTPUT;
+                    if (token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION && !codePolicy.getDisableLogs()) token.classification = Token.Classification.LOG_OUTPUT;
 
                     // message categorisation, dynamic
                     if (token.classification == Token.Classification.EXCEPTION_THROW || token.classification == Token.Classification.LOG_OUTPUT) {
@@ -520,14 +554,17 @@ public class PythonSourceCodeParse extends SourceCodeParse {
     @Override
     public void classifyForCallStack(Token token) {
         if (token.classification == Token.Classification.NOT_CLASSIFIED_YET || token.classification == Token.Classification.NOT_FULLY_CLASSIFIED) {
-            if (token.type == TokenClassification.SOURCE_CODE) {
+            if (token.type == TokenType.SOURCE_CODE) {
                 Matcher matcherMethod = reMethod.matcher(token.source);
                 if (matcherMethod.find()) {
                     final String code = matcherMethod.group();
-                    //if (reMethodIgnore.matcher(code).find())
-                    //    continue;
                     token.classification = Token.Classification.METHOD_SIGNATURE;
                     token.extractedCode = code;
+                    if (reClass.matcher(token.extractedCode).find()) {
+                        token.classification = Token.Classification.CLASS_SIGNATURE;
+                    } else if (reControl.matcher(token.extractedCode).find()) {
+                        token.classification = Token.Classification.CONTROL_SIGNATURE;
+                    }
                 } else {
                     token.classification = Token.Classification.NO_MATCH;
                 }

@@ -1,5 +1,5 @@
 /*
-Copyright 2022 BlueTrailSoftware, Holding Inc.
+Copyright 2023 ERR0 LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import com.google.gson.JsonParser;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.config.ConnectionConfig;
+import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.impl.io.BasicHttpClientConnectionManager;
@@ -41,13 +42,20 @@ public class RestApiProvider implements ApiProvider {
     public RestApiProvider(final String tokenPath) throws IOException {
         ConnectionConfig connectionConfig = ConnectionConfig.custom()
                 .setConnectTimeout(5, TimeUnit.MINUTES)
-                .setSocketTimeout(15, TimeUnit.MINUTES)
+                .setSocketTimeout(60, TimeUnit.MINUTES)
+                .build();
+
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setResponseTimeout(15, TimeUnit.MINUTES)
                 .build();
 
         BasicHttpClientConnectionManager connectionManager = new BasicHttpClientConnectionManager();
         connectionManager.setConnectionConfig(connectionConfig);
 
-        httpClient = HttpClients.custom().setConnectionManager(connectionManager).build();
+        httpClient = HttpClients.custom()
+                .setConnectionManager(connectionManager)
+                .setDefaultRequestConfig(requestConfig)
+                .build();
 
         try {
             tokenJson = JsonParser.parseString(Utils.readString(Utils.pathOf(tokenPath))).getAsJsonObject();

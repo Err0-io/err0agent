@@ -1,5 +1,5 @@
 /*
-Copyright 2022 BlueTrailSoftware, Holding Inc.
+Copyright 2023 ERR0 LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -44,12 +44,10 @@ public class PhpSourceCodeParse extends SourceCodeParse {
         reLoggerLevel = Pattern.compile("(\\\\|::|->)(" + pattern + ")\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE); // group #2 is our match
     }
 
-    private static Pattern reMethodPerhaps = Pattern.compile("\\)\\s*$");
-    private static Pattern reMethod = Pattern.compile("\\s*(([^){};]+?)\\([^)]*?\\)?(\\s*use\\s*\\([^)]+?\\))?)\\s*$");
-    //private static Pattern reLambda = Pattern.compile("\\s*(([^\\){};,]+?)\\([^\\)]*?\\)\\s+->\\s*)\\s*$");
+    private static Pattern reMethodPerhaps = Pattern.compile("\\)(\\s*:\\s*\\S.*?)?\\s*$");
+    private static Pattern reMethod = Pattern.compile("\\s*(([^){};]+?)\\([^)]*?\\)?(\\s*use\\s*\\([^)]+?\\))?(\\s*:\\s*\\S.*?)?)\\s*$");
+    private static Pattern reControl = Pattern.compile("(^|\\s+)(for(each)?|if|else(\\s*if)?|do|while|switch|try|catch|finally)(\\(|\\{|\\s|$)", Pattern.MULTILINE);
     private static Pattern reClass = Pattern.compile("\\s*(([^){};]+?\\s+?)?class\\s+(\\S+)[^;{(]+?)\\s*$");
-    private static Pattern reMethodIgnore = Pattern.compile("(\\s+|^\\s*)(catch|if|do|while|switch|for)\\s+", Pattern.MULTILINE);
-    //private static Pattern reErrorNumber = Pattern.compile("^(\'|\")\\[ERR-(\\d+)\\]\\s+");
     private Pattern reLogger = null;
     private Pattern reLoggerLevel = null;
     private static Pattern reException = Pattern.compile("throw\\s+new\\s+([^\\s\\(]*)\\s*\\(\\s*$");
@@ -60,7 +58,7 @@ public class PhpSourceCodeParse extends SourceCodeParse {
         int n = 0;
         PhpSourceCodeParse parse = new PhpSourceCodeParse(policy);
         Token currentToken = new Token(n++, null);
-        currentToken.type = TokenClassification.CONTENT;
+        currentToken.type = TokenType.CONTENT;
         int lineNumber = 1;
         currentToken.startLineNumber = lineNumber;
         final char chars[] = sourceCode.toCharArray();
@@ -75,7 +73,7 @@ public class PhpSourceCodeParse extends SourceCodeParse {
                     if (ch == '<' && i < l - 1 && chars[i + 1] == '?') {
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
+                        currentToken.type = TokenType.SOURCE_CODE;
                         currentToken.sourceCode.append(ch);
                         currentToken.sourceCode.append(chars[i + 1]);
                         ++i;
@@ -92,13 +90,13 @@ public class PhpSourceCodeParse extends SourceCodeParse {
                         ++i;
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.CONTENT;
+                        currentToken.type = TokenType.CONTENT;
                         currentToken.depth = depth;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == '{') {
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
+                        currentToken.type = TokenType.SOURCE_CODE;
                         currentToken.sourceCode.append(ch);
                         currentToken.depth = depth + 1;
                         currentToken.startLineNumber = lineNumber;
@@ -106,27 +104,27 @@ public class PhpSourceCodeParse extends SourceCodeParse {
                         currentToken.sourceCode.append(ch);
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
+                        currentToken.type = TokenType.SOURCE_CODE;
                         currentToken.depth = depth - 1;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == ';') {
                         currentToken.sourceCode.append(ch);
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
+                        currentToken.type = TokenType.SOURCE_CODE;
                         currentToken.depth = depth;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == '\'') {
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.APOS_LITERAL;
+                        currentToken.type = TokenType.APOS_LITERAL;
                         currentToken.sourceCode.append(ch);
                         currentToken.depth = depth;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == '\"') {
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.QUOT_LITERAL;
+                        currentToken.type = TokenType.QUOT_LITERAL;
                         currentToken.sourceCode.append(ch);
                         currentToken.depth = depth;
                         currentToken.startLineNumber = lineNumber;
@@ -135,7 +133,7 @@ public class PhpSourceCodeParse extends SourceCodeParse {
                         if (ch2 == '*') {
                             parse.tokenList.add(currentToken.finish(lineNumber));
                             currentToken = new Token(n++, currentToken);
-                            currentToken.type = TokenClassification.COMMENT_BLOCK;
+                            currentToken.type = TokenType.COMMENT_BLOCK;
                             currentToken.sourceCode.append(ch);
                             currentToken.sourceCode.append(ch2);
                             currentToken.depth = depth;
@@ -144,7 +142,7 @@ public class PhpSourceCodeParse extends SourceCodeParse {
                         } else if (ch2 == '/') {
                             parse.tokenList.add(currentToken.finish(lineNumber));
                             currentToken = new Token(n++, currentToken);
-                            currentToken.type = TokenClassification.COMMENT_LINE;
+                            currentToken.type = TokenType.COMMENT_LINE;
                             currentToken.sourceCode.append(ch);
                             currentToken.sourceCode.append(ch2);
                             currentToken.depth = depth;
@@ -162,7 +160,7 @@ public class PhpSourceCodeParse extends SourceCodeParse {
                         currentToken.sourceCode.append(ch);
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
+                        currentToken.type = TokenType.SOURCE_CODE;
                         currentToken.depth = depth;
                         currentToken.startLineNumber = lineNumber;
                     } else {
@@ -177,7 +175,7 @@ public class PhpSourceCodeParse extends SourceCodeParse {
                             currentToken.sourceCode.append(ch2);
                             parse.tokenList.add(currentToken.finish(lineNumber));
                             currentToken = new Token(n++, currentToken);
-                            currentToken.type = TokenClassification.SOURCE_CODE;
+                            currentToken.type = TokenType.SOURCE_CODE;
                             currentToken.depth = depth;
                             currentToken.startLineNumber = lineNumber;
                             ++i;
@@ -193,7 +191,7 @@ public class PhpSourceCodeParse extends SourceCodeParse {
                         currentToken.sourceCode.append(ch);
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
+                        currentToken.type = TokenType.SOURCE_CODE;
                         currentToken.depth = depth;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == '\\') {
@@ -209,7 +207,7 @@ public class PhpSourceCodeParse extends SourceCodeParse {
                         currentToken.sourceCode.append(ch);
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
+                        currentToken.type = TokenType.SOURCE_CODE;
                         currentToken.depth = depth;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == '\\') {
@@ -228,7 +226,7 @@ public class PhpSourceCodeParse extends SourceCodeParse {
 
     @Override
     public boolean couldContainErrorNumber(Token token) {
-        return token.type == TokenClassification.APOS_LITERAL || token.type == TokenClassification.QUOT_LITERAL;
+        return token.type == TokenType.APOS_LITERAL || token.type == TokenType.QUOT_LITERAL;
     }
 
     @Override
@@ -254,6 +252,31 @@ public class PhpSourceCodeParse extends SourceCodeParse {
                         } else {
                             token.sourceNoErrorCode = token.source = token.source.substring(0,1) + token.source.substring(matcherErrorNumber.end());
                         }
+                    } else if (policy.getCodePolicy().getEnablePlaceholder()) {
+                        Matcher matcherPlaceholder = policy.getReErrorNumber_php_placeholder().matcher(token.source);
+                        if (matcherPlaceholder.matches()) {
+                            token.classification = Token.Classification.PLACEHOLDER;
+                            String number = matcherPlaceholder.group(policy.reErrorNumber_php_placeholder_number_group);
+                            if (null != number && ! "".equals(number)) {
+                                long errorOrdinal = Long.parseLong(number);
+                                if (apiProvider.validErrorNumber(policy, errorOrdinal)) {
+                                    if (globalState.store(errorOrdinal, stateItem, token)) {
+                                        token.keepErrorCode = true;
+                                        token.errorOrdinal = errorOrdinal;
+                                        token.sourceNoErrorCode = matcherPlaceholder.group(policy.reErrorNumber_php_placeholder_open_close_group) + matcherPlaceholder.group(policy.reErrorNumber_php_placeholder_open_close_group);
+                                    } else {
+                                        token.sourceNoErrorCode = token.source = matcherPlaceholder.group(policy.reErrorNumber_php_placeholder_open_close_group) + matcherPlaceholder.group(policy.reErrorNumber_php_placeholder_open_close_group);
+                                    }
+                                } else {
+                                    token.sourceNoErrorCode = token.source = matcherPlaceholder.group(policy.reErrorNumber_php_placeholder_open_close_group) + matcherPlaceholder.group(policy.reErrorNumber_php_placeholder_open_close_group);
+                                }
+                            } else {
+                                token.sourceNoErrorCode = token.source = matcherPlaceholder.group(policy.reErrorNumber_php_placeholder_open_close_group) + matcherPlaceholder.group(policy.reErrorNumber_php_placeholder_open_close_group);
+                            }
+                        } else {
+                            token.classification = Token.Classification.POTENTIAL_ERROR_NUMBER;
+                            token.sourceNoErrorCode = token.source;
+                        }
                     } else {
                         token.classification = Token.Classification.POTENTIAL_ERROR_NUMBER;
                         token.sourceNoErrorCode = token.source;
@@ -264,7 +287,7 @@ public class PhpSourceCodeParse extends SourceCodeParse {
                 {
                     token.classification = Token.Classification.NOT_FULLY_CLASSIFIED;
                     Token next = token.next();
-                    if (next != null && (next.type == TokenClassification.QUOT_LITERAL || next.type == TokenClassification.APOS_LITERAL)) {
+                    if (next != null && (next.type == TokenType.QUOT_LITERAL || next.type == TokenType.APOS_LITERAL)) {
                         // rule 0 - this code must be followed by a string literal
                         if (null != languageCodePolicy && languageCodePolicy.rules.size() > 0) {
                             // classify according to rules.
@@ -287,7 +310,7 @@ public class PhpSourceCodeParse extends SourceCodeParse {
                         token.classification = Token.Classification.NO_MATCH;
                     }
 
-                    if ((token.classification == Token.Classification.NOT_FULLY_CLASSIFIED || token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) && (null == languageCodePolicy || !languageCodePolicy.disable_builtin_log_detection)) {
+                    if ((token.classification == Token.Classification.NOT_FULLY_CLASSIFIED || token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) && (null == languageCodePolicy || !languageCodePolicy.disable_builtin_log_detection) && (!codePolicy.getDisableLogs())) {
                         Matcher matcherLogger = reLogger.matcher(token.source);
                         if (matcherLogger.find()) {
                             token.classification = Token.Classification.LOG_OUTPUT;
@@ -299,7 +322,7 @@ public class PhpSourceCodeParse extends SourceCodeParse {
                         }
                     }
 
-                    if (token.classification == Token.Classification.NOT_FULLY_CLASSIFIED || token.classification == Token.Classification.NOT_LOG_OUTPUT || token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) {
+                    if ((token.classification == Token.Classification.NOT_FULLY_CLASSIFIED || token.classification == Token.Classification.NOT_LOG_OUTPUT || token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) && (!codePolicy.getDisableExceptions())) {
                         Matcher matcherException = reException.matcher(token.source);
                         if (matcherException.find()) {
                             token.classification = Token.Classification.EXCEPTION_THROW;
@@ -310,7 +333,7 @@ public class PhpSourceCodeParse extends SourceCodeParse {
                         }
                     }
 
-                    if (token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) token.classification = Token.Classification.LOG_OUTPUT;
+                    if (token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION && (!codePolicy.getDisableLogs())) token.classification = Token.Classification.LOG_OUTPUT;
 
                     // message categorisation, dynamic
                     if (token.classification == Token.Classification.EXCEPTION_THROW || token.classification == Token.Classification.LOG_OUTPUT) {
@@ -351,7 +374,7 @@ public class PhpSourceCodeParse extends SourceCodeParse {
                                     case COMMENT_LINE:
                                         break;
                                     default:
-                                        if (current.type == TokenClassification.QUOT_LITERAL) {
+                                        if (current.type == TokenType.QUOT_LITERAL) {
                                             if (reVariableInString.matcher(sourceCode).find()) {
                                                 staticLiteral = false;
                                             }
@@ -381,24 +404,30 @@ public class PhpSourceCodeParse extends SourceCodeParse {
 
     private String codeWithAnnotations(int n, int startIndex, String code) {
         // Go backwards from matcherMethod.start(1) through previous blocks
-        boolean useBackwardsCode = false;
         boolean abort = false;
         StringBuilder backwardsCode = new StringBuilder();
         Stack<Character> stack = new Stack<>();
+        for (int i = code.length() - 1; i >= 0; --i) {
+            char ch = code.charAt(i);
+            if (ch == ')' || ch == '}') {
+                stack.push(ch);
+            } else if (! stack.empty() && (ch == '(' || ch == '{')) {
+                stack.pop();
+            }
+        }
         for (int i = n, j = startIndex; !abort && i > 0; j = tokenList.get(--i).source.length() - 1) {
             Token currentToken = tokenList.get(i);
-            if (currentToken.type == TokenClassification.COMMENT_BLOCK || currentToken.type == TokenClassification.COMMENT_LINE || currentToken.type == TokenClassification.CONTENT)
+            if (currentToken.type == TokenType.COMMENT_BLOCK || currentToken.type == TokenType.COMMENT_LINE || currentToken.type == TokenType.CONTENT)
                 continue;
             for (; !abort && j >= 0; --j) {
                 char ch = currentToken.source.charAt(j);
-                if (currentToken.type == TokenClassification.SOURCE_CODE) {
+                if (currentToken.type == TokenType.SOURCE_CODE) {
                     if (stack.empty()) {
                         if (ch == ',' || ch == ';' || ch == '{' || ch == '(' || ch == '}') {
                             abort = true;
                             break;
                         } else if (ch == ')') {
                             stack.push(ch);
-                            useBackwardsCode = true;
                         }
                         backwardsCode.append(ch);
                     } else {
@@ -415,19 +444,16 @@ public class PhpSourceCodeParse extends SourceCodeParse {
             }
         }
 
-        if (useBackwardsCode) {
-            backwardsCode.reverse();
-            backwardsCode.append(code);
-            code = backwardsCode.toString();
-        }
+        backwardsCode.reverse();
+        backwardsCode.append(code);
 
-        return code;
+        return backwardsCode.toString();
     }
 
     @Override
     public void classifyForCallStack(Token token) {
         if (token.classification == Token.Classification.NOT_CLASSIFIED_YET || token.classification == Token.Classification.NOT_FULLY_CLASSIFIED) {
-            if (token.type == TokenClassification.SOURCE_CODE) {
+            if (token.type == TokenType.SOURCE_CODE) {
                 boolean foundMethod = false;
                 Matcher matcherMethodPerhaps = reMethodPerhaps.matcher(token.source);
                 if (matcherMethodPerhaps.find()) {
@@ -445,6 +471,9 @@ public class PhpSourceCodeParse extends SourceCodeParse {
                         token.classification = Token.Classification.METHOD_SIGNATURE;
                         token.extractedCode = code;
                         foundMethod = true;
+                        if (reControl.matcher(token.extractedCode).find()) {
+                            token.classification = Token.Classification.CONTROL_SIGNATURE;
+                        }
                     }
                 }
 

@@ -1,5 +1,5 @@
 /*
-Copyright 2022 BlueTrailSoftware, Holding Inc.
+Copyright 2023 ERR0 LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -231,6 +231,20 @@ public class ProjectPolicy {
         return reErrorNumber_js;
     }
 
+    private Pattern reErrorNumber_js_placeholder = null;
+    public Pattern getReErrorNumber_js_placeholder() {
+        if (null == reErrorNumber_js_placeholder) {
+            CodePolicy codePolicy = getCodePolicy();
+            if (!codePolicy.enablePlaceholder) {
+                throw new RuntimeException("[AGENT-000104] Unable to search for placeholder");
+            }
+            reErrorNumber_js_placeholder = Pattern.compile("^(`|'|\")(" + codePolicy.placeholderValue + "|" + getErrorPrefix() + "-(\\d+))\\1$");
+        }
+        return reErrorNumber_js_placeholder;
+    }
+    public final int reErrorNumber_js_placeholder_open_close_group = 1;
+    public final int reErrorNumber_js_placeholder_number_group = 3;
+    
     // C# pattern for finding our error number.
     private Pattern reErrorNumber_cs = null;
     public Pattern getReErrorNumber_cs() {
@@ -239,6 +253,20 @@ public class ProjectPolicy {
         }
         return reErrorNumber_cs;
     }
+
+    private Pattern reErrorNumber_cs_placeholder = null;
+    public Pattern getReErrorNumber_cs_placeholder() {
+        if (null == reErrorNumber_cs_placeholder) {
+            CodePolicy codePolicy = getCodePolicy();
+            if (!codePolicy.enablePlaceholder) {
+                throw new RuntimeException("[AGENT-000105] Unable to search for placeholder");
+            }
+            reErrorNumber_cs_placeholder = Pattern.compile("^(\")(" + codePolicy.placeholderValue + "|" + getErrorPrefix() + "-(\\d+))\\1$");
+        }
+        return reErrorNumber_cs_placeholder;
+    }
+    public final int reErrorNumber_cs_placeholder_open_close_group = 1;
+    public final int reErrorNumber_cs_placeholder_number_group = 3;
 
     // C/C++ pattern for finding our error number.
     private Pattern reErrorNumber_ccpp = null;
@@ -249,6 +277,20 @@ public class ProjectPolicy {
         return reErrorNumber_ccpp;
     }
 
+    private Pattern reErrorNumber_ccpp_placeholder = null;
+    public Pattern getReErrorNumber_ccpp_placeholder() {
+        if (null == reErrorNumber_ccpp_placeholder) {
+            CodePolicy codePolicy = getCodePolicy();
+            if (!codePolicy.enablePlaceholder) {
+                throw new RuntimeException("[AGENT-000106] Unable to search for placeholder");
+            }
+            reErrorNumber_ccpp_placeholder = Pattern.compile("^(\")(" + codePolicy.placeholderValue + "|" + getErrorPrefix() + "-(\\d+))\\1$");
+        }
+        return reErrorNumber_ccpp_placeholder;
+    }
+    public final int reErrorNumber_ccpp_placeholder_open_close_group = 1;
+    public final int reErrorNumber_ccpp_placeholder_number_group = 3;
+
     // GO pattern for finding our error number.
     private Pattern reErrorNumber_go = null;
     public Pattern getReErrorNumber_go() {
@@ -258,6 +300,20 @@ public class ProjectPolicy {
         return reErrorNumber_go;
     }
 
+    private Pattern reErrorNumber_go_placeholder = null;
+    public Pattern getReErrorNumber_go_placeholder() {
+        if (null == reErrorNumber_go_placeholder) {
+            CodePolicy codePolicy = getCodePolicy();
+            if (!codePolicy.enablePlaceholder) {
+                throw new RuntimeException("[AGENT-000107] Unable to search for placeholder");
+            }
+            reErrorNumber_go_placeholder = Pattern.compile("^(`|'|\")(" + codePolicy.placeholderValue + "|" + getErrorPrefix() + "-(\\d+))\\1$");
+        }
+        return reErrorNumber_go_placeholder;
+    }
+    public final int reErrorNumber_go_placeholder_open_close_group = 1;
+    public final int reErrorNumber_go_placeholder_number_group = 3;
+
     // Rust pattern for finding our error number.
     private Pattern reErrorNumber_rust = null;
     public Pattern getReErrorNumber_rust() {
@@ -266,6 +322,20 @@ public class ProjectPolicy {
         }
         return reErrorNumber_rust;
     }
+
+    private Pattern reErrorNumber_rust_placeholder = null;
+    public Pattern getReErrorNumber_rust_placeholder() {
+        if (null == reErrorNumber_rust_placeholder) {
+            CodePolicy codePolicy = getCodePolicy();
+            if (!codePolicy.enablePlaceholder) {
+                throw new RuntimeException("[AGENT-000108] Unable to search for placeholder");
+            }
+            reErrorNumber_rust_placeholder = Pattern.compile("^(\")(" + codePolicy.placeholderValue + "|" + getErrorPrefix() + "-(\\d+))\\1$");
+        }
+        return reErrorNumber_rust_placeholder;
+    }
+    public final int reErrorNumber_rust_placeholder_open_close_group = 1;
+    public final int reErrorNumber_rust_placeholder_number_group = 3;
 
     // Java pattern for finding our error number.
     private Pattern reErrorNumber_java = null;
@@ -285,14 +355,42 @@ public class ProjectPolicy {
         return reErrorNumber_java_textblocks;
     }
 
+    private Pattern reErrorNumber_java_placeholder = null;
+    public Pattern getReErrorNumber_java_placeholder() {
+        if (null == reErrorNumber_java_placeholder) {
+            CodePolicy codePolicy = getCodePolicy();
+            if (!codePolicy.enablePlaceholder) {
+                throw new RuntimeException("[AGENT-000109] Unable to search for placeholder");
+            }
+            reErrorNumber_java_placeholder = Pattern.compile("^(\")(" + codePolicy.placeholderValue + "|" + getErrorPrefix() + "-(\\d+))\\1$");
+        }
+        return reErrorNumber_java_placeholder;
+    }
+    public final int reErrorNumber_java_placeholder_open_close_group = 1;
+    public final int reErrorNumber_java_placeholder_number_group = 3;
+
     // PHP pattern for finding our error number.
     private Pattern reErrorNumber_php = null;
     public Pattern getReErrorNumber_php() {
         if (null == reErrorNumber_php) {
-            reErrorNumber_php = Pattern.compile("^(\'|\")\\[" + getErrorPrefix() + "-(\\d+)\\]\\s*");
+            reErrorNumber_php = Pattern.compile("^('|\")\\[" + getErrorPrefix() + "-(\\d+)\\]\\s*");
         }
         return reErrorNumber_php;
     }
+
+    private Pattern reErrorNumber_php_placeholder = null;
+    public Pattern getReErrorNumber_php_placeholder() {
+        if (null == reErrorNumber_php_placeholder) {
+            CodePolicy codePolicy = getCodePolicy();
+            if (!codePolicy.enablePlaceholder) {
+                throw new RuntimeException("[AGENT-000110] Unable to search for placeholder");
+            }
+            reErrorNumber_php_placeholder = Pattern.compile("^('|\")(" + codePolicy.placeholderValue + "|" + getErrorPrefix() + "-(\\d+))\\1$");
+        }
+        return reErrorNumber_php_placeholder;
+    }
+    public final int reErrorNumber_php_placeholder_open_close_group = 1;
+    public final int reErrorNumber_php_placeholder_number_group = 3;
 
     // TypeScript pattern for finding our error number.
     private Pattern reErrorNumber_ts = null;
@@ -303,13 +401,41 @@ public class ProjectPolicy {
         return reErrorNumber_ts;
     }
 
+    private Pattern reErrorNumber_ts_placeholder = null;
+    public Pattern getReErrorNumber_ts_placeholder() {
+        if (null == reErrorNumber_ts_placeholder) {
+            CodePolicy codePolicy = getCodePolicy();
+            if (!codePolicy.enablePlaceholder) {
+                throw new RuntimeException("[AGENT-000111] Unable to search for placeholder");
+            }
+            reErrorNumber_ts_placeholder = Pattern.compile("^(`|'|\")(" + codePolicy.placeholderValue + "|" + getErrorPrefix() + "-(\\d+))\\1$");
+        }
+        return reErrorNumber_ts_placeholder;
+    }
+    public final int reErrorNumber_ts_placeholder_open_close_group = 1;
+    public final int reErrorNumber_ts_placeholder_number_group = 3;
+
     private Pattern reErrorNumber_py = null;
     public Pattern getReErrorNumber_py() {
         if (null == reErrorNumber_py) {
-            reErrorNumber_py = Pattern.compile("^('|\")\\[" + getErrorPrefix() + "-(\\d+)\\]\\s*");
+            reErrorNumber_py = Pattern.compile("^(['\"])\\[" + getErrorPrefix() + "-(\\d+)\\]\\s*");
         }
         return reErrorNumber_py;
     }
+
+    private Pattern reErrorNumber_py_placeholder = null;
+    public Pattern getReErrorNumber_py_placeholder() {
+        if (null == reErrorNumber_py_placeholder) {
+            CodePolicy codePolicy = getCodePolicy();
+            if (!codePolicy.enablePlaceholder) {
+                throw new RuntimeException("[AGENT-000112] Unable to search for placeholder");
+            }
+            reErrorNumber_py_placeholder = Pattern.compile("^(['\"]|'''|\"\"\")(" + codePolicy.placeholderValue + "|" + getErrorPrefix() + "-(\\d+))\\1$");
+        }
+        return reErrorNumber_py_placeholder;
+    }
+    public final int reErrorNumber_py_placeholder_open_close_group = 1;
+    public final int reErrorNumber_py_placeholder_number_group = 3;
 
     private Pattern reErrorNumber_py_textblocks = null;
     public Pattern getReErrorNumber_py_textblocks() {
@@ -327,6 +453,20 @@ public class ProjectPolicy {
         return reErrorNumber_lua;
     }
 
+    private Pattern reErrorNumber_lua_placeholder = null;
+    public Pattern getReErrorNumber_lua_placeholder() {
+        if (null == reErrorNumber_lua_placeholder) {
+            CodePolicy codePolicy = getCodePolicy();
+            if (!codePolicy.enablePlaceholder) {
+                throw new RuntimeException("[AGENT-000113] Unable to search for placeholder");
+            }
+            reErrorNumber_lua_placeholder = Pattern.compile("^('|\")(" + codePolicy.placeholderValue + "|" + getErrorPrefix() + "-(\\d+))\\1$");
+        }
+        return reErrorNumber_lua_placeholder;
+    }
+    public final int reErrorNumber_lua_placeholder_open_close_group = 1;
+    public final int reErrorNumber_lua_placeholder_number_group = 3;
+
     private Pattern reErrorNumber_rb = null;
     public Pattern getReErrorNumber_rb() {
         if (null == reErrorNumber_rb) {
@@ -342,6 +482,20 @@ public class ProjectPolicy {
         }
         return reErrorNumber_rb_hereDoc;
     }
+
+    private Pattern reErrorNumber_rb_placeholder = null;
+    public Pattern getReErrorNumber_rb_placeholder() {
+        if (null == reErrorNumber_rb_placeholder) {
+            CodePolicy codePolicy = getCodePolicy();
+            if (!codePolicy.enablePlaceholder) {
+                throw new RuntimeException("[AGENT-000114] Unable to search for placeholder");
+            }
+            reErrorNumber_rb_placeholder = Pattern.compile("^(['\"])(" + codePolicy.placeholderValue + "|" + getErrorPrefix() + "-(\\d+))\\1$");
+        }
+        return reErrorNumber_rb_placeholder;
+    }
+    public final int reErrorNumber_rb_placeholder_open_close_group = 1;
+    public final int reErrorNumber_rb_placeholder_number_group = 3;
 
     public CodePolicy getCodePolicy() {
         if (null == this.prj_code_policy) {

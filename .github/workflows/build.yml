@@ -4,8 +4,10 @@ on:
   push:
     branches: [ "develop", "master" ]
     tags: '*'
-  pull_request:
-    branches: [ "develop", "master" ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: write

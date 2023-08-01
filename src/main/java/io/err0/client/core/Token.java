@@ -1,5 +1,5 @@
 /*
-Copyright 2022 BlueTrailSoftware, Holding Inc.
+Copyright 2023 ERR0 LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ public class Token {
     private void setNext(Token next) { this.next = next; }
     public Token next() { return this.next; }
 
-    public TokenClassification type;
+    public TokenType type;
     public int longBracketLevel = 0;
     public StringBuilder sourceCode = new StringBuilder();
     public String initialSource = null;
@@ -120,7 +120,9 @@ public class Token {
         EXCEPTION_THROW,
         CLASS_SIGNATURE,
         METHOD_SIGNATURE,
-        LAMBDA_SIGNATURE
+        LAMBDA_SIGNATURE,
+        CONTROL_SIGNATURE,
+        PLACEHOLDER,
     }
 
     public Classification classification = Classification.NOT_CLASSIFIED_YET;

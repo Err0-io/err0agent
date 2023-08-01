@@ -1,5 +1,5 @@
 /*
-Copyright 2022 BlueTrailSoftware, Holding Inc.
+Copyright 2023 ERR0 LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import com.google.gson.JsonArray;
 import io.err0.client.Main;
 import io.err0.client.core.*;
 
+import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,11 +44,10 @@ public class TypescriptSourceCodeParse extends SourceCodeParse {
         reLoggerLevel = Pattern.compile("\\.(" + pattern + ")\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
     }
 
-    private static Pattern reMethod = Pattern.compile("\\s*(([^){};]+?)\\([^)]*?\\)(:[^;{(]+?)?)\\s*$");
+    private static Pattern reMethod = Pattern.compile("\\s*(([^(){};]+?)\\(.*?\\)(:[^;{(]+?)?)\\s*$", Pattern.DOTALL);
+    private static Pattern reControl = Pattern.compile("(^|\\s+)(for|if|else(\\s+if)?|do|while|switch|try|catch|finally)(\\(|\\{|\\s|$)", Pattern.MULTILINE);
     private static Pattern reLambda = Pattern.compile("\\s*(([^){};,]+?)\\([^)]*?\\)\\s+=>\\s*)\\s*$");
     private static Pattern reClass = Pattern.compile("\\s*(([^){};]+?)\\s+class\\s+(\\S+)[^;{(]+?)\\s*$");
-    private static Pattern reMethodIgnore = Pattern.compile("(\\s+|^\\s*)(catch|if|do|while|switch|for)\\s+", Pattern.MULTILINE);
-    //private static Pattern reErrorNumber = Pattern.compile("^(`|'|\")\\[ERR-(\\d+)\\]\\s+");
     private Pattern reLogger = null;
     private Pattern reLoggerLevel = null;
     private static Pattern reException = Pattern.compile("throw\\s+(new\\s+)?([^\\s(]*)\\s*\\(\\s*$");
@@ -57,7 +57,7 @@ public class TypescriptSourceCodeParse extends SourceCodeParse {
         int n = 0;
         TypescriptSourceCodeParse parse = new TypescriptSourceCodeParse(policy);
         Token currentToken = new Token(n++, null);
-        currentToken.type = TokenClassification.SOURCE_CODE;
+        currentToken.type = TokenType.SOURCE_CODE;
         int lineNumber = 1;
         currentToken.startLineNumber = lineNumber;
         final char chars[] = sourceCode.toCharArray();
@@ -72,7 +72,7 @@ public class TypescriptSourceCodeParse extends SourceCodeParse {
                     if (ch == '{') {
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
+                        currentToken.type = TokenType.SOURCE_CODE;
                         currentToken.sourceCode.append(ch);
                         currentToken.depth = depth + 1;
                         currentToken.startLineNumber = lineNumber;
@@ -80,34 +80,34 @@ public class TypescriptSourceCodeParse extends SourceCodeParse {
                         currentToken.sourceCode.append(ch);
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
+                        currentToken.type = TokenType.SOURCE_CODE;
                         currentToken.depth = depth - 1;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == ';') {
                         currentToken.sourceCode.append(ch);
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
+                        currentToken.type = TokenType.SOURCE_CODE;
                         currentToken.depth = depth;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == '\'') {
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.APOS_LITERAL;
+                        currentToken.type = TokenType.APOS_LITERAL;
                         currentToken.sourceCode.append(ch);
                         currentToken.depth = depth;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == '\"') {
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.QUOT_LITERAL;
+                        currentToken.type = TokenType.QUOT_LITERAL;
                         currentToken.sourceCode.append(ch);
                         currentToken.depth = depth;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == '`') {
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.BACKTICK_LITERAL;
+                        currentToken.type = TokenType.BACKTICK_LITERAL;
                         currentToken.sourceCode.append(ch);
                         currentToken.depth = depth;
                         currentToken.startLineNumber = lineNumber;
@@ -116,7 +116,7 @@ public class TypescriptSourceCodeParse extends SourceCodeParse {
                         if (ch2 == '*') {
                             parse.tokenList.add(currentToken.finish(lineNumber));
                             currentToken = new Token(n++, currentToken);
-                            currentToken.type = TokenClassification.COMMENT_BLOCK;
+                            currentToken.type = TokenType.COMMENT_BLOCK;
                             currentToken.sourceCode.append(ch);
                             currentToken.sourceCode.append(ch2);
                             currentToken.depth = depth;
@@ -125,7 +125,7 @@ public class TypescriptSourceCodeParse extends SourceCodeParse {
                         } else if (ch2 == '/') {
                             parse.tokenList.add(currentToken.finish(lineNumber));
                             currentToken = new Token(n++, currentToken);
-                            currentToken.type = TokenClassification.COMMENT_LINE;
+                            currentToken.type = TokenType.COMMENT_LINE;
                             currentToken.sourceCode.append(ch);
                             currentToken.sourceCode.append(ch2);
                             currentToken.depth = depth;
@@ -143,7 +143,7 @@ public class TypescriptSourceCodeParse extends SourceCodeParse {
                         currentToken.sourceCode.append(ch);
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
+                        currentToken.type = TokenType.SOURCE_CODE;
                         currentToken.depth = depth;
                         currentToken.startLineNumber = lineNumber;
                     } else {
@@ -158,7 +158,7 @@ public class TypescriptSourceCodeParse extends SourceCodeParse {
                             currentToken.sourceCode.append(ch2);
                             parse.tokenList.add(currentToken.finish(lineNumber));
                             currentToken = new Token(n++, currentToken);
-                            currentToken.type = TokenClassification.SOURCE_CODE;
+                            currentToken.type = TokenType.SOURCE_CODE;
                             currentToken.depth = depth;
                             currentToken.startLineNumber = lineNumber;
                             ++i;
@@ -174,7 +174,7 @@ public class TypescriptSourceCodeParse extends SourceCodeParse {
                         currentToken.sourceCode.append(ch);
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
+                        currentToken.type = TokenType.SOURCE_CODE;
                         currentToken.depth = depth;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == '\\') {
@@ -190,7 +190,7 @@ public class TypescriptSourceCodeParse extends SourceCodeParse {
                         currentToken.sourceCode.append(ch);
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
+                        currentToken.type = TokenType.SOURCE_CODE;
                         currentToken.depth = depth;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == '\\') {
@@ -206,7 +206,7 @@ public class TypescriptSourceCodeParse extends SourceCodeParse {
                         currentToken.sourceCode.append(ch);
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
-                        currentToken.type = TokenClassification.SOURCE_CODE;
+                        currentToken.type = TokenType.SOURCE_CODE;
                         currentToken.depth = depth;
                         currentToken.startLineNumber = lineNumber;
                     } else if (ch == '\\') {
@@ -225,7 +225,7 @@ public class TypescriptSourceCodeParse extends SourceCodeParse {
 
     @Override
     public boolean couldContainErrorNumber(Token token) {
-        return token.type == TokenClassification.APOS_LITERAL || token.type == TokenClassification.BACKTICK_LITERAL || token.type == TokenClassification.QUOT_LITERAL;
+        return token.type == TokenType.APOS_LITERAL || token.type == TokenType.BACKTICK_LITERAL || token.type == TokenType.QUOT_LITERAL;
     }
 
     @Override
@@ -252,6 +252,31 @@ public class TypescriptSourceCodeParse extends SourceCodeParse {
                         } else {
                             token.sourceNoErrorCode = token.source = token.source.substring(0,1) + token.source.substring(matcherErrorNumber.end());
                         }
+                    } else if (policy.getCodePolicy().getEnablePlaceholder()) {
+                        Matcher matcherPlaceholder = policy.getReErrorNumber_ts_placeholder().matcher(token.source);
+                        if (matcherPlaceholder.matches()) {
+                            token.classification = Token.Classification.PLACEHOLDER;
+                            String number = matcherPlaceholder.group(policy.reErrorNumber_ts_placeholder_number_group);
+                            if (null != number && ! "".equals(number)) {
+                                long errorOrdinal = Long.parseLong(number);
+                                if (apiProvider.validErrorNumber(policy, errorOrdinal)) {
+                                    if (globalState.store(errorOrdinal, stateItem, token)) {
+                                        token.keepErrorCode = true;
+                                        token.errorOrdinal = errorOrdinal;
+                                        token.sourceNoErrorCode = matcherPlaceholder.group(policy.reErrorNumber_ts_placeholder_open_close_group) + matcherPlaceholder.group(policy.reErrorNumber_ts_placeholder_open_close_group);
+                                    } else {
+                                        token.sourceNoErrorCode = token.source = matcherPlaceholder.group(policy.reErrorNumber_ts_placeholder_open_close_group) + matcherPlaceholder.group(policy.reErrorNumber_ts_placeholder_open_close_group);
+                                    }
+                                } else {
+                                    token.sourceNoErrorCode = token.source = matcherPlaceholder.group(policy.reErrorNumber_ts_placeholder_open_close_group) + matcherPlaceholder.group(policy.reErrorNumber_ts_placeholder_open_close_group);
+                                }
+                            } else {
+                                token.sourceNoErrorCode = token.source = matcherPlaceholder.group(policy.reErrorNumber_ts_placeholder_open_close_group) + matcherPlaceholder.group(policy.reErrorNumber_ts_placeholder_open_close_group);
+                            }
+                        } else {
+                            token.classification = Token.Classification.POTENTIAL_ERROR_NUMBER;
+                            token.sourceNoErrorCode = token.source;
+                        }
                     } else {
                         token.classification = Token.Classification.POTENTIAL_ERROR_NUMBER;
                         token.sourceNoErrorCode = token.source;
@@ -262,7 +287,7 @@ public class TypescriptSourceCodeParse extends SourceCodeParse {
                 {
                     token.classification = Token.Classification.NOT_FULLY_CLASSIFIED;
                     Token next = token.next();
-                    if (next != null && (next.type == TokenClassification.QUOT_LITERAL || next.type == TokenClassification.APOS_LITERAL || next.type == TokenClassification.BACKTICK_LITERAL)) {
+                    if (next != null && (next.type == TokenType.QUOT_LITERAL || next.type == TokenType.APOS_LITERAL || next.type == TokenType.BACKTICK_LITERAL)) {
                         // rule 0 - this code must be followed by a string literal
                         if (null != languageCodePolicy && languageCodePolicy.rules.size() > 0) {
                             // classify according to rules.
@@ -285,7 +310,7 @@ public class TypescriptSourceCodeParse extends SourceCodeParse {
                         token.classification = Token.Classification.NO_MATCH;
                     }
 
-                    if ((token.classification == Token.Classification.NOT_FULLY_CLASSIFIED || token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) && (null == languageCodePolicy || !languageCodePolicy.disable_builtin_log_detection)) {
+                    if ((token.classification == Token.Classification.NOT_FULLY_CLASSIFIED || token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) && (null == languageCodePolicy || !languageCodePolicy.disable_builtin_log_detection) && (!codePolicy.getDisableLogs())) {
                         Matcher matcherLogger = reLogger.matcher(token.source);
                         if (matcherLogger.find()) {
                             token.classification = Token.Classification.LOG_OUTPUT;
@@ -297,7 +322,7 @@ public class TypescriptSourceCodeParse extends SourceCodeParse {
                         }
                     }
 
-                    if (token.classification == Token.Classification.NOT_FULLY_CLASSIFIED || token.classification == Token.Classification.NOT_LOG_OUTPUT || token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) {
+                    if ((token.classification == Token.Classification.NOT_FULLY_CLASSIFIED || token.classification == Token.Classification.NOT_LOG_OUTPUT || token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) && (!codePolicy.getDisableExceptions())) {
                         Matcher matcherException = reException.matcher(token.source);
                         if (matcherException.find()) {
                             token.classification = Token.Classification.EXCEPTION_THROW;
@@ -306,7 +331,7 @@ public class TypescriptSourceCodeParse extends SourceCodeParse {
                         }
                     }
 
-                    if (token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) token.classification = Token.Classification.LOG_OUTPUT;
+                    if (token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION && (!codePolicy.getDisableLogs())) token.classification = Token.Classification.LOG_OUTPUT;
 
                     // message categorisation, dynamic
                     if (token.classification == Token.Classification.EXCEPTION_THROW || token.classification == Token.Classification.LOG_OUTPUT) {
@@ -347,7 +372,7 @@ public class TypescriptSourceCodeParse extends SourceCodeParse {
                                     case COMMENT_LINE:
                                         break;
                                     default:
-                                        if (current.type == TokenClassification.BACKTICK_LITERAL) {
+                                        if (current.type == TokenType.BACKTICK_LITERAL) {
                                             if (sourceCode.indexOf("${") >= 0) {
                                                 staticLiteral = false;
                                             }
@@ -375,22 +400,73 @@ public class TypescriptSourceCodeParse extends SourceCodeParse {
         }
     }
 
+    private String codeWithAnnotations(int n, int startIndex, String code) {
+        // Go backwards from matcherMethod.start(1) through previous blocks
+        boolean abort = false;
+        StringBuilder backwardsCode = new StringBuilder();
+        Stack<Character> stack = new Stack<>();
+        for (int i = code.length() - 1; i >= 0; --i) {
+            char ch = code.charAt(i);
+            if (ch == ')' || ch == '}') {
+                stack.push(ch);
+            } else if (! stack.empty() && (ch == '(' || ch == '{')) {
+                stack.pop();
+            }
+        }
+        for (int i = n, j = startIndex; !abort && i > 0; j = tokenList.get(--i).source.length() - 1) {
+            Token currentToken = tokenList.get(i);
+            if (currentToken.type == TokenType.COMMENT_BLOCK || currentToken.type == TokenType.COMMENT_LINE || currentToken.type == TokenType.CONTENT)
+                continue;
+            for (; !abort && j >= 0; --j) {
+                char ch = currentToken.source.charAt(j);
+                if (currentToken.type == TokenType.SOURCE_CODE) {
+                    if (stack.empty()) {
+                        if (ch == ',' || ch == ';' || ch == '{' || ch == '(' || ch == '}') {
+                            abort = true;
+                            break;
+                        } else if (ch == ')') {
+                            stack.push(ch);
+                        }
+                        backwardsCode.append(ch);
+                    } else {
+                        if (ch == ')' || ch == '}') {
+                            stack.push(ch);
+                        } else if (ch == '(' || ch == '{') {
+                            stack.pop();
+                        }
+                        backwardsCode.append(ch);
+                    }
+                } else {
+                    backwardsCode.append(ch);
+                }
+            }
+        }
+
+        backwardsCode.reverse();
+        backwardsCode.append(code);
+
+        return backwardsCode.toString();
+    }
+
     @Override
     public void classifyForCallStack(Token token) {
         if (token.classification == Token.Classification.NOT_CLASSIFIED_YET || token.classification == Token.Classification.NOT_FULLY_CLASSIFIED) {
-            if (token.type == TokenClassification.SOURCE_CODE) {
+            if (token.type == TokenType.SOURCE_CODE) {
                 Matcher matcherMethod = reMethod.matcher(token.source);
                 if (matcherMethod.find()) {
-                    final String code = matcherMethod.group(1);
+                    String code = matcherMethod.group(1);
                     //if (reMethodIgnore.matcher(code).find())
                     //    continue;
                     token.classification = Token.Classification.METHOD_SIGNATURE;
-                    token.extractedCode = code;
+                    token.extractedCode = codeWithAnnotations(token.n, matcherMethod.start(1) - 1, code);
+                    if (reControl.matcher(token.extractedCode).find()) {
+                        token.classification = Token.Classification.CONTROL_SIGNATURE;
+                    }
                 } else {
                     Matcher matcherClass = reClass.matcher(token.source);
                     if (matcherClass.find()) {
                         token.classification = Token.Classification.CLASS_SIGNATURE;
-                        token.extractedCode = matcherClass.group(1);
+                        token.extractedCode = codeWithAnnotations(token.n, matcherClass.start(1) - 1, matcherClass.group(1));
                     } else {
                         Matcher matcherLambda = reLambda.matcher(token.source);
                         if (matcherLambda.find()) {

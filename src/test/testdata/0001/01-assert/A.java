@@ -40,4 +40,19 @@ public class A {
 
         logger.trace("Finishing...");
     }
+
+    void method2(
+            String parameter
+    ) {
+        logger.info("[E-7] A log")
+    }
+
+    protected void checkParameter(String param) {
+        String a = null, b = null;
+        if ("const".equals(param)) {
+            if (a == null && b == null) {
+                throw new RuntimeException("[E-8] Example call stack issue.");
+            }
+        }
+    }
 }

@@ -1,5 +1,5 @@
 /*
-Copyright 2022 BlueTrailSoftware, Holding Inc.
+Copyright 2023 ERR0 LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -81,7 +81,7 @@ public class UnitTestApiProvider implements ApiProvider {
         currentErrorNumber = nextErrorNumber-1;
     }
 
-    static class MetaData {
+    public static class MetaData {
         MetaData(final String errorCode, final long errorOrdinal, final JsonObject metaData) {
             this.errorCode = errorCode;
             this.errorOrdinal = errorOrdinal;

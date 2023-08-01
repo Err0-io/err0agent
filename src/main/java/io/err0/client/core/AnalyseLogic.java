@@ -1,5 +1,5 @@
 /*
-Copyright 2022 BlueTrailSoftware, Holding Inc.
+Copyright 2023 ERR0 LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -30,6 +30,9 @@ public interface AnalyseLogic {
 
     void pass4ProcessResult(StateItem stateItem, String filename, SourceCodeParse parse);
 
+    /**
+     * @return true if a file changed, or should change
+     */
     boolean returnValue();
 
 }

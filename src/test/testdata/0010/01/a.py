@@ -1,3 +1,8 @@
+import logging
+
+log = logging.getLogger("0010")
+log.setLevel(logging.DEBUG)
+
 class Apps:
     """
     A registry that stores the configuration of installed applications.
@@ -31,7 +36,31 @@ class Example:
             This is a test of another syntax.
             ''');
 
-    def method4():
+    def method5():
         raise RuntimeError("""
             This is a test of another syntax.
             """);
+
+    def logging1():
+        log.info("----- Example ----")
+        log.warning("Another example!")
+
+    def continuation(
+        param
+    ):
+        log.info("Call stack helper")
+
+def another_continuation(
+    param
+):
+    log.warning("Continuation of function definition at depth = 0")
+
+class NotSpaced(object):
+    def __init__(self, mode, device, dtype):
+        if mode == "test":
+            device.test()
+        else:
+            log.warning("Call stack issue to fix")
+    def trouble():
+        """This is not a comment"""
+        log.warning("Strings as comments?")

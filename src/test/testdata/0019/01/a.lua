@@ -10,3 +10,12 @@ function a(parameter)
     logger.warn([===[Multi-line [[
         string ]] brackets=3]===]);
 end
+
+--[[
+Multi line comment
+A second line
+--]]
+
+function b(parameter) {
+    logger.log("Test message.");
+}

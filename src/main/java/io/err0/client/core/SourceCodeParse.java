@@ -1,5 +1,5 @@
 /*
-Copyright 2022 BlueTrailSoftware, Holding Inc.
+Copyright 2023 ERR0 LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,14 +24,14 @@ import java.util.regex.Pattern;
 
 public abstract class SourceCodeParse {
 
-    public SourceCodeParse(final Language language, final CodePolicy policy, final LanguageCodePolicy languageCodePolicy) {
+    public SourceCodeParse(final Language language, final CodePolicy codePolicy, final LanguageCodePolicy languageCodePolicy) {
         this.language = language;
-        this.policy = policy;
+        this.codePolicy = codePolicy;
         this.languageCodePolicy = languageCodePolicy; // or null
     }
 
     public final Language language;
-    public final CodePolicy policy;
+    public final CodePolicy codePolicy;
     public final LanguageCodePolicy languageCodePolicy;
 
     public enum Language {
@@ -46,6 +46,17 @@ public abstract class SourceCodeParse {
         RUST,
         LUA,
         RUBY,
+    }
+
+    public final CallStackLogic callStackLogic() {
+        switch (language) {
+            case RUBY:
+            case PYTHON:
+            case LUA:
+                return new IndentCallStackLogic();
+            default:
+                return new CurlyCallStackLogic();
+        }
     }
 
     public final ArrayList<Token> tokenList = new ArrayList<>();

@@ -1,5 +1,5 @@
 /*
-Copyright 2022 BlueTrailSoftware, Holding Inc.
+Copyright 2023 ERR0 LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -29,6 +29,36 @@ public class TestPolicy {
     public static ProjectPolicy getPolicy() {
         try {
             final RealmPolicy realmPolicy = new RealmPolicy(JsonParser.parseString(Utils.readString(Utils.pathOf("policies/realm/example-realm.json"))).getAsJsonObject());
+            return new ProjectPolicy(realmPolicy, JsonParser.parseString(Utils.readString(Utils.pathOf("policies/application/example-app.json"))).getAsJsonObject());
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static ProjectPolicy getPolicyEnablePlaceholder() {
+        try {
+            final RealmPolicy realmPolicy = new RealmPolicy(JsonParser.parseString(Utils.readString(Utils.pathOf("policies/realm/example-realm-placeholder.json"))).getAsJsonObject());
+            return new ProjectPolicy(realmPolicy, JsonParser.parseString(Utils.readString(Utils.pathOf("policies/application/example-app.json"))).getAsJsonObject());
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static ProjectPolicy getPolicyDisableLogs() {
+        try {
+            final RealmPolicy realmPolicy = new RealmPolicy(JsonParser.parseString(Utils.readString(Utils.pathOf("policies/realm/example-realm-disable-logs.json"))).getAsJsonObject());
+            return new ProjectPolicy(realmPolicy, JsonParser.parseString(Utils.readString(Utils.pathOf("policies/application/example-app.json"))).getAsJsonObject());
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static ProjectPolicy getPolicyDisableExceptions() {
+        try {
+            final RealmPolicy realmPolicy = new RealmPolicy(JsonParser.parseString(Utils.readString(Utils.pathOf("policies/realm/example-realm-disable-exceptions.json"))).getAsJsonObject());
             return new ProjectPolicy(realmPolicy, JsonParser.parseString(Utils.readString(Utils.pathOf("policies/application/example-app.json"))).getAsJsonObject());
         }
         catch (IOException e) {
