@@ -266,7 +266,7 @@ message.append("1 of --stand-alone, or --token-file\n");
 message.append("1 of --insert, or --check\n");
 message.append("--git-dir\n");
 message.append("\n");
-message.append("Copyright 2022-2023 BlueTrailSoftware, Holding Inc.\n");
+message.append("Copyright 2023 ERR0 LLC.\n");
 message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                 System.out.print(message.toString());
                 System.exit(0);
