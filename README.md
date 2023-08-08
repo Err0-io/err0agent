@@ -1,8 +1,10 @@
+
+
 <div id="header" align="center">
 <img src="https://www.err0.io/assets/img/err0/icons/err0Logo.svg" width="603" height="164">
 </div>
 
-# err0: the power of Error Codes
+# err0: the power of Error Code
 
 <div align="center">
     <a href="https://github.com/Err0-io/err0agent/LICENSE"><img src="https://img.shields.io/github/license/Err0-io/err0agent" alt="license"></a>
@@ -13,15 +15,23 @@
 
 ## What is err0?
 
-err0 is an Error Code Management Platform.
+err0 is an Error Code & Messages Management Platform.
 
-<a href="https://en.wikipedia.org/wiki/Error_code">Error Codes</a> are present since the inception of computing, and are used by large software companies (i.e. Microsoft, Oracle, Adobe, SAP, Cisco, etc.). err0 is the first tooling that empowers all software teams with the power of Error Codes. 
+<a href="https://en.wikipedia.org/wiki/Error_code">**Error Code**</a> are present since the inception of computing. It's a **battle-tested engineering best practice** that is used by all large software companies (i.e. Microsoft, Oracle, Adobe, SAP, Cisco, etc.). err0 is the #1 tooling that empowers all software teams with the power of Error Code. 
 
-The use of Error Codes enable to solve key scaling issues in Product Management, QA, User eXperience, Customer eXperience, DevOps and Monitoring, Logs Management, CyberSecurity, Compliance and audit trails, Support and Software debugging. 
+- **Enhanced QA Awareness**: By implementing Error Codes, you can ensure that your QA team remains informed about all error/exception handlers and any changes to error and log messages. This helps in conducting thorough testing to ensure that all possible error scenarios handled by the software are appropriately validated.
+- **Meaningful Messages**: The utilization of Error Codes contributes to crafting error and log messages that are not only meaningful but also helpful. This becomes especially valuable as it empowers your UI/UX team to independently manage error messages without delving into the source code. This separation of concerns streamlines the process of refining user-facing messaging.
+- **Up-to-Date Knowledge Base**: Error Codes enable the maintenance of an up-to-date knowledge base encompassing all error messages and logs. This is pivotal for ensuring effective customer support and self-service. Customers benefit from accurate and timely assistance, while your support team can provide informed solutions swiftly.
+- **Efficient Log Monitoring**: Through the adoption of a single standardized pattern for log messages, you can achieve efficient log monitoring. This unified pattern ensures a 100% match, and its dynamic severity and priority characteristics eliminate the need for extensive hours spent fine-tuning per log message pattern. This results in a more streamlined and effective monitoring process.
+- **Perfect User Experience**: By leveraging Error Codes, you can deliver a seamless and precise Error Pop-Up experience to users. This approach contributes to heightened user satisfaction, thereby reducing churn and minimizing the number of customer support calls. Providing users with clear and actionable error messages fosters a positive perception of your software and its support system.
+
+Embracing Error Codes in your project not only enhances the technical aspects but also aligns with a customer-centric marketing strategy. It's a win-win situation that elevates both the development and user experience aspects of your project.
 
 See <a href="https://bit.ly/3Sv4dLV">err0.io/</a> for more information, demo request, contact,  and check our <a href="https://www.linkedin.com/company/err0-io/">LinkedIn</a> for more information on the power of error codes.
 
 Please note that err0 is totally free for all Open-Source projects, just contact us.
+
+<img src="https://www.err0.io/assets/img/screenshots/full_error_code_page.png" width="700"/>
 
 ## What is required to test or use err0?
 
@@ -29,11 +39,11 @@ A <a href="https://bit.ly/3PJoFaw">free account on the err0.io platform</a> is r
 
 ## What is the err0agent?
 
-The err0agent is the agent that will parse the source code, detect errors, exceptions and logs statement and apply the corresponding Management Policy, notably by <u>inserting Error Codes</u>. The agent is open-source as we wouldn't ourselves run anything in our CI/CD pipeline that we couldn't check.
+The err0agent is the agent that will parse the source code, detect error/exception handlers and logs statement and apply the corresponding Error Numbering Policy, notably by <u>inserting Error Codes like [ERR-0123]</u>. The agent is open-source as we wouldn't ourselves run anything in our CI/CD pipeline that we couldn't check.
 
 ## Which programming languages are supported by err0?
 
-The err0agent automatically detects the programming language.
+The err0agent automatically detects the following programming language.
 
 <div align="center">
 <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/c/c-original.svg" width="50" height="50"/>
@@ -50,6 +60,21 @@ The err0agent automatically detects the programming language.
 <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/ruby/ruby-original.svg" width="50" height="50" />
 </div>
 
+## Can it handle custom log or error handlers?
+
+Yes. The policy is fully editable! 
+
+<div align="left">
+<img src="https://www.err0.io/assets/img/screenshots/advanced_code_policy.png" width="400" />
+<img src="https://www.err0.io/assets/img/screenshots/error_detection_settings.png" width="400" />
+</div>
+
+## Can it use a custom placeholder to insert error code?
+
+Yes. On can define a custom Placeholder in the  "Code Policy settings" of a project. The agent will pick-it-up and automatically insert error codes.
+
+<img src="https://www.err0.io/assets/img/screenshots/edit_code_policy_placeholder.png" width="500" />
+
 ## Can it be integrated in CI/CD?
 
 Yes. We are using both GitLab and GitHub on our side, and the err0agent is provided with:
@@ -64,6 +89,9 @@ Yes. We are using both GitLab and GitHub on our side, and the err0agent is provi
 err0 platform enables to publish and maintain Knowledge Data Bases (KDB) of error codes, thus bringing a key solution to major pain point.
 
 Visit the err0agent knowledge base: <a href="http://bit.ly/3YYxmS5">err0 agent KDB</a> for more information on err0agent's codes.
+
+<img src="https://www.err0.io/assets/img/screenshots/knowledge_base_add.png" width="300" />
+<img src="https://www.err0.io/assets/img/screenshots/kdb_sample.png" width="500" />
 
 ## Quality Metrics
 
@@ -89,17 +117,13 @@ When you're ready to use this in production why not <a href="https://bit.ly/3Sv4
 
 ### Full mode
 
-A step by step guide is available on the <a href="https://bit.ly/3Sv4dLV">err0</a> platform, which details each step:
+A step by step guide is available on the <a href="https://www.err0.io/how-to">err0</a> platform, which details each step:
  1. Create a numbering policy
  2. Add a project to the numbering policy
  3. Run the agent, in sandbox mode, on your code to insert error codes
  4. Test & tweak the agent configuration to reach your objective
  5. Disable sandbox mode and commit error codes
  6. Run the agent  `err0-check.sh` command to mark the error codes as committed
- 7. Create a software (ie. product or service)
- 8. Track your software versions, to access error codes diff
- 9. Contribute knowledge and publish knowledge base on your error codes
- 10. Use error code contexts to keep track of how frequently error codes are occuring
 
 <a href="https://asciinema.org/a/564800?t=02" target="_blank"><img src="https://asciinema.org/a/564800.svg" /></a>
  
