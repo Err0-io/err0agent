@@ -520,7 +520,7 @@ public class ProjectPolicy {
         if (null == reErrorNumber_swift_placeholder) {
             CodePolicy codePolicy = getCodePolicy();
             if (!codePolicy.enablePlaceholder) {
-                throw new RuntimeException("[AGENT-000109] Unable to search for placeholder");
+                throw new RuntimeException("[AGENT-000118] Unable to search for placeholder");
             }
             reErrorNumber_swift_placeholder = Pattern.compile("^(\")(" + codePolicy.placeholderValue + "|" + getErrorPrefix() + "-(\\d+))\\1$");
         }

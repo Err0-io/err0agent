@@ -1043,7 +1043,7 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                         } else if (swiftAllowed && newFileLower.endsWith(".swift")) {
                             final FileCoding fileCoding = new FileCoding(p);
                             globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, SwiftSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
-                            System.out.println("Parsed: " + newFile);
+                            System.out.println("[AGENT-000117] Parsed: " + newFile);
                         }
                     }
                 });
