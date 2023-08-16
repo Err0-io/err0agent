@@ -35,3 +35,17 @@ public struct Structure {
 """#)
     }
 }
+
+public func aFunctionThatLogs() -> Void {
+    let logger = Logger();
+
+    logger.log("[E-6] default level")
+    logger.trace("trace level")
+    logger.debug("debug level")
+    logger.notice("[E-7] notice level")
+    logger.info("[E-8] info level")
+    logger.error("[E-9] error level")
+    logger.warning("[E-10] warning level")
+    logger.fault("[E-11] fault level")
+    logger.critical("[E-12] critical level")
+}

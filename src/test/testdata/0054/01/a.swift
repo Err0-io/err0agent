@@ -35,3 +35,17 @@ This fatal error is static \(object)
 """#)
     }
 }
+
+public func aFunctionThatLogs() -> Void {
+    let logger = Logger();
+
+    logger.log("default level")
+    logger.trace("trace level")
+    logger.debug("debug level")
+    logger.notice("notice level")
+    logger.info("info level")
+    logger.error("error level")
+    logger.warning("warning level")
+    logger.fault("fault level")
+    logger.critical("critical level")
+}

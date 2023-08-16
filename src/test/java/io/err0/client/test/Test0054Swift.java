@@ -130,7 +130,7 @@ public class Test0054Swift {
 
             previousState = apiProvider.getState();
 
-            assertEquals(5, previousState.metaDataStorage.size());
+            assertEquals(12, previousState.metaDataStorage.size());
         }
 
         // pass #3 - insert
@@ -170,7 +170,7 @@ public class Test0054Swift {
 
             previousState = apiProvider.getState();
 
-            assertEquals(5, previousState.metaDataStorage.size());
+            assertEquals(12, previousState.metaDataStorage.size());
         }
     }
 }
