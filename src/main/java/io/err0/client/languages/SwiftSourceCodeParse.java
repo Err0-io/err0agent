@@ -45,8 +45,8 @@ public class SwiftSourceCodeParse extends SourceCodeParse {
         reLoggerLevel = Pattern.compile("\\.(" + pattern + ")\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE); // group #1 is the level
     }
 
-    private static Pattern reMethod = Pattern.compile("\\s*(([^(){};]+?)\\(.*?\\)(\\s+throws\\s+)?)\\s*$", Pattern.DOTALL);
-    private static Pattern reControl = Pattern.compile("(^|\\s+)(for|if|else(\\s+if)?|do|while|switch|try|catch|finally|synchronized)(\\(|\\{|\\s|$)", Pattern.MULTILINE);
+    private static Pattern reMethod = Pattern.compile("\\s*(([^(){};]+?)\\(.*?\\)(\\s+throws\\s+)?(\\s*->.*?))\\s*$", Pattern.DOTALL);
+    private static Pattern reControl = Pattern.compile("(^|\\s+)(for|if|else(\\s+if)?|do|while|switch|try|catch|defer)(\\(|\\{|\\s|$)", Pattern.MULTILINE);
     private static Pattern reLambda = Pattern.compile("\\s*(([^){};,=]+?)\\([^)]*?\\)\\s+->\\s*)\\s*$");
     private static Pattern reClass = Pattern.compile("\\s*(([^){};]*\\s+)?(class|struct|protocol|enum)\\s+(\\S+)[^;{(]+?)\\s*$");
     private Pattern reLogger = null;
@@ -117,6 +117,15 @@ public class SwiftSourceCodeParse extends SourceCodeParse {
                             annotationBracketDepth = 0;
                             inAnnotationString = false;
                             currentToken.sourceCode.append(ch);
+                        } else if (ch == '\n') {
+                            currentToken.sourceCode.append(ch); // continuation
+                            if (!(i > 0 && chars[i-1] == '\\')) {
+                                parse.tokenList.add(currentToken.finish(lineNumber));
+                                currentToken = new Token(n++, currentToken);
+                                currentToken.type = TokenType.SOURCE_CODE;
+                                currentToken.depth = depth;
+                                currentToken.startLineNumber = lineNumber;
+                            }
                         } else if (ch == '{') {
                             parse.tokenList.add(currentToken.finish(lineNumber));
                             currentToken = new Token(n++, currentToken);
@@ -563,7 +572,7 @@ public class SwiftSourceCodeParse extends SourceCodeParse {
                 char ch = currentToken.source.charAt(j);
                 if (currentToken.type == TokenType.SOURCE_CODE) {
                     if (stack.empty()) {
-                        if (ch == ',' || ch == ';' || ch == '{' || ch == '(' || ch == '}') {
+                        if (ch == ',' || ch == ';' || ch == '\n' || ch == '{' || ch == '(' || ch == '}') {
                             abort = true;
                             break;
                         } else if (ch == ')') {

@@ -55,7 +55,7 @@ public func aFunctionThatLogs() -> Void {
     logger.critical("critical level")
 }
 
-public func aFunctionThatThrows() -> Never {
+public func aFunctionThatThrows() throws -> Never {
     throw AnErrorType.noErrorNumber
     throw AnErrorType.withErrorNumber("An error message")
 }
