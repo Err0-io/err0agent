@@ -19,6 +19,7 @@ package io.err0.client.languages;
 import com.google.gson.JsonArray;
 import io.err0.client.Main;
 import io.err0.client.core.*;
+import io.err0.client.languages.ext.SwiftExtendedInformation;
 
 import java.util.Stack;
 import java.util.regex.Matcher;
@@ -67,6 +68,7 @@ public class SwiftSourceCodeParse extends SourceCodeParse {
         boolean inAnnotationString = false;
         int commentBlockDepth = 0;
         for (int i = 0, l = chars.length; i < l; ++i) {
+            SwiftExtendedInformation extendedInformation = null;
             int depth = currentToken.depth;
             final char ch = chars[i];
             if (ch == '\n') {
@@ -143,10 +145,13 @@ public class SwiftSourceCodeParse extends SourceCodeParse {
                             currentToken.sourceCode.append(ch);
                             currentToken.depth = depth;
                             currentToken.startLineNumber = lineNumber;
-                        } else if (ch == '\"') {
+                        } else if (ch == '#' && i < l - 1 && chars[i + 1] == '\"') {
                             parse.tokenList.add(currentToken.finish(lineNumber));
-                            if (i < l - 2 && chars[i + 1] == '\"' && chars[i + 2] == '\"') {
+                            if (i < l - 3 && chars[i + 1] == '\"' && chars[i + 2] == '\"' && chars[i + 3] == '\"') {
                                 currentToken = new Token(n++, currentToken);
+                                extendedInformation = new SwiftExtendedInformation(currentToken);
+                                extendedInformation.nonInterpolating = true;
+                                currentToken.extendedInformation = extendedInformation;
                                 currentToken.type = TokenType.QUOT3_LITERAL;
                                 currentToken.sourceCode.append(ch);
                                 currentToken.sourceCode.append(chars[++i]);
@@ -155,6 +160,30 @@ public class SwiftSourceCodeParse extends SourceCodeParse {
                                 currentToken.startLineNumber = lineNumber;
                             } else {
                                 currentToken = new Token(n++, currentToken);
+                                extendedInformation = new SwiftExtendedInformation(currentToken);
+                                extendedInformation.nonInterpolating = true;
+                                currentToken.extendedInformation = extendedInformation;
+                                currentToken.type = TokenType.QUOT_LITERAL;
+                                currentToken.sourceCode.append(ch);
+                                currentToken.depth = depth;
+                                currentToken.startLineNumber = lineNumber;
+                            }
+                        } else if (ch == '\"') {
+                            parse.tokenList.add(currentToken.finish(lineNumber));
+                            if (i < l - 2 && chars[i + 1] == '\"' && chars[i + 2] == '\"') {
+                                currentToken = new Token(n++, currentToken);
+                                extendedInformation = new SwiftExtendedInformation(currentToken);
+                                currentToken.extendedInformation = extendedInformation;
+                                currentToken.type = TokenType.QUOT3_LITERAL;
+                                currentToken.sourceCode.append(ch);
+                                currentToken.sourceCode.append(chars[++i]);
+                                currentToken.sourceCode.append(chars[++i]);
+                                currentToken.depth = depth;
+                                currentToken.startLineNumber = lineNumber;
+                            } else {
+                                currentToken = new Token(n++, currentToken);
+                                extendedInformation = new SwiftExtendedInformation(currentToken);
+                                currentToken.extendedInformation = extendedInformation;
                                 currentToken.type = TokenType.QUOT_LITERAL;
                                 currentToken.sourceCode.append(ch);
                                 currentToken.depth = depth;
@@ -253,8 +282,12 @@ public class SwiftSourceCodeParse extends SourceCodeParse {
                     }
                     break;
                 case QUOT_LITERAL:
-                    if (ch == '\"') {
+                    extendedInformation = (SwiftExtendedInformation) currentToken.extendedInformation;
+                    if (ch == '\"' && (!extendedInformation.nonInterpolating || (i + 1 < l && chars[i+1] == '#'))) {
                         currentToken.sourceCode.append(ch);
+                        if (extendedInformation.nonInterpolating) {
+                            currentToken.sourceCode.append(chars[++i]);
+                        }
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenType.SOURCE_CODE;
@@ -273,10 +306,14 @@ public class SwiftSourceCodeParse extends SourceCodeParse {
                     break;
                 case QUOT3_LITERAL:
                     if (ch == '\"') {
-                        if (i < l-2 && chars[i+1] == '\"' && chars[i+2] == '\"') {
+                        extendedInformation = (SwiftExtendedInformation) currentToken.extendedInformation;
+                        if (i < l-2 && chars[i+1] == '\"' && chars[i+2] == '\"' && (!extendedInformation.nonInterpolating || (i < l - 3 && chars[i+3] == '#'))) {
                             currentToken.sourceCode.append(ch);
                             currentToken.sourceCode.append(chars[++i]);
                             currentToken.sourceCode.append(chars[++i]);
+                            if (extendedInformation.nonInterpolating) {
+                                currentToken.sourceCode.append(chars[++i]);
+                            }
                             parse.tokenList.add(currentToken.finish(lineNumber));
                             currentToken = new Token(n++, currentToken);
                             currentToken.type = TokenType.SOURCE_CODE;
@@ -318,12 +355,12 @@ public class SwiftSourceCodeParse extends SourceCodeParse {
                             if (globalState.store(errorOrdinal, stateItem, token)) {
                                 token.keepErrorCode = true;
                                 token.errorOrdinal = errorOrdinal;
-                                token.sourceNoErrorCode = token.source.substring(0, 1) + token.source.substring(matcherErrorNumber.end());
+                                token.sourceNoErrorCode = token.source.substring(0, token.extendedInformation.getStringQuoteWidth()) + token.source.substring(matcherErrorNumber.end());
                             } else {
-                                token.sourceNoErrorCode = token.source = token.source.substring(0,1) + token.source.substring(matcherErrorNumber.end());
+                                token.sourceNoErrorCode = token.source = token.source.substring(0, token.extendedInformation.getStringQuoteWidth()) + token.source.substring(matcherErrorNumber.end());
                             }
                         } else {
-                            token.sourceNoErrorCode = token.source = token.source.substring(0,1) + token.source.substring(matcherErrorNumber.end());
+                            token.sourceNoErrorCode = token.source = token.source.substring(0, token.extendedInformation.getStringQuoteWidth()) + token.source.substring(matcherErrorNumber.end());
                         }
                     } else if (policy.getCodePolicy().getEnablePlaceholder()) {
                         Matcher matcherPlaceholder = policy.getReErrorNumber_swift_placeholder().matcher(token.source);
@@ -367,12 +404,12 @@ public class SwiftSourceCodeParse extends SourceCodeParse {
                             if (globalState.store(errorOrdinal, stateItem, token)) {
                                 token.keepErrorCode = true;
                                 token.errorOrdinal = errorOrdinal;
-                                token.sourceNoErrorCode = "\"\"\"" + matcherErrorNumber.group(1) + token.source.substring(matcherErrorNumber.end());
+                                token.sourceNoErrorCode = token.source.substring(0, token.extendedInformation.getStringQuoteWidth()) + matcherErrorNumber.group(1) + token.source.substring(matcherErrorNumber.end());
                             } else {
-                                token.sourceNoErrorCode = token.source = "\"\"\"" + matcherErrorNumber.group(1) + token.source.substring(matcherErrorNumber.end());
+                                token.sourceNoErrorCode = token.source = token.source.substring(0, token.extendedInformation.getStringQuoteWidth()) + matcherErrorNumber.group(1) + token.source.substring(matcherErrorNumber.end());
                             }
                         } else {
-                            token.sourceNoErrorCode = token.source = "\"\"\"" + matcherErrorNumber.group(1) + token.source.substring(matcherErrorNumber.end());
+                            token.sourceNoErrorCode = token.source = token.source.substring(0, token.extendedInformation.getStringQuoteWidth()) + matcherErrorNumber.group(1) + token.source.substring(matcherErrorNumber.end());
                         }
                     } else {
                         token.classification = Token.Classification.POTENTIAL_ERROR_NUMBER;
@@ -471,7 +508,7 @@ public class SwiftSourceCodeParse extends SourceCodeParse {
                                         break;
                                     case QUOT_LITERAL:
                                     case QUOT3_LITERAL:
-                                        if (sourceCode.contains("\\(")) {
+                                        if (!((SwiftExtendedInformation)current.extendedInformation).nonInterpolating && sourceCode.contains("\\(")) {
                                             staticLiteral = false;
                                         }
                                         cleaned.append(sourceCode);

@@ -501,7 +501,7 @@ public class ProjectPolicy {
     private Pattern reErrorNumber_swift = null;
     public Pattern getReErrorNumber_swift() {
         if (null == reErrorNumber_swift) {
-            reErrorNumber_swift = Pattern.compile("^\"\\[" + getErrorPrefix() + "-(\\d+)\\]\\s*");
+            reErrorNumber_swift = Pattern.compile("^#?\"\\[" + getErrorPrefix() + "-(\\d+)\\]\\s*");
         }
         return reErrorNumber_swift;
     }
@@ -510,7 +510,7 @@ public class ProjectPolicy {
     private Pattern reErrorNumber_swift_textblocks = null;
     public Pattern getReErrorNumber_swift_textblocks() {
         if (null == reErrorNumber_swift_textblocks) {
-            reErrorNumber_swift_textblocks = Pattern.compile("^\"\"\"(\\s*)\\[" + getErrorPrefix() + "-(\\d+)\\]\\s*");
+            reErrorNumber_swift_textblocks = Pattern.compile("^#?\"\"\"(\\s*)\\[" + getErrorPrefix() + "-(\\d+)\\]\\s*");
         }
         return reErrorNumber_swift_textblocks;
     }

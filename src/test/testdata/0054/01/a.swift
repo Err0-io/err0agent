@@ -18,4 +18,20 @@ public struct Structure {
     public func dynamicMessage<T>(_ object: T) -> Never where T : String {
         fatalError("This fatal error is dynamic \(object)")
     }
+
+    public func notADynamicMessage<T>(_ object: T) -> Never where T : String {
+        fatalError(#"This fatal error is static \(object)"#)
+    }
+
+    public func dynamicMultiLineMessage<T>(_ object: T) -> Never where T : String {
+        fatalError("""
+This fatal error is dynamic \(object)
+""")
+    }
+
+    public func staticMultiLineMessage<T>(_ object: T) -> Never where T : String {
+        fatalError(#"""
+This fatal error is static \(object)
+"""#)
+    }
 }

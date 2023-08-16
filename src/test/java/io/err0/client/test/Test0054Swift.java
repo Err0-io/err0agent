@@ -81,6 +81,27 @@ public class Test0054Swift {
                 boolean static_literal = metaData.metaData.get("static_literal").getAsBoolean();
                 assertFalse(static_literal);
             }
+
+            {
+                UnitTestApiProvider.MetaData metaData = previousState.metaDataStorage.get(3L);
+                assertNotNull(metaData);
+                boolean static_literal = metaData.metaData.get("static_literal").getAsBoolean();
+                assertTrue(static_literal);
+            }
+
+            {
+                UnitTestApiProvider.MetaData metaData = previousState.metaDataStorage.get(4L);
+                assertNotNull(metaData);
+                boolean static_literal = metaData.metaData.get("static_literal").getAsBoolean();
+                assertFalse(static_literal);
+            }
+
+            {
+                UnitTestApiProvider.MetaData metaData = previousState.metaDataStorage.get(5L);
+                assertNotNull(metaData);
+                boolean static_literal = metaData.metaData.get("static_literal").getAsBoolean();
+                assertTrue(static_literal);
+            }
         }
 
         // pass #2 - scan and report (no changes)
@@ -109,7 +130,7 @@ public class Test0054Swift {
 
             previousState = apiProvider.getState();
 
-            assertEquals(2, previousState.metaDataStorage.size());
+            assertEquals(5, previousState.metaDataStorage.size());
         }
 
         // pass #3 - insert
@@ -149,7 +170,7 @@ public class Test0054Swift {
 
             previousState = apiProvider.getState();
 
-            assertEquals(2, previousState.metaDataStorage.size());
+            assertEquals(5, previousState.metaDataStorage.size());
         }
     }
 }
