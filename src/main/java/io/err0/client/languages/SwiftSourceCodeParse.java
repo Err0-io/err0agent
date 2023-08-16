@@ -65,6 +65,7 @@ public class SwiftSourceCodeParse extends SourceCodeParse {
         boolean inAnnotation = false;
         int annotationBracketDepth = 0;
         boolean inAnnotationString = false;
+        int commentBlockDepth = 0;
         for (int i = 0, l = chars.length; i < l; ++i) {
             int depth = currentToken.depth;
             final char ch = chars[i];
@@ -163,6 +164,7 @@ public class SwiftSourceCodeParse extends SourceCodeParse {
                             final char ch2 = chars[i + 1];
                             if (ch2 == '*') {
                                 parse.tokenList.add(currentToken.finish(lineNumber));
+                                commentBlockDepth = 0;
                                 currentToken = new Token(n++, currentToken);
                                 currentToken.type = TokenType.COMMENT_BLOCK;
                                 currentToken.sourceCode.append(ch);
@@ -204,22 +206,29 @@ public class SwiftSourceCodeParse extends SourceCodeParse {
                     break;
                 case COMMENT_BLOCK:
                     if (ch == '*' && i < l-1) {
-                        final char ch2 = chars[i+1];
+                        final char ch2 = chars[i + 1];
                         if (ch2 == '/') {
                             currentToken.sourceCode.append(ch);
-                            currentToken.sourceCode.append(ch2);
-                            parse.tokenList.add(currentToken.finish(lineNumber));
-                            currentToken = new Token(n++, currentToken);
-                            currentToken.type = TokenType.SOURCE_CODE;
-                            inAnnotation = false;
-                            annotationBracketDepth = 0;
-                            inAnnotationString = false;
-                            currentToken.depth = depth;
-                            currentToken.startLineNumber = lineNumber;
-                            ++i;
+                            if (commentBlockDepth == 0) {
+                                currentToken.sourceCode.append(ch2);
+                                parse.tokenList.add(currentToken.finish(lineNumber));
+                                currentToken = new Token(n++, currentToken);
+                                currentToken.type = TokenType.SOURCE_CODE;
+                                inAnnotation = false;
+                                annotationBracketDepth = 0;
+                                inAnnotationString = false;
+                                currentToken.depth = depth;
+                                currentToken.startLineNumber = lineNumber;
+                                ++i;
+                            } else {
+                                --commentBlockDepth;
+                            }
                         } else {
                             currentToken.sourceCode.append(ch);
                         }
+                    } else if (i < l - 1 && ch == '/' && chars[i+1] == '*') {
+                        ++commentBlockDepth;
+                        currentToken.sourceCode.append(ch);
                     } else {
                         currentToken.sourceCode.append(ch);
                     }
