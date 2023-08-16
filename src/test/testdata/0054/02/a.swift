@@ -8,6 +8,11 @@
     /* a nested, multi-line comment. */
  */
 
+enum AnErrorType : Error {
+    case noErrorNumber
+    case withErrorNumber(String)
+}
+
 public struct Structure {
     public var example: String
 
@@ -48,4 +53,9 @@ public func aFunctionThatLogs() -> Void {
     logger.warning("[E-10] warning level")
     logger.fault("[E-11] fault level")
     logger.critical("[E-12] critical level")
+}
+
+public func aFunctionThatThrows() -> Never {
+    throw AnErrorType.noErrorNumber
+    throw AnErrorType.withErrorNumber("[E-13] An error message")
 }
