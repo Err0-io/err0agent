@@ -45,10 +45,10 @@ public class SwiftSourceCodeParse extends SourceCodeParse {
         reLoggerLevel = Pattern.compile("\\.(" + pattern + ")\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE); // group #1 is the level
     }
 
-    private static Pattern reMethod = Pattern.compile("\\s*(([^(){};]+?)\\(.*?\\)(\\s+throws\\s+)?(\\s*->.*?))\\s*$", Pattern.DOTALL);
+    private static Pattern reMethod = Pattern.compile("\\s*((([^(){};\\n]+?)\\s+(func|var|let|set|get|didSet|willSet)\\s+([^(){};\\n]+?)?(\\(.*?\\))?(\\s+throws\\s+)?(\\s*->\\s*([^(){};\\n]+?))?))\\s*$", Pattern.DOTALL);
     private static Pattern reControl = Pattern.compile("(^|\\s+)(for|if|else(\\s+if)?|do|while|switch|try|catch|defer)(\\(|\\{|\\s|$)", Pattern.MULTILINE);
-    private static Pattern reLambda = Pattern.compile("\\s*(([^){};,=]+?)\\([^)]*?\\)\\s+->\\s*)\\s*$");
-    private static Pattern reClass = Pattern.compile("\\s*(([^){};]*\\s+)?(class|struct|protocol|enum)\\s+(\\S+)[^;{(]+?)\\s*$");
+    private static Pattern reLambda = Pattern.compile("\\s*(([^){};\\n,=]+?)\\([^)]*?\\)\\s+(->\\s*([^(){};\\n]+?))?\\s+in)\\s*$", Pattern.MULTILINE);
+    private static Pattern reClass = Pattern.compile("\\s*(([^){};\\n]*\\s+)?(class|struct|protocol|enum|extension)\\s+(\\S+)[^;\\n{(]+?)\\s*$");
     private Pattern reLogger = null;
     private Pattern reLoggerLevel = null;
     private static Pattern reException = Pattern.compile("throw\\s+([^\\s\\(]*)\\s*\\(\\s*$");
@@ -117,15 +117,6 @@ public class SwiftSourceCodeParse extends SourceCodeParse {
                             annotationBracketDepth = 0;
                             inAnnotationString = false;
                             currentToken.sourceCode.append(ch);
-                        } else if (ch == '\n') {
-                            currentToken.sourceCode.append(ch); // continuation
-                            if (!(i > 0 && chars[i-1] == '\\')) {
-                                parse.tokenList.add(currentToken.finish(lineNumber));
-                                currentToken = new Token(n++, currentToken);
-                                currentToken.type = TokenType.SOURCE_CODE;
-                                currentToken.depth = depth;
-                                currentToken.startLineNumber = lineNumber;
-                            }
                         } else if (ch == '{') {
                             parse.tokenList.add(currentToken.finish(lineNumber));
                             currentToken = new Token(n++, currentToken);
@@ -603,13 +594,11 @@ public class SwiftSourceCodeParse extends SourceCodeParse {
     public void classifyForCallStack(Token token) {
         if (token.classification == Token.Classification.NOT_CLASSIFIED_YET || token.classification == Token.Classification.NOT_FULLY_CLASSIFIED) {
             if (token.type == TokenType.SOURCE_CODE) {
-                Matcher matcherMethod = reMethod.matcher(token.source);
+                String snippet = codeWithAnnotations(token.n, token.source.length() - 1, "");
+                Matcher matcherMethod = reMethod.matcher(snippet);
                 if (matcherMethod.find()) {
-                    String code = matcherMethod.group(1);
-                    //if (reMethodIgnore.matcher(code).find())
-                    //    continue;
                     token.classification = Token.Classification.METHOD_SIGNATURE;
-                    token.extractedCode = codeWithAnnotations(token.n, matcherMethod.start(1) - 1, code);
+                    token.extractedCode = snippet;
                     if (reControl.matcher(token.extractedCode).find()) {
                         token.classification = Token.Classification.CONTROL_SIGNATURE;
                     }
@@ -619,12 +608,18 @@ public class SwiftSourceCodeParse extends SourceCodeParse {
                         token.classification = Token.Classification.CLASS_SIGNATURE;
                         token.extractedCode = codeWithAnnotations(token.n, matcherClass.start(1) - 1, matcherClass.group(1));
                     } else {
-                        Matcher matcherLambda = reLambda.matcher(token.source);
+                        Matcher matcherLambda = reLambda.matcher(snippet);
                         if (matcherLambda.find()) {
                             token.classification = Token.Classification.LAMBDA_SIGNATURE;
                             token.extractedCode = matcherLambda.group(1);
                         } else {
-                            token.classification = Token.Classification.NO_MATCH;
+                            Matcher matcherControl = reControl.matcher(token.source);
+                            if (matcherControl.find()) {
+                                token.extractedCode = codeWithAnnotations(token.n, matcherControl.start(2) - 1, matcherControl.group(2));
+                                token.classification = Token.Classification.CONTROL_SIGNATURE;
+                            } else {
+                                token.classification = Token.Classification.NO_MATCH;
+                            }
                         }
                     }
                 }

@@ -16,6 +16,7 @@ limitations under the License.
 
 package io.err0.client.test;
 
+import com.google.gson.JsonArray;
 import io.err0.client.Main;
 import io.err0.client.core.*;
 import org.junit.jupiter.api.Test;
@@ -72,6 +73,9 @@ public class Test0054Swift {
                 assertNotNull(metaData);
                 boolean static_literal = metaData.metaData.get("static_literal").getAsBoolean();
                 assertTrue(static_literal);
+                JsonArray array = metaData.metaData.getAsJsonArray("methods");
+                assertEquals(2, array.size());
+                assertEquals("public func staticMessage<T>(_ object: T) -> Never where T : String", array.get(1).getAsJsonObject().get("c").getAsString());
             }
 
             // check dynamic literal
