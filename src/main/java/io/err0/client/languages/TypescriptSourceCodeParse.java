@@ -31,7 +31,7 @@ public class TypescriptSourceCodeParse extends SourceCodeParse {
         super(Language.TYPESCRIPT, policy, policy.adv_ts);
         switch (policy.mode) {
             case DEFAULTS:
-                reLogger = Pattern.compile("(^|\\s+)((m?_?)*log(ger)?|console|window\\.console)\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+                reLogger = Pattern.compile("(^|\\s+)((m?_?)*log(ger)?|console|window\\.console)\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info|fault|notice)\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
                 break;
 
             case EASY_CONFIGURATION:
@@ -40,7 +40,7 @@ public class TypescriptSourceCodeParse extends SourceCodeParse {
                 break;
         }
 
-        final String pattern = policy.mode == CodePolicy.CodePolicyMode.DEFAULTS ? "(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)" : policy.easyModeMethodPattern();
+        final String pattern = policy.mode == CodePolicy.CodePolicyMode.DEFAULTS ? "(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info|fault|notice)" : policy.easyModeMethodPattern();
         reLoggerLevel = Pattern.compile("\\.(" + pattern + ")\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
     }
 

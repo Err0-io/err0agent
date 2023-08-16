@@ -127,7 +127,7 @@ public class CodePolicy {
         JsonElement el = codePolicyJson.get("easy_mode_logger_method_naming_pattern");
         if (null == el) {
             // defaults:
-            return "(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)";
+            return "(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info|fault|notice)";
         } else {
             return el.getAsString();
         }

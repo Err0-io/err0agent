@@ -28,7 +28,7 @@ public class GolangSourceCodeParse extends SourceCodeParse {
         super(Language.GOLANG, policy, policy.adv_golang);
         switch (policy.mode) {
             case DEFAULTS:
-                reLogger = Pattern.compile("(^|\\s+)(m?_?)*log(ger)?\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)f?\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+                reLogger = Pattern.compile("(^|\\s+)(m?_?)*log(ger)?\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info|fault|notice)f?\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
                 break;
 
             case EASY_CONFIGURATION:
@@ -37,7 +37,7 @@ public class GolangSourceCodeParse extends SourceCodeParse {
                 break;
         }
 
-        final String pattern = policy.mode == CodePolicy.CodePolicyMode.DEFAULTS ? "(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)" : policy.easyModeMethodPattern();
+        final String pattern = policy.mode == CodePolicy.CodePolicyMode.DEFAULTS ? "(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info|fault|notice)" : policy.easyModeMethodPattern();
         reLoggerLevel = Pattern.compile("\\.(" + pattern + ")f?\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
     }
 

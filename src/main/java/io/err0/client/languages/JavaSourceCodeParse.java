@@ -31,7 +31,7 @@ public class JavaSourceCodeParse extends SourceCodeParse {
         super(Language.JAVA, policy, policy.adv_java);
         switch (policy.mode) {
             case DEFAULTS:
-                reLogger = Pattern.compile("(^|\\s+)(m?_?)*log(ger)?\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+                reLogger = Pattern.compile("(^|\\s+)(m?_?)*log(ger)?\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info|fault|notice)\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
                 reFluentSlf4jConfirm = Pattern.compile("^\\s*(m?_?)*log(ger)?\\.(atFatal|atError|atWarn|atInfo)\\(\\)\\.", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE); // atDebug|atTrace
                 break;
 
@@ -42,7 +42,7 @@ public class JavaSourceCodeParse extends SourceCodeParse {
                 break;
         }
 
-        final String pattern = policy.mode == CodePolicy.CodePolicyMode.DEFAULTS ? "(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)" : policy.easyModeMethodPattern();
+        final String pattern = policy.mode == CodePolicy.CodePolicyMode.DEFAULTS ? "(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info|fault|notice)" : policy.easyModeMethodPattern();
         reLoggerLevel = Pattern.compile("\\.(" + pattern + ")\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE); // group #1 is the level
         reFluentSlf4jLevel = Pattern.compile("\\.at(" + pattern + ")\\(\\)\\.", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE); // group #1 is the level
     }

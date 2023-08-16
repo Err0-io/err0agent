@@ -31,7 +31,7 @@ public class PhpSourceCodeParse extends SourceCodeParse {
         super(Language.PHP, policy, policy.adv_php);
         switch (policy.mode) {
             case DEFAULTS:
-                reLogger = Pattern.compile("(^|\\s|\\\\|\\$|->)(error_log|(m?_?)*log(ger)?(\\\\|::|->)(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info))\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE);
+                reLogger = Pattern.compile("(^|\\s|\\\\|\\$|->)(error_log|(m?_?)*log(ger)?(\\\\|::|->)(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info|fault|notice))\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE);
                 break;
 
             case EASY_CONFIGURATION:
@@ -40,7 +40,7 @@ public class PhpSourceCodeParse extends SourceCodeParse {
                 break;
         }
 
-        final String pattern = policy.mode == CodePolicy.CodePolicyMode.DEFAULTS ? "(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)" : policy.easyModeMethodPattern();
+        final String pattern = policy.mode == CodePolicy.CodePolicyMode.DEFAULTS ? "(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info|fault|notice)" : policy.easyModeMethodPattern();
         reLoggerLevel = Pattern.compile("(\\\\|::|->)(" + pattern + ")\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE); // group #2 is our match
     }
 
