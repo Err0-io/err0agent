@@ -47,7 +47,6 @@ public class SwiftSourceCodeParse extends SourceCodeParse {
 
     private static Pattern reMethod = Pattern.compile("\\s*((([^(){};\\n]+?)\\s+(func|var|let|set|get|didSet|willSet)\\s+([^(){};\\n]+?)?(\\(.*?\\))?(\\s+throws\\s+)?(\\s*->\\s*([^(){};\\n]+?))?))\\s*$", Pattern.DOTALL);
     private static Pattern reControl = Pattern.compile("(^|\\s+)(for|if|else(\\s+if)?|do|while|switch|try|catch|defer)(\\(|\\{|\\s|$)", Pattern.MULTILINE);
-    private static Pattern reLambda = Pattern.compile("\\s*(([^){};\\n,=]+?)\\([^)]*?\\)\\s+(->\\s*([^(){};\\n]+?))?\\s+in)\\s*$", Pattern.MULTILINE);
     private static Pattern reClass = Pattern.compile("\\s*(([^){};\\n]*\\s+)?(class|struct|protocol|enum|extension)\\s+(\\S+)[^;\\n{(]+?)\\s*$");
     private Pattern reLogger = null;
     private Pattern reLoggerLevel = null;
@@ -608,18 +607,12 @@ public class SwiftSourceCodeParse extends SourceCodeParse {
                         token.classification = Token.Classification.CLASS_SIGNATURE;
                         token.extractedCode = codeWithAnnotations(token.n, matcherClass.start(1) - 1, matcherClass.group(1));
                     } else {
-                        Matcher matcherLambda = reLambda.matcher(snippet);
-                        if (matcherLambda.find()) {
-                            token.classification = Token.Classification.LAMBDA_SIGNATURE;
-                            token.extractedCode = matcherLambda.group(1);
+                        Matcher matcherControl = reControl.matcher(token.source);
+                        if (matcherControl.find()) {
+                            token.extractedCode = codeWithAnnotations(token.n, matcherControl.start(2) - 1, matcherControl.group(2));
+                            token.classification = Token.Classification.CONTROL_SIGNATURE;
                         } else {
-                            Matcher matcherControl = reControl.matcher(token.source);
-                            if (matcherControl.find()) {
-                                token.extractedCode = codeWithAnnotations(token.n, matcherControl.start(2) - 1, matcherControl.group(2));
-                                token.classification = Token.Classification.CONTROL_SIGNATURE;
-                            } else {
-                                token.classification = Token.Classification.NO_MATCH;
-                            }
+                            token.classification = Token.Classification.NO_MATCH;
                         }
                     }
                 }
