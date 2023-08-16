@@ -31,12 +31,12 @@ public class SwiftSourceCodeParse extends SourceCodeParse {
         super(Language.SWIFT, policy, policy.adv_swift);
         switch (policy.mode) {
             case DEFAULTS:
-                reLogger = Pattern.compile("(^|\\s+)(m?_?)*log(ger)?\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info|fault|notice)\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+                reLogger = Pattern.compile("(^|\\s+|\\.)(m?_?)*log(ger)?\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info|fault|notice)\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
                 break;
 
             case EASY_CONFIGURATION:
             case ADVANCED_CONFIGURATION:
-                reLogger = Pattern.compile("(^|\\s+)" + policy.easyModeObjectPattern() + "\\." + policy.easyModeMethodPattern() + "\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+                reLogger = Pattern.compile("(^|\\s+|\\.)" + policy.easyModeObjectPattern() + "\\." + policy.easyModeMethodPattern() + "\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
                 break;
         }
 
@@ -44,14 +44,15 @@ public class SwiftSourceCodeParse extends SourceCodeParse {
         reLoggerLevel = Pattern.compile("\\.(" + pattern + ")\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE); // group #1 is the level
     }
 
-    private static Pattern reMethod = Pattern.compile("\\s*(([^(){};]+?)\\(.*?\\)(\\s+throws\\s+[^;{()]+?)?)\\s*$", Pattern.DOTALL);
+    private static Pattern reMethod = Pattern.compile("\\s*(([^(){};]+?)\\(.*?\\)(\\s+throws\\s+)?)\\s*$", Pattern.DOTALL);
     private static Pattern reControl = Pattern.compile("(^|\\s+)(for|if|else(\\s+if)?|do|while|switch|try|catch|finally|synchronized)(\\(|\\{|\\s|$)", Pattern.MULTILINE);
     private static Pattern reLambda = Pattern.compile("\\s*(([^){};,=]+?)\\([^)]*?\\)\\s+->\\s*)\\s*$");
-    private static Pattern reClass = Pattern.compile("\\s*(([^){};]*\\s+)?(class|record)\\s+(\\S+)[^;{(]+?)\\s*$");
+    private static Pattern reClass = Pattern.compile("\\s*(([^){};]*\\s+)?(class|struct|protocol|enum)\\s+(\\S+)[^;{(]+?)\\s*$");
     private Pattern reLogger = null;
     private Pattern reLoggerLevel = null;
-    private static Pattern reException = Pattern.compile("throw\\s+new\\s+([^\\s\\(]*)\\s*\\(\\s*$");
+    private static Pattern reException = Pattern.compile("throw\\s+([^\\s\\(]*)\\s*\\(\\s*$");
     private static int reException_group_class = 1;
+    private static Pattern reFatalError = Pattern.compile("\\bfatalError\\s*\\(\\s*$");
 
     public static SwiftSourceCodeParse lex(final CodePolicy policy, final String sourceCode) {
         int n = 0;
@@ -300,7 +301,7 @@ public class SwiftSourceCodeParse extends SourceCodeParse {
                 case QUOT_LITERAL:
                 {
                     // 1) Strip '[ERR-nnnnnn] ' from string literals for re-injection
-                    Matcher matcherErrorNumber = policy.getReErrorNumber_java().matcher(token.source);
+                    Matcher matcherErrorNumber = policy.getReErrorNumber_swift().matcher(token.source);
                     if (matcherErrorNumber.find()) {
                         token.classification = Token.Classification.ERROR_NUMBER;
                         long errorOrdinal = Long.parseLong(matcherErrorNumber.group(1));
@@ -316,25 +317,25 @@ public class SwiftSourceCodeParse extends SourceCodeParse {
                             token.sourceNoErrorCode = token.source = token.source.substring(0,1) + token.source.substring(matcherErrorNumber.end());
                         }
                     } else if (policy.getCodePolicy().getEnablePlaceholder()) {
-                        Matcher matcherPlaceholder = policy.getReErrorNumber_java_placeholder().matcher(token.source);
+                        Matcher matcherPlaceholder = policy.getReErrorNumber_swift_placeholder().matcher(token.source);
                         if (matcherPlaceholder.matches()) {
                             token.classification = Token.Classification.PLACEHOLDER;
-                            String number = matcherPlaceholder.group(policy.reErrorNumber_java_placeholder_number_group);
+                            String number = matcherPlaceholder.group(policy.reErrorNumber_swift_placeholder_number_group);
                             if (null != number && ! "".equals(number)) {
                                 long errorOrdinal = Long.parseLong(number);
                                 if (apiProvider.validErrorNumber(policy, errorOrdinal)) {
                                     if (globalState.store(errorOrdinal, stateItem, token)) {
                                         token.keepErrorCode = true;
                                         token.errorOrdinal = errorOrdinal;
-                                        token.sourceNoErrorCode = matcherPlaceholder.group(policy.reErrorNumber_java_placeholder_open_close_group) + matcherPlaceholder.group(policy.reErrorNumber_java_placeholder_open_close_group);
+                                        token.sourceNoErrorCode = matcherPlaceholder.group(policy.reErrorNumber_swift_placeholder_open_close_group) + matcherPlaceholder.group(policy.reErrorNumber_swift_placeholder_open_close_group);
                                     } else {
-                                        token.sourceNoErrorCode = token.source = matcherPlaceholder.group(policy.reErrorNumber_java_placeholder_open_close_group) + matcherPlaceholder.group(policy.reErrorNumber_java_placeholder_open_close_group);
+                                        token.sourceNoErrorCode = token.source = matcherPlaceholder.group(policy.reErrorNumber_swift_placeholder_open_close_group) + matcherPlaceholder.group(policy.reErrorNumber_swift_placeholder_open_close_group);
                                     }
                                 } else {
-                                    token.sourceNoErrorCode = token.source = matcherPlaceholder.group(policy.reErrorNumber_java_placeholder_open_close_group) + matcherPlaceholder.group(policy.reErrorNumber_java_placeholder_open_close_group);
+                                    token.sourceNoErrorCode = token.source = matcherPlaceholder.group(policy.reErrorNumber_swift_placeholder_open_close_group) + matcherPlaceholder.group(policy.reErrorNumber_swift_placeholder_open_close_group);
                                 }
                             } else {
-                                token.sourceNoErrorCode = token.source = matcherPlaceholder.group(policy.reErrorNumber_java_placeholder_open_close_group) + matcherPlaceholder.group(policy.reErrorNumber_java_placeholder_open_close_group);
+                                token.sourceNoErrorCode = token.source = matcherPlaceholder.group(policy.reErrorNumber_swift_placeholder_open_close_group) + matcherPlaceholder.group(policy.reErrorNumber_swift_placeholder_open_close_group);
                             }
                         } else {
                             token.classification = Token.Classification.POTENTIAL_ERROR_NUMBER;
@@ -349,7 +350,7 @@ public class SwiftSourceCodeParse extends SourceCodeParse {
                 case QUOT3_LITERAL:
                 {
                     // 1) Strip '[ERR-nnnnnn] ' from string literals for re-injection
-                    Matcher matcherErrorNumber = policy.getReErrorNumber_java_textblocks().matcher(token.source);
+                    Matcher matcherErrorNumber = policy.getReErrorNumber_swift_textblocks().matcher(token.source);
                     if (matcherErrorNumber.find()) {
                         token.classification = Token.Classification.ERROR_NUMBER;
                         long errorOrdinal = Long.parseLong(matcherErrorNumber.group(2));
@@ -414,6 +415,12 @@ public class SwiftSourceCodeParse extends SourceCodeParse {
                         if (matcherException.find()) {
                             token.classification = Token.Classification.EXCEPTION_THROW;
                             token.exceptionClass = matcherException.group(reException_group_class);
+                        } else {
+                           Matcher matcherFatalError = reFatalError.matcher(token.source);
+                           if (matcherFatalError.find()) {
+                               token.classification = Token.Classification.EXCEPTION_THROW;
+                               // no exception class.
+                           }
                         }
                     }
 

@@ -497,6 +497,38 @@ public class ProjectPolicy {
     public final int reErrorNumber_rb_placeholder_open_close_group = 1;
     public final int reErrorNumber_rb_placeholder_number_group = 3;
 
+    // Swift pattern for finding our error number.
+    private Pattern reErrorNumber_swift = null;
+    public Pattern getReErrorNumber_swift() {
+        if (null == reErrorNumber_swift) {
+            reErrorNumber_swift = Pattern.compile("^\"\\[" + getErrorPrefix() + "-(\\d+)\\]\\s*");
+        }
+        return reErrorNumber_swift;
+    }
+
+    // Swift pattern for finding our error number, multi-line strings.
+    private Pattern reErrorNumber_swift_textblocks = null;
+    public Pattern getReErrorNumber_swift_textblocks() {
+        if (null == reErrorNumber_swift_textblocks) {
+            reErrorNumber_swift_textblocks = Pattern.compile("^\"\"\"(\\s*)\\[" + getErrorPrefix() + "-(\\d+)\\]\\s*");
+        }
+        return reErrorNumber_swift_textblocks;
+    }
+
+    private Pattern reErrorNumber_swift_placeholder = null;
+    public Pattern getReErrorNumber_swift_placeholder() {
+        if (null == reErrorNumber_swift_placeholder) {
+            CodePolicy codePolicy = getCodePolicy();
+            if (!codePolicy.enablePlaceholder) {
+                throw new RuntimeException("[AGENT-000109] Unable to search for placeholder");
+            }
+            reErrorNumber_swift_placeholder = Pattern.compile("^(\")(" + codePolicy.placeholderValue + "|" + getErrorPrefix() + "-(\\d+))\\1$");
+        }
+        return reErrorNumber_swift_placeholder;
+    }
+    public final int reErrorNumber_swift_placeholder_open_close_group = 1;
+    public final int reErrorNumber_swift_placeholder_number_group = 3;
+
     public CodePolicy getCodePolicy() {
         if (null == this.prj_code_policy) {
             return realmPolicy.realm_code_policy;
