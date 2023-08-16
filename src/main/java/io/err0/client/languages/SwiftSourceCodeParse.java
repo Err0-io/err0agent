@@ -469,6 +469,14 @@ public class SwiftSourceCodeParse extends SourceCodeParse {
                                             staticLiteral = false;
                                         }
                                         break;
+                                    case QUOT_LITERAL:
+                                    case QUOT3_LITERAL:
+                                        if (sourceCode.contains("\\(")) {
+                                            staticLiteral = false;
+                                        }
+                                        cleaned.append(sourceCode);
+                                        output.append(sourceCode);
+                                        break;
                                     case COMMENT_BLOCK:
                                     case CONTENT:
                                     case COMMENT_LINE:
