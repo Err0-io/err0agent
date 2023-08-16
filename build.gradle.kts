@@ -123,6 +123,7 @@ tasks.withType<JavaExec> {
   // Check-out the open-source-bundle project at the same parent level as this project:
   args = listOf(
     // pass #1 -- insert error codes (or re-insert error codes).
+    "--token", "../open-source-bundle/dev-localhost/err0-vapor-20230816-b6fc8533-3c11-11ee-a93e-305a3ac84b71.json", "--insert", "../open-source-bundle/vapor", // Swift
     "--token", "../open-source-bundle/dev-localhost/err0-smartthingsedgedrivers-20230603-077907dc-0214-11ee-a0ed-305a3ac84b71.json", "--insert", "../open-source-bundle/SmartThingsEdgeDrivers", // Lua
     "--token", "../open-source-bundle/dev-localhost/err0-leptos-20221220-7c62eafd-806b-11ed-b59e-4401bb8de3b3.json", "--insert", "../open-source-bundle/leptos", // Rust
     "--token", "../open-source-bundle/dev-localhost/err0-postfix-20221220-5cd5d49b-806b-11ed-b59e-4401bb8de3b3.json", "--insert", "../open-source-bundle/postfix", // C
@@ -146,6 +147,7 @@ tasks.withType<JavaExec> {
     "--token", "../open-source-bundle/dev-localhost/err0-rails-20230723-82c92bf1-1997-11ee-8025-305a3ac84b71.json", "--insert", "../open-source-bundle/rails", // Ruby
     "--token", "../open-source-bundle/dev-localhost/err0-pytorch-20221209-6cd848c3-77ab-11ed-b3c0-4401bb8de3b3.json", "--insert", "../open-source-bundle/pytorch", // Python/C++
     // pass #2 -- analyse source code, ignoring dirty checkout.
+    "--token", "../open-source-bundle/dev-localhost/err0-vapor-20230816-b6fc8533-3c11-11ee-a93e-305a3ac84b71.json", "--analyse", "--dirty", "../open-source-bundle/vapor", // Swift
     "--token", "../open-source-bundle/dev-localhost/err0-smartthingsedgedrivers-20230603-077907dc-0214-11ee-a0ed-305a3ac84b71.json", "--analyse", "--dirty", "../open-source-bundle/SmartThingsEdgeDrivers", // Lua
     "--token", "../open-source-bundle/dev-localhost/err0-leptos-20221220-7c62eafd-806b-11ed-b59e-4401bb8de3b3.json", "--analyse", "--dirty", "../open-source-bundle/leptos", // Rust
     "--token", "../open-source-bundle/dev-localhost/err0-postfix-20221220-5cd5d49b-806b-11ed-b59e-4401bb8de3b3.json", "--analyse", "--dirty", "../open-source-bundle/postfix", // C

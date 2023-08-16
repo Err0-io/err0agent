@@ -46,6 +46,7 @@ public abstract class SourceCodeParse {
         RUST,
         LUA,
         RUBY,
+        SWIFT,
     }
 
     public final CallStackLogic callStackLogic() {
