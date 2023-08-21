@@ -291,6 +291,29 @@ public class ProjectPolicy {
     public final int reErrorNumber_ccpp_placeholder_open_close_group = 1;
     public final int reErrorNumber_ccpp_placeholder_number_group = 3;
 
+    // Objective C/C++ pattern for finding our error number.
+    private Pattern reErrorNumber_objc = null;
+    public Pattern getReErrorNumber_objc() {
+        if (null == reErrorNumber_objc) {
+            reErrorNumber_objc = Pattern.compile("^\"\\[" + getErrorPrefix() + "-(\\d+)\\]\\s*");
+        }
+        return reErrorNumber_objc;
+    }
+
+    private Pattern reErrorNumber_objc_placeholder = null;
+    public Pattern getReErrorNumber_objc_placeholder() {
+        if (null == reErrorNumber_objc_placeholder) {
+            CodePolicy codePolicy = getCodePolicy();
+            if (!codePolicy.enablePlaceholder) {
+                throw new RuntimeException("[AGENT-000122] Unable to search for placeholder");
+            }
+            reErrorNumber_objc_placeholder = Pattern.compile("^(\")(" + codePolicy.placeholderValue + "|" + getErrorPrefix() + "-(\\d+))\\1$");
+        }
+        return reErrorNumber_objc_placeholder;
+    }
+    public final int reErrorNumber_objc_placeholder_open_close_group = 1;
+    public final int reErrorNumber_objc_placeholder_number_group = 3;
+
     // GO pattern for finding our error number.
     private Pattern reErrorNumber_go = null;
     public Pattern getReErrorNumber_go() {

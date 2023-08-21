@@ -976,6 +976,7 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
             final boolean rubyAllowed = codePolicy.mode != CodePolicy.CodePolicyMode.ADVANCED_CONFIGURATION || (null == codePolicy.adv_ruby || !codePolicy.adv_ruby.disable_language);
             final boolean swiftAllowed = codePolicy.mode != CodePolicy.CodePolicyMode.ADVANCED_CONFIGURATION || (null == codePolicy.adv_swift || !codePolicy.adv_swift.disable_language);
             final boolean kotlinAllowed = codePolicy.mode != CodePolicy.CodePolicyMode.ADVANCED_CONFIGURATION || (null == codePolicy.adv_kotlin || !codePolicy.adv_kotlin.disable_language);
+            final boolean objcAllowed = codePolicy.mode != CodePolicy.CodePolicyMode.ADVANCED_CONFIGURATION || (null == codePolicy.adv_objc || !codePolicy.adv_objc.disable_language);
 
             try (Stream<Path> paths = Files.walk(Paths.get(startPoint)))
             {
@@ -1049,6 +1050,10 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                             final FileCoding fileCoding = new FileCoding(p);
                             globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, KotlinSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
                             System.out.println("[AGENT-000119] Parsed: " + newFile);
+                        } else if (objcAllowed && (newFileLower.endsWith(".m") || newFileLower.endsWith(".mm"))) {
+                            final FileCoding fileCoding = new FileCoding(p);
+                            globalState.store(newFile, localToCheckoutUnchanged, localToCheckoutLower, ObjectiveCCPPSourceCodeParse.lex(projectPolicy.getCodePolicy(), fileCoding.content), fileCoding.charset);
+                            System.out.println("[AGENT-000121] Parsed: " + newFile);
                         }
                     }
                 });
