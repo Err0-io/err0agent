@@ -93,7 +93,7 @@ public class Token {
             case APOS3_LITERAL:
                 return "'''";
             default:
-                throw new RuntimeException("Unknown case.");
+                throw new RuntimeException("[AGENT-000123] Unknown case.");
         }
     }
 
