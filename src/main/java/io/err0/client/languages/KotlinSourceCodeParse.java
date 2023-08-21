@@ -524,7 +524,7 @@ public class KotlinSourceCodeParse extends SourceCodeParse {
                 char ch = currentToken.source.charAt(j);
                 if (currentToken.type == TokenType.SOURCE_CODE) {
                     if (stack.empty()) {
-                        if (ch == ',' || ch == ';' || ch == '{' || ch == '(' || ch == '}') {
+                        if (ch == '*' || ch == ',' || ch == ';' || ch == '{' || ch == '(' || ch == '}') {
                             abort = true;
                             break;
                         } else if (ch == ')') {
