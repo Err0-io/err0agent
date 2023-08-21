@@ -45,7 +45,7 @@ public class ObjectiveCCPPSourceCodeParse extends SourceCodeParse {
     }
 
     private static Pattern reMethodPerhaps = Pattern.compile("\\)\\s*$");
-    private static Pattern reMethod = Pattern.compile("\\s*(([^(){};]+?)\\(.*?\\)(\\s+throws\\s+[^;{()]+?)?)\\s*$", Pattern.DOTALL);
+    private static Pattern reMethod = Pattern.compile("(\\s+-?\\s+)?(\\(.*?\\))?\\s*(([^(){};]+?)\\(.*?\\)(\\s+throws\\s+[^;{()]+?)?)\\s*$", Pattern.DOTALL);
     private static Pattern reControl = Pattern.compile("(^|\\s+)(for|if|else(\\s+if)?|do|while|switch|try|catch|finally)(\\(|\\{|\\s|$)", Pattern.MULTILINE);
     private static Pattern reClass = Pattern.compile("\\s*(([^){\\[\\]};]+?)\\s+class\\s+(\\S+)[^;{(]+?)\\s*$");
     private Pattern reBuiltInLog = Pattern.compile("\\b(NSLog|os_log)\\s*\\(\\s*$");
@@ -224,12 +224,12 @@ public class ObjectiveCCPPSourceCodeParse extends SourceCodeParse {
                             if (globalState.store(errorOrdinal, stateItem, token)) {
                                 token.keepErrorCode = true;
                                 token.errorOrdinal = errorOrdinal;
-                                token.sourceNoErrorCode = token.source.substring(0, 2) + token.source.substring(matcherErrorNumber.end());
+                                token.sourceNoErrorCode = token.source.substring(0, 3) + token.source.substring(matcherErrorNumber.end());
                             } else {
-                                token.sourceNoErrorCode = token.source = token.source.substring(0,2) + token.source.substring(matcherErrorNumber.end());
+                                token.sourceNoErrorCode = token.source = token.source.substring(0,3) + token.source.substring(matcherErrorNumber.end());
                             }
                         } else {
-                            token.sourceNoErrorCode = token.source = token.source.substring(0,2) + token.source.substring(matcherErrorNumber.end());
+                            token.sourceNoErrorCode = token.source = token.source.substring(0,3) + token.source.substring(matcherErrorNumber.end());
                         }
                     } else if (policy.getCodePolicy().getEnablePlaceholder()) {
                         Matcher matcherPlaceholder = policy.getReErrorNumber_objc_placeholder().matcher(token.source);
@@ -242,15 +242,15 @@ public class ObjectiveCCPPSourceCodeParse extends SourceCodeParse {
                                     if (globalState.store(errorOrdinal, stateItem, token)) {
                                         token.keepErrorCode = true;
                                         token.errorOrdinal = errorOrdinal;
-                                        token.sourceNoErrorCode = matcherPlaceholder.group(policy.reErrorNumber_objc_placeholder_open_close_group) + matcherPlaceholder.group(policy.reErrorNumber_objc_placeholder_open_close_group);
+                                        token.sourceNoErrorCode = "@\"\"";
                                     } else {
-                                        token.sourceNoErrorCode = token.source = matcherPlaceholder.group(policy.reErrorNumber_objc_placeholder_open_close_group) + matcherPlaceholder.group(policy.reErrorNumber_objc_placeholder_open_close_group);
+                                        token.sourceNoErrorCode = "@\"\"";
                                     }
                                 } else {
-                                    token.sourceNoErrorCode = token.source = matcherPlaceholder.group(policy.reErrorNumber_objc_placeholder_open_close_group) + matcherPlaceholder.group(policy.reErrorNumber_objc_placeholder_open_close_group);
+                                    token.sourceNoErrorCode = "@\"\"";
                                 }
                             } else {
-                                token.sourceNoErrorCode = token.source = matcherPlaceholder.group(policy.reErrorNumber_objc_placeholder_open_close_group) + matcherPlaceholder.group(policy.reErrorNumber_objc_placeholder_open_close_group);
+                                token.sourceNoErrorCode = "@\"\"";
                             }
                         } else {
                             token.classification = Token.Classification.POTENTIAL_ERROR_NUMBER;
@@ -391,9 +391,9 @@ public class ObjectiveCCPPSourceCodeParse extends SourceCodeParse {
         Stack<Character> stack = new Stack<>();
         for (int i = code.length() - 1; i >= 0; --i) {
             char ch = code.charAt(i);
-            if (ch == ')' || ch == '}') {
+            if (ch == ')' || ch == '}' || ch == ']') {
                 stack.push(ch);
-            } else if (! stack.empty() && (ch == '(' || ch == '{')) {
+            } else if (! stack.empty() && (ch == '(' || ch == '{' || ch == '[')) {
                 stack.pop();
             }
         }
@@ -405,10 +405,10 @@ public class ObjectiveCCPPSourceCodeParse extends SourceCodeParse {
                 char ch = currentToken.source.charAt(j);
                 if (currentToken.type == TokenType.SOURCE_CODE) {
                     if (stack.empty()) {
-                        if (/*ch == ',' ||*/ ch == ';' || ch == '{' || ch == '(' || ch == '}' || ch == ']') {
+                        if (/*ch == ',' ||*/ ch == ';' || ch == '{' || ch == '(' || ch == '}' || ch == '[') {
                             abort = true;
                             break;
-                        } else if (ch == ')') {
+                        } else if (ch == ')' || ch == ']') {
                             stack.push(ch);
                         }
                         backwardsCode.append(ch);
@@ -442,7 +442,7 @@ public class ObjectiveCCPPSourceCodeParse extends SourceCodeParse {
                     String codeBlock = codeWithAnnotations(token.n, matcherMethodPerhaps.end() - 1, "");
                     Matcher matcherMethod = reMethod.matcher(codeBlock);
                     if (matcherMethod.find()) {
-                        String code = matcherMethod.group(1);
+                        String code = matcherMethod.group(3);
 
                         Matcher mPreprocessor = rePreprocessor.matcher(code);
                         while (mPreprocessor.find()) { // maybe it's #endregion \r\n #region foo \r\n your code...
