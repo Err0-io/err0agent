@@ -80,6 +80,8 @@ public class CodePolicy {
                 this.adv_ruby = null == e ? new LanguageCodePolicy(new JsonObject(), this) : new LanguageCodePolicy(e.getAsJsonObject(), this);
                 e = codePolicyJson.get("adv_swift");
                 this.adv_swift = null == e ? new LanguageCodePolicy(new JsonObject(), this) : new LanguageCodePolicy(e.getAsJsonObject(), this);
+                e = codePolicyJson.get("adv_kotlin");
+                this.adv_kotlin = null == e ? new LanguageCodePolicy(new JsonObject(), this) : new LanguageCodePolicy(e.getAsJsonObject(), this);
                 break;
             default:
                 throw new RuntimeException("[AGENT-000009] Unknown mode");
@@ -115,6 +117,7 @@ public class CodePolicy {
     public LanguageCodePolicy adv_lua;
     public LanguageCodePolicy adv_ruby;
     public LanguageCodePolicy adv_swift;
+    public LanguageCodePolicy adv_kotlin;
 
     public String easyModeObjectPattern() {
         JsonElement el = codePolicyJson.get("easy_mode_logger_object_naming_pattern");
