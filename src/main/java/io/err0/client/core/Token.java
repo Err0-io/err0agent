@@ -92,6 +92,14 @@ public class Token {
                 return "\"\"\"";
             case APOS3_LITERAL:
                 return "'''";
+            case LONGBRACKET_LITERAL:
+                StringBuilder sb = new StringBuilder();
+                sb.append("]");
+                for (int i = 0; i < longBracketLevel; ++i) {
+                    sb.append("=");
+                }
+                sb.append("]");
+                return sb.toString();
             default:
                 throw new RuntimeException("[AGENT-000123] Unknown case.");
         }
