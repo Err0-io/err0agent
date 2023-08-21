@@ -45,7 +45,7 @@ public class ObjectiveCCPPSourceCodeParse extends SourceCodeParse {
     }
 
     private static Pattern reMethodPerhaps = Pattern.compile("\\)\\s*$");
-    private static Pattern reMethod = Pattern.compile("(\\s+-?\\s+)?(\\(.*?\\))?\\s*(([^(){};]+?)\\(.*?\\)(\\s+throws\\s+[^;{()]+?)?)\\s*$", Pattern.DOTALL);
+    private static Pattern reMethod = Pattern.compile("(\\s+[-+]?\\s+)?(\\(.*?\\))?\\s*(([^(){};]+?)\\(.*?\\)(\\s+throws\\s+[^;{()]+?)?)\\s*$", Pattern.DOTALL);
     private static Pattern reControl = Pattern.compile("(^|\\s+)(for|if|else(\\s+if)?|do|while|switch|try|catch|finally)(\\(|\\{|\\s|$)", Pattern.MULTILINE);
     private static Pattern reClass = Pattern.compile("\\s*(([^){\\[\\]};]+?)\\s+class\\s+(\\S+)[^;{(]+?)\\s*$");
     private Pattern reBuiltInLog = Pattern.compile("\\b(NSLog|os_log)\\s*\\(\\s*$");
@@ -224,12 +224,12 @@ public class ObjectiveCCPPSourceCodeParse extends SourceCodeParse {
                             if (globalState.store(errorOrdinal, stateItem, token)) {
                                 token.keepErrorCode = true;
                                 token.errorOrdinal = errorOrdinal;
-                                token.sourceNoErrorCode = token.source.substring(0, 3) + token.source.substring(matcherErrorNumber.end());
+                                token.sourceNoErrorCode = token.source.substring(0, 2) + token.source.substring(matcherErrorNumber.end());
                             } else {
-                                token.sourceNoErrorCode = token.source = token.source.substring(0,3) + token.source.substring(matcherErrorNumber.end());
+                                token.sourceNoErrorCode = token.source = token.source.substring(0,2) + token.source.substring(matcherErrorNumber.end());
                             }
                         } else {
-                            token.sourceNoErrorCode = token.source = token.source.substring(0,3) + token.source.substring(matcherErrorNumber.end());
+                            token.sourceNoErrorCode = token.source = token.source.substring(0,2) + token.source.substring(matcherErrorNumber.end());
                         }
                     } else if (policy.getCodePolicy().getEnablePlaceholder()) {
                         Matcher matcherPlaceholder = policy.getReErrorNumber_objc_placeholder().matcher(token.source);

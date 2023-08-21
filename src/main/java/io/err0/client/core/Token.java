@@ -79,6 +79,24 @@ public class Token {
                 throw new RuntimeException("[AGENT-000020] Not a string literal, type = " + type.name());
         }
     }
+
+    public String getEndQuote() {
+        switch (type) {
+            case QUOT_LITERAL:
+                return "\"";
+            case APOS_LITERAL:
+                return "'";
+            case BACKTICK_LITERAL:
+                return "`";
+            case QUOT3_LITERAL:
+                return "\"\"\"";
+            case APOS3_LITERAL:
+                return "'''";
+            default:
+                throw new RuntimeException("Unknown case.");
+        }
+    }
+
     public int getStringQuoteWidth()
     {
         if (null != extendedInformation) {

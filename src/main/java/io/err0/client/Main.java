@@ -1473,6 +1473,7 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
 
                             final int width = item.token.getStringQuoteWidth();
                             String start = item.token.sourceNoErrorCode.substring(0, width);
+                            String end = item.token.getEndQuote();
                             final String remainder = Utils.stripLeading(item.token.sourceNoErrorCode.substring(width));
                             final String whitespace = item.token.sourceNoErrorCode.substring(width, (item.token.sourceNoErrorCode.length() - remainder.length()));
                             if (width > 1) {
@@ -1487,7 +1488,7 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                                 open = "";
                                 close = "";
                             }
-                            item.token.source = start + open + policy.getErrorCodeFormatter().formatErrorCode(item.token.errorOrdinal) + close + (remainder.length() == 0 || remainder.equals(start) ? "" : " ") + remainder;
+                            item.token.source = start + open + policy.getErrorCodeFormatter().formatErrorCode(item.token.errorOrdinal) + close + (remainder.length() == 0 || remainder.equals(end) ? "" : " ") + remainder;
                         }
                     } else {
                         item.token.keepErrorCode = false;
@@ -1496,6 +1497,7 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                             logic.pass2AssignNewErrorNumber(item); // item.token.errorOrdinal = apiProvider.nextErrorNumber();
                             final int width = item.token.getStringQuoteWidth();
                             String start = item.token.sourceNoErrorCode.substring(0, width);
+                            String end = item.token.getEndQuote();
                             final String remainder = Utils.stripLeading(item.token.sourceNoErrorCode.substring(width));
                             final String whitespace = item.token.sourceNoErrorCode.substring(width, (item.token.sourceNoErrorCode.length() - remainder.length()));
                             if (width > 1) {
@@ -1510,7 +1512,7 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                                 open = "";
                                 close = "";
                             }
-                            item.token.source = start + open + policy.getErrorCodeFormatter().formatErrorCode(item.token.errorOrdinal) + close + (remainder.length() == 0 || remainder.equals(start) ? "" : " ") + remainder;
+                            item.token.source = start + open + policy.getErrorCodeFormatter().formatErrorCode(item.token.errorOrdinal) + close + (remainder.length() == 0 || remainder.equals(end) ? "" : " ") + remainder;
                         };
                     }
                 }
@@ -1570,6 +1572,7 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                         if (!currentToken.keepErrorCode) {
                             final int width = currentToken.getStringQuoteWidth();
                             String start = currentToken.sourceNoErrorCode.substring(0, width);
+                            String end = currentToken.getEndQuote();
                             final String remainder = Utils.stripLeading(currentToken.sourceNoErrorCode.substring(width));
                             final String whitespace = currentToken.sourceNoErrorCode.substring(width, (currentToken.sourceNoErrorCode.length() - remainder.length()));
                             if (width > 1) {
@@ -1584,10 +1587,11 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                                 open = "";
                                 close = "";
                             }
-                            currentToken.source = start + open + policy.getErrorCodeFormatter().formatErrorCode(currentToken.errorOrdinal) + close + (remainder.length() == 0 || remainder.equals(start) ? "" : " ") + remainder;
+                            currentToken.source = start + open + policy.getErrorCodeFormatter().formatErrorCode(currentToken.errorOrdinal) + close + (remainder.length() == 0 || remainder.equals(end) ? "" : " ") + remainder;
                         } else {
                             final int width = currentToken.getStringQuoteWidth();
                             String start = currentToken.sourceNoErrorCode.substring(0, width);
+                            String end = currentToken.getEndQuote();
                             final String remainder = Utils.stripLeading(currentToken.sourceNoErrorCode.substring(width));
                             final String whitespace = currentToken.sourceNoErrorCode.substring(width, (currentToken.sourceNoErrorCode.length() - remainder.length()));
                             if (width > 1) {
@@ -1602,7 +1606,7 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                                 open = "";
                                 close = "";
                             }
-                            final String formatted = start + open + policy.getErrorCodeFormatter().formatErrorCode(currentToken.errorOrdinal) + close + (remainder.length() == 0 || remainder.equals(start) ? "" : " ") + remainder;
+                            final String formatted = start + open + policy.getErrorCodeFormatter().formatErrorCode(currentToken.errorOrdinal) + close + (remainder.length() == 0 || remainder.equals(end) ? "" : " ") + remainder;
                             if (!formatted.equals(currentToken.initialSource)) {
                                 currentToken.source = formatted;
                                 logic.pass3InsertExistingErrorNumber(stateItem, currentToken); // no code corresponds to this in the main 'do everything' analyse method
