@@ -48,6 +48,7 @@ public class ObjectiveCCPPSourceCodeParse extends SourceCodeParse {
     private static Pattern reMethod = Pattern.compile("\\s*(([^(){};]+?)\\(.*?\\)(\\s+throws\\s+[^;{()]+?)?)\\s*$", Pattern.DOTALL);
     private static Pattern reControl = Pattern.compile("(^|\\s+)(for|if|else(\\s+if)?|do|while|switch|try|catch|finally)(\\(|\\{|\\s|$)", Pattern.MULTILINE);
     private static Pattern reClass = Pattern.compile("\\s*(([^){\\[\\]};]+?)\\s+class\\s+(\\S+)[^;{(]+?)\\s*$");
+    private Pattern reNSLog = Pattern.compile("\\bNSLog\\s*\\(\\s*$");
     private Pattern reLogger = null;
     private Pattern reLoggerLevel = null;
     private static Pattern reException = Pattern.compile("\\[([^\\s(\\[]*)\\s*raise:\\s*$");
@@ -296,6 +297,11 @@ public class ObjectiveCCPPSourceCodeParse extends SourceCodeParse {
                             Matcher matcherLoggerLevel = reLoggerLevel.matcher(token.source);
                             if (matcherLoggerLevel.find()) {
                                 token.loggerLevel = matcherLoggerLevel.group(1);
+                            }
+                        } else {
+                            Matcher matcherNSLog = reNSLog.matcher(token.source);
+                            if (matcherNSLog.find()) {
+                                token.classification = Token.Classification.LOG_OUTPUT;
                             }
                         }
                     }
