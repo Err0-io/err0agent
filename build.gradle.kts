@@ -73,13 +73,15 @@ dependencies {
   //implementation("io.vertx:vertx-web-client")
   //testImplementation("io.vertx:vertx-junit5")
   testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
-  implementation("com.google.code.gson:gson:2.8.7")
+  // https://mvnrepository.com/artifact/com.google.code.gson/gson
+  implementation("com.google.code.gson:gson:2.10.1")
+
 
   // https://mvnrepository.com/artifact/org.eclipse.jgit/org.eclipse.jgit
-  implementation("org.eclipse.jgit:org.eclipse.jgit:5.12.0.202106070339-r")
+  implementation("org.eclipse.jgit:org.eclipse.jgit:6.6.0.202305301015-r")
 
   // https://mvnrepository.com/artifact/org.apache.httpcomponents.client5/httpclient5
-  implementation("org.apache.httpcomponents.client5:httpclient5:5.2")
+  implementation("org.apache.httpcomponents.client5:httpclient5:5.2.1")
 
   // https://mvnrepository.com/artifact/commons-cli/commons-cli
   implementation("commons-cli:commons-cli:1.5.0")
