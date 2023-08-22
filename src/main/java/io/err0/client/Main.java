@@ -1476,7 +1476,7 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                             String end = item.token.getEndQuote();
                             final String remainder = Utils.stripLeading(item.token.sourceNoErrorCode.substring(width));
                             final String whitespace = item.token.sourceNoErrorCode.substring(width, (item.token.sourceNoErrorCode.length() - remainder.length()));
-                            if (width > 1) {
+                            if (end.length() > 1) {
                                 start = start + whitespace;
                             }
                             String open = "[", close = "]";
@@ -1500,7 +1500,7 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                             String end = item.token.getEndQuote();
                             final String remainder = Utils.stripLeading(item.token.sourceNoErrorCode.substring(width));
                             final String whitespace = item.token.sourceNoErrorCode.substring(width, (item.token.sourceNoErrorCode.length() - remainder.length()));
-                            if (width > 1) {
+                            if (end.length() > 1) {
                                 start = start + whitespace;
                             }
                             String open = "[", close = "]";
@@ -1575,7 +1575,7 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                             String end = currentToken.getEndQuote();
                             final String remainder = Utils.stripLeading(currentToken.sourceNoErrorCode.substring(width));
                             final String whitespace = currentToken.sourceNoErrorCode.substring(width, (currentToken.sourceNoErrorCode.length() - remainder.length()));
-                            if (width > 1) {
+                            if (end.length() > 1) {
                                 start = start + whitespace;
                             }
                             String open = "[", close = "]";
@@ -1594,7 +1594,7 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                             String end = currentToken.getEndQuote();
                             final String remainder = Utils.stripLeading(currentToken.sourceNoErrorCode.substring(width));
                             final String whitespace = currentToken.sourceNoErrorCode.substring(width, (currentToken.sourceNoErrorCode.length() - remainder.length()));
-                            if (width > 1) {
+                            if (end.length() > 1) {
                                 start = start + whitespace;
                             }
                             String open = "[", close = "]";
