@@ -53,6 +53,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -60,19 +61,22 @@ import java.util.stream.Stream;
 public class Main {
 
     public final static boolean USE_NEAREST_CODE_FOR_LINE_OF_CODE = true;
-    public final static int CHAR_RADIUS = 4*1024;
+    public final static int CHAR_RADIUS = 4 * 1024;
     private static Pattern reGitdir = Pattern.compile("^gitdir: (.*?)$", Pattern.MULTILINE);
     private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
 
     static class GitMetadata {
-        GitMetadata(final String gitHash, final boolean statusIsClean, final boolean detachedHead) {
+        GitMetadata(final String gitHash, final boolean statusIsClean, final boolean detachedHead, final Repository repository) {
             this.gitHash = gitHash;
             this.statusIsClean = statusIsClean;
             this.detachedHead = detachedHead;
+            this.repository = repository;
         }
+
         final String gitHash;
         final boolean statusIsClean;
         final boolean detachedHead;
+        final Repository repository;
     }
 
     private static GitMetadata populateGitMetadata(final String checkoutDir, final JsonObject appGitMetadata, final JsonObject runGitMetadata) throws IOException, GitAPIException {
@@ -92,11 +96,11 @@ public class Main {
             if (matcher.find()) {
                 gitpath = Utils.pathOf(checkoutDir + "/" + matcher.group(1));
             }
-            if (! Files.exists(gitpath) || ! Files.isDirectory(gitpath)) {
+            if (!Files.exists(gitpath) || !Files.isDirectory(gitpath)) {
                 System.err.println("[AGENT-000092] Error: cannot find .git directory, err0's docker scripts must be run from the top-level of your git project, not a submodule.");
                 System.exit(-1);
             }
-        } else if (! Files.exists(gitpath)) {
+        } else if (!Files.exists(gitpath)) {
             System.err.println("[AGENT-000093] Error: cannot find .git directory are you at the top-level of your git project?");
             System.exit(-1);
         }
@@ -142,7 +146,7 @@ public class Main {
                         commitObjectId = tag.getObject().getId();
                         tagObjectId = ObjectId.toString(commitObjectId);
                         // ref points to an annotated tag
-                    } catch(IncorrectObjectTypeException notAnAnnotatedTag) {
+                    } catch (IncorrectObjectTypeException notAnAnnotatedTag) {
                         // ref is a lightweight (aka unannotated) tag
                         tag = null;
                     }
@@ -170,20 +174,19 @@ public class Main {
                 final String fullBranchName = ref.getName();
                 if (fullBranchName.startsWith("refs/heads/")) {
                     final String branchName = fullBranchName.substring(11);
-                    if (! "HEAD".equals(branchName) && dedupe.add(branchName)) {
+                    if (!"HEAD".equals(branchName) && dedupe.add(branchName)) {
                         final String branchObjectId = ObjectId.toString(ref.getObjectId());
                         if (branchObjectId.equals(objectId)) {
                             gitBranches.add(branchName);
                         }
                         branches.addProperty(branchName, branchObjectId);
                     }
-                }
-                else if (fullBranchName.startsWith("refs/remotes/")) {
+                } else if (fullBranchName.startsWith("refs/remotes/")) {
                     final String remoteNameBranchName = fullBranchName.substring(13);
                     final int i = remoteNameBranchName.indexOf('/');
                     if (i >= 0) {
-                        final String branchName = remoteNameBranchName.substring(i+1);
-                        if (! "HEAD".equals(branchName) && dedupe.add(branchName)) {
+                        final String branchName = remoteNameBranchName.substring(i + 1);
+                        if (!"HEAD".equals(branchName) && dedupe.add(branchName)) {
                             final String branchObjectId = ObjectId.toString(ref.getObjectId());
                             if (branchObjectId.equals(objectId)) {
                                 gitBranches.add(branchName);
@@ -211,7 +214,7 @@ public class Main {
         Status status = git.status().call();
         boolean statusIsClean = status.isClean();
 
-        if (! statusIsClean) {
+        if (!statusIsClean) {
             // repo is dirty before agent run, flag hash as dirty and remove tags from this run's metadata.
             if (null != gitHash) {
                 runGitMetadata.addProperty("git_hash", gitHash + "-dirty");
@@ -219,7 +222,7 @@ public class Main {
             runGitMetadata.add("git_tags", new JsonArray());
         }
 
-        return new GitMetadata(gitHash, statusIsClean, detachedHead);
+        return new GitMetadata(gitHash, statusIsClean, detachedHead, repo);
     }
 
     public static void main(String args[]) {
@@ -252,7 +255,7 @@ public class Main {
 
             if (line.hasOption("version")) {
                 StringBuilder message = new StringBuilder();
-message.append("Version: ").append(io.err0.client.BuildConfig.VERSION).append(" revision: ").append(io.err0.client.BuildConfig.GIT_SHORT_VERSION).append(" timestamp: ").append(BuildConfig.BUILD_UNIXTIME).append("\n");
+                message.append("Version: ").append(io.err0.client.BuildConfig.VERSION).append(" revision: ").append(io.err0.client.BuildConfig.GIT_SHORT_VERSION).append(" timestamp: ").append(BuildConfig.BUILD_UNIXTIME).append("\n");
                 System.out.println(message.toString());
             }
 
@@ -260,14 +263,14 @@ message.append("Version: ").append(io.err0.client.BuildConfig.VERSION).append(" 
                 HelpFormatter helpFormatter = new HelpFormatter();
                 helpFormatter.printHelp("err0agent", options);
                 StringBuilder message = new StringBuilder();
-message.append("\n");
-message.append("You must specify:\n");
-message.append("1 of --stand-alone, or --token-file\n");
-message.append("1 of --insert, or --check\n");
-message.append("--git-dir\n");
-message.append("\n");
-message.append("Copyright 2023 ERR0 LLC.\n");
-message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
+                message.append("\n");
+                message.append("You must specify:\n");
+                message.append("1 of --stand-alone, or --token-file\n");
+                message.append("1 of --insert, or --check\n");
+                message.append("--git-dir\n");
+                message.append("\n");
+                message.append("Copyright 2023 ERR0 LLC.\n");
+                message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                 System.out.print(message.toString());
                 System.exit(0);
             }
@@ -314,8 +317,7 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
 
                 realmPolicy = new RealmPolicy(realm);
                 projectPolicy = new ProjectPolicy(realmPolicy, project);
-            }
-            else if (line.hasOption("token-file")) {
+            } else if (line.hasOption("token-file")) {
                 // a new API provider per token
                 if (apiProvider != null) {
                     apiProvider.close();
@@ -349,8 +351,10 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
 
             if (line.hasOption("insert")) {
 
-                if (null == realmPolicy) throw new Exception("[AGENT-000076] Must specify realm policy using --realm before specifying checkout dir");
-                if (null == projectPolicy) throw new Exception("[AGENT-000077] Must specify application policy using --app before specifying checkout dir");
+                if (null == realmPolicy)
+                    throw new Exception("[AGENT-000076] Must specify realm policy using --realm before specifying checkout dir");
+                if (null == projectPolicy)
+                    throw new Exception("[AGENT-000077] Must specify application policy using --app before specifying checkout dir");
                 String checkoutDir = line.getOptionValue("git-dir");
                 boolean importCodes = false;
 
@@ -358,7 +362,7 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
 
                 if (projectPolicy.renumber_on_next_run) {
                     doRenumber = true;
-                    if (! apiProvider.markRenumberingOK(projectPolicy)) {
+                    if (!apiProvider.markRenumberingOK(projectPolicy)) {
                         throw new RuntimeException("[AGENT-000078] Unable to renumber automatically.");
                     }
                 }
@@ -377,7 +381,7 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
 
                 final String gitHash = gitMetadata.gitHash;
 
-                if (! importCodes) {
+                if (!importCodes) {
                     apiProvider.importPreviousState(projectPolicy, globalState, GsonHelper.asString(runGitMetadata, "current_branch", null));
                 }
 
@@ -387,8 +391,22 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                 boolean didChangeAFile = false;
 
                 try {
+                    String _checkoutDir = (new File(checkoutDir)).getAbsolutePath();
+                    String __checkoutDir = _checkoutDir.endsWith("/") ? _checkoutDir : (_checkoutDir + "/");
+                    Function<String, Boolean> isIgnored = (path) -> {
+                        if (path.startsWith(__checkoutDir)) {
+                            String relativePath = path.substring(__checkoutDir.length());
+                            try {
+                                return GitHelper.isIgnored(gitMetadata.repository, relativePath);
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        } else {
+                            return true;
+                        }
+                    };
 
-                    scan(projectPolicy, globalState, checkoutDir, apiProvider, doRenumber);
+                    scan(projectPolicy, globalState, checkoutDir, apiProvider, doRenumber, isIgnored);
 
                     if (importCodes) {
                         _import(apiProvider, globalState, projectPolicy);
@@ -396,8 +414,7 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
 
 
                     didChangeAFile = runInsert(apiProvider, globalState, projectPolicy, driver, run_uuid, statisticsGatherer);
-                }
-                catch (Throwable t) {
+                } catch (Throwable t) {
                     statisticsGatherer.throwable = t;
                 }
 
@@ -441,8 +458,10 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
 
             } else if (line.hasOption("check")) {
 
-                if (null == realmPolicy) throw new Exception("[AGENT-000080] Must specify realm policy using --realm before specifying report dir");
-                if (null == projectPolicy) throw new Exception("[AGENT-000081] Must specify application policy using --app before specifying report dir");
+                if (null == realmPolicy)
+                    throw new Exception("[AGENT-000080] Must specify realm policy using --realm before specifying report dir");
+                if (null == projectPolicy)
+                    throw new Exception("[AGENT-000081] Must specify application policy using --app before specifying report dir");
                 String reportDir = line.getOptionValue("git-dir");
                 String current_branch = null;
                 boolean check = true; // always, only, "check" mode.
@@ -474,7 +493,7 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                     System.err.println("[AGENT-000083] Detached HEAD in the git repository; current branch must be specified by --branch.");
                     System.exit(-1);
                 }
-                if (! dirty) {
+                if (!dirty) {
                     if (!gitMetadata.statusIsClean) {
                         System.err.println("[AGENT-000084] --analyse requires a clean git checkout.");
                         System.exit(-1);
@@ -488,18 +507,32 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                 final StatisticsGatherer statisticsGatherer = new StatisticsGatherer();
                 boolean wouldChangeAFile = true;
                 try {
-                    scan(projectPolicy, globalState, reportDir, apiProvider, false);
+                    String _checkoutDir = (new File(reportDir)).getAbsolutePath();
+                    String __checkoutDir = _checkoutDir.endsWith("/") ? _checkoutDir : (_checkoutDir + "/");
+                    Function<String, Boolean> isIgnored = (path) -> {
+                        if (path.startsWith(__checkoutDir)) {
+                            String relativePath = path.substring(__checkoutDir.length());
+                            try {
+                                return GitHelper.isIgnored(gitMetadata.repository, relativePath);
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        } else {
+                            return true;
+                        }
+                    };
+
+                    scan(projectPolicy, globalState, reportDir, apiProvider, false, isIgnored);
 
                     wouldChangeAFile = runAnalyse(apiProvider, globalState, projectPolicy, driver, run_uuid, statisticsGatherer);
-                }
-                catch (Throwable t) {
+                } catch (Throwable t) {
                     statisticsGatherer.throwable = t;
                 }
 
-                JsonObject runMetadata = statisticsGatherer.toRunMetadata(! wouldChangeAFile);
+                JsonObject runMetadata = statisticsGatherer.toRunMetadata(!wouldChangeAFile);
                 apiProvider.updateRun(projectPolicy, run_uuid, runGitMetadata, runMetadata);
 
-                if (! wouldChangeAFile) {
+                if (!wouldChangeAFile) {
                     apiProvider.finaliseRun(projectPolicy, run_uuid);
                 }
 
@@ -542,8 +575,7 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                 System.err.println("[AGENT-000087] Must specify either --insert or --check");
                 System.exit(-1);
             }
-        }
-        catch (ParseException exp) {
+        } catch (ParseException exp) {
             // oops, something went wrong
             System.err.println("[AGENT-000088] Parsing failed.  Reason: " + exp.getMessage());
             System.exit(-1);
@@ -580,14 +612,11 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                     System.out.println("[AGENT-000037] insert error codes into the source code");
                     System.out.println("[AGENT-000038] <command> --token path-to-token.json --analyse --check /path/to/git/repo");
                     System.out.println("[AGENT-000039] analyse error codes in the project and return failure if some need to change");
-                }
-                else if ("--metrics".equals(arg)) {
+                } else if ("--metrics".equals(arg)) {
                     metricsReport = true;
-                }
-                else if ("--error-codes".equals(arg)) {
+                } else if ("--error-codes".equals(arg)) {
                     errorCodeData = true;
-                }
-                else if ("--offline".equals(arg)) {
+                } else if ("--offline".equals(arg)) {
                     // a new API provider per token
                     if (apiProvider != null) {
                         apiProvider.close();
@@ -613,8 +642,7 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
 
                     realmPolicy = new RealmPolicy(realm);
                     projectPolicy = new ProjectPolicy(realmPolicy, project);
-                }
-                else if ("--token".equals(arg)) {
+                } else if ("--token".equals(arg)) {
 
                     // a new API provider per token
                     if (apiProvider != null) {
@@ -645,14 +673,16 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                     // We're ready!
 
                 } else if ("--checkout".equals(arg) || "--insert".equals(arg)) {
-                    if (null == realmPolicy) throw new Exception("[AGENT-000001] Must specify realm policy using --realm before specifying checkout dir");
-                    if (null == projectPolicy) throw new Exception("[AGENT-000002] Must specify application policy using --app before specifying checkout dir");
+                    if (null == realmPolicy)
+                        throw new Exception("[AGENT-000001] Must specify realm policy using --realm before specifying checkout dir");
+                    if (null == projectPolicy)
+                        throw new Exception("[AGENT-000002] Must specify application policy using --app before specifying checkout dir");
                     String checkoutDir = args[++i];
                     boolean importCodes = false;
                     if ("--import".equals(checkoutDir)) {
                         checkoutDir = args[++i];
                         importCodes = true;
-                        if (! (apiProvider instanceof UnitTestApiProvider)) {
+                        if (!(apiProvider instanceof UnitTestApiProvider)) {
                             throw new RuntimeException("[AGENT-000003] Only compatible with the unit test api provider.");
                         }
                     }
@@ -665,7 +695,7 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
 
                     if (projectPolicy.renumber_on_next_run) {
                         doRenumber = true;
-                        if (! apiProvider.markRenumberingOK(projectPolicy)) {
+                        if (!apiProvider.markRenumberingOK(projectPolicy)) {
                             throw new RuntimeException("[AGENT-000027] Unable to renumber automatically.");
                         }
                     }
@@ -684,7 +714,7 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
 
                     final String gitHash = gitMetadata.gitHash;
 
-                    if (! importCodes) {
+                    if (!importCodes) {
                         apiProvider.importPreviousState(projectPolicy, globalState, GsonHelper.asString(runGitMetadata, "current_branch", null));
                     }
 
@@ -694,8 +724,22 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                     boolean didChangeAFile = false;
 
                     try {
+                        String _checkoutDir = (new File(checkoutDir)).getAbsolutePath();
+                        String __checkoutDir = _checkoutDir.endsWith("/") ? _checkoutDir : (_checkoutDir + "/");
+                        Function<String, Boolean> isIgnored = (path) -> {
+                            if (path.startsWith(__checkoutDir)) {
+                                String relativePath = path.substring(__checkoutDir.length());
+                                try {
+                                    return GitHelper.isIgnored(gitMetadata.repository, relativePath);
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            } else {
+                                return true;
+                            }
+                        };
 
-                        scan(projectPolicy, globalState, checkoutDir, apiProvider, doRenumber);
+                        scan(projectPolicy, globalState, checkoutDir, apiProvider, doRenumber, isIgnored);
 
                         if (importCodes) {
                             _import(apiProvider, globalState, projectPolicy);
@@ -703,8 +747,7 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
 
 
                         didChangeAFile = runInsert(apiProvider, globalState, projectPolicy, driver, run_uuid, statisticsGatherer);
-                    }
-                    catch (Throwable t) {
+                    } catch (Throwable t) {
                         statisticsGatherer.throwable = t;
                     }
 
@@ -747,8 +790,10 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                     }
 
                 } else if ("--report".equals(arg) || "--analyse".equals(arg) || "--analyze".equals(arg)) {
-                    if (null == realmPolicy) throw new Exception("[AGENT-000004] Must specify realm policy using --realm before specifying report dir");
-                    if (null == projectPolicy) throw new Exception("[AGENT-000005] Must specify application policy using --app before specifying report dir");
+                    if (null == realmPolicy)
+                        throw new Exception("[AGENT-000004] Must specify realm policy using --realm before specifying report dir");
+                    if (null == projectPolicy)
+                        throw new Exception("[AGENT-000005] Must specify application policy using --app before specifying report dir");
                     String reportDir = args[++i];
                     String current_branch = null;
                     boolean check = false;
@@ -786,7 +831,7 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                         System.err.println("[AGENT-000041] Detached HEAD in the git repository; current branch must be specified by --branch.");
                         System.exit(-1);
                     }
-                    if (! dirty) {
+                    if (!dirty) {
                         if (!gitMetadata.statusIsClean) {
                             System.err.println("[AGENT-000042] --analyse requires a clean git checkout.");
                             System.exit(-1);
@@ -800,18 +845,32 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                     final StatisticsGatherer statisticsGatherer = new StatisticsGatherer();
                     boolean wouldChangeAFile = true;
                     try {
-                        scan(projectPolicy, globalState, reportDir, apiProvider, false);
+                        String _checkoutDir = (new File(reportDir)).getAbsolutePath();
+                        String __checkoutDir = _checkoutDir.endsWith("/") ? _checkoutDir : (_checkoutDir + "/");
+                        Function<String, Boolean> isIgnored = (path) -> {
+                            if (path.startsWith(__checkoutDir)) {
+                                String relativePath = path.substring(__checkoutDir.length());
+                                try {
+                                    return GitHelper.isIgnored(gitMetadata.repository, relativePath);
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            } else {
+                                return true;
+                            }
+                        };
+
+                        scan(projectPolicy, globalState, reportDir, apiProvider, false, isIgnored);
 
                         wouldChangeAFile = runAnalyse(apiProvider, globalState, projectPolicy, driver, run_uuid, statisticsGatherer);
-                    }
-                    catch (Throwable t) {
+                    } catch (Throwable t) {
                         statisticsGatherer.throwable = t;
                     }
 
-                    JsonObject runMetadata = statisticsGatherer.toRunMetadata(! wouldChangeAFile);
+                    JsonObject runMetadata = statisticsGatherer.toRunMetadata(!wouldChangeAFile);
                     apiProvider.updateRun(projectPolicy, run_uuid, runGitMetadata, runMetadata);
 
-                    if (! wouldChangeAFile) {
+                    if (!wouldChangeAFile) {
                         apiProvider.finaliseRun(projectPolicy, run_uuid);
                     }
 
@@ -855,13 +914,11 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                     System.exit(-1);
                 }
             }
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             System.err.println("[AGENT-000045] Fatal error: " + t.toString());
             t.printStackTrace(System.err);
             System.exit(-1);
-        }
-        finally {
+        } finally {
             if (apiProvider != null) {
                 apiProvider.close();
                 apiProvider = null;
@@ -916,7 +973,9 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
 
         AtomicLong maxErrorNumber = new AtomicLong(0);
         globalState.errorCodeMap.forEach((errorOrdinal, tokenStateItem) -> {
-            if (errorOrdinal.longValue() > maxErrorNumber.get()) { maxErrorNumber.set(errorOrdinal); }
+            if (errorOrdinal.longValue() > maxErrorNumber.get()) {
+                maxErrorNumber.set(errorOrdinal);
+            }
         });
         long max = maxErrorNumber.get();
         if (max > 0) {
@@ -925,6 +984,10 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
     }
 
     public static void scan(final ProjectPolicy projectPolicy, final GlobalState globalState, String path, ApiProvider apiProvider, boolean doRenumber) {
+        scan(projectPolicy, globalState, path, apiProvider, doRenumber, null);
+    }
+
+    public static void scan(final ProjectPolicy projectPolicy, final GlobalState globalState, String path, ApiProvider apiProvider, boolean doRenumber, Function<String, Boolean> isIgnored) {
 
         if (doRenumber) {
             globalState.previousRunSignatures.clear();
@@ -988,6 +1051,11 @@ message.append("License: Apache 2.0\t\tWeb: https://www.err0.io/\n");
                     }
                     for (int i = 0, l = n_exclude_patterns; i < l; ++i) {
                         if (projectPolicy.excludeFilePatterns.get(i).matcher(newFile).find()) return;
+                    }
+                    if (null != isIgnored) {
+                        if (isIgnored.apply(newFile)) {
+                            return;
+                        }
                     }
                     if (! Files.isDirectory(p) && ! Files.isSymbolicLink(p)) {
                         if (!newFile.startsWith(finalPath)) {
