@@ -5,11 +5,13 @@ import io.err0.client.core.TokenExtendedInformation;
 
 public class ObjectiveCCPPExtendedInformation implements TokenExtendedInformation {
 
-    public ObjectiveCCPPExtendedInformation(final Token token) {
+    public ObjectiveCCPPExtendedInformation(final Token token, final int stringQuoteWidth) {
         this.token = token;
+        this.stringQuoteWidth = stringQuoteWidth;
     }
 
     private final Token token;
+    private final int stringQuoteWidth;
 
     @Override
     public String getStringLiteral() {
@@ -20,7 +22,7 @@ public class ObjectiveCCPPExtendedInformation implements TokenExtendedInformatio
 
     @Override
     public int getStringQuoteWidth() {
-        return 2;
+        return this.stringQuoteWidth;
     }
 
     @Override

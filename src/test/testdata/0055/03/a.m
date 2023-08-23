@@ -16,3 +16,7 @@ void c_method() {
 }
 
 @end
+
+void cpp_method() {
+    throw std::exception("[E-6] A c++ style exception");
+}

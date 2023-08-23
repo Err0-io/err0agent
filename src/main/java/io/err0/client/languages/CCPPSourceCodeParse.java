@@ -51,8 +51,8 @@ public class CCPPSourceCodeParse extends SourceCodeParse {
     private Pattern reBuiltInLoggerLevel = Pattern.compile("LOG_(EMERG|ALERT|CRIT|ERR|WARNING|NOTICE|INFO|DEBUG)");
     private Pattern reLogger = null;
     private Pattern reLoggerLevel = null;
-    private static Pattern reException = Pattern.compile("throw\\s+([^\\s(]*)\\s*\\(\\s*$");
-    private static int reException_group_class = 1;
+    protected static Pattern reException = Pattern.compile("throw\\s+([^\\s(]*)\\s*\\(\\s*$");
+    protected static int reException_group_class = 1;
     private static Pattern rePreprocessor = Pattern.compile("^(\\s*#([^#\r\n]+))", Pattern.MULTILINE);
 
     public static CCPPSourceCodeParse lex(final CodePolicy codePolicy, final String sourceCode) {

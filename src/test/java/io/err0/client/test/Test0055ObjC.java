@@ -94,7 +94,7 @@ public class Test0055ObjC {
 
             previousState = apiProvider.getState();
 
-            assertEquals(5, previousState.metaDataStorage.size());
+            assertEquals(6, previousState.metaDataStorage.size());
 
             {
                 UnitTestApiProvider.MetaData metaData = previousState.metaDataStorage.get(1L);
@@ -113,6 +113,12 @@ public class Test0055ObjC {
                 JsonArray methods = metaData.metaData.getAsJsonArray("methods");
                 assertEquals(1, methods.size());
                 assertEquals("+ (void)classMethod", methods.get(0).getAsJsonObject().get("c").getAsString());
+            }
+            {
+                UnitTestApiProvider.MetaData metaData = previousState.metaDataStorage.get(6L);
+                JsonArray methods = metaData.metaData.getAsJsonArray("methods");
+                assertEquals(1, methods.size());
+                assertEquals("void cpp_method()", methods.get(0).getAsJsonObject().get("c").getAsString());
             }
         }
 
@@ -153,7 +159,7 @@ public class Test0055ObjC {
 
             previousState = apiProvider.getState();
 
-            assertEquals(5, previousState.metaDataStorage.size());
+            assertEquals(6, previousState.metaDataStorage.size());
         }
     }
 }

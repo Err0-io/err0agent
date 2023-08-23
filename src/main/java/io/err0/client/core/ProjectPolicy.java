@@ -295,7 +295,7 @@ public class ProjectPolicy {
     private Pattern reErrorNumber_objc = null;
     public Pattern getReErrorNumber_objc() {
         if (null == reErrorNumber_objc) {
-            reErrorNumber_objc = Pattern.compile("^@\"\\[" + getErrorPrefix() + "-(\\d+)\\]\\s*");
+            reErrorNumber_objc = Pattern.compile("^@?\"\\[" + getErrorPrefix() + "-(\\d+)\\]\\s*");
         }
         return reErrorNumber_objc;
     }
@@ -307,7 +307,7 @@ public class ProjectPolicy {
             if (!codePolicy.enablePlaceholder) {
                 throw new RuntimeException("[AGENT-000122] Unable to search for placeholder");
             }
-            reErrorNumber_objc_placeholder = Pattern.compile("^@\"(" + codePolicy.placeholderValue + "|" + getErrorPrefix() + "-(\\d+))\"$");
+            reErrorNumber_objc_placeholder = Pattern.compile("^@?\"(" + codePolicy.placeholderValue + "|" + getErrorPrefix() + "-(\\d+))\"$");
         }
         return reErrorNumber_objc_placeholder;
     }

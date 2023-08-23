@@ -104,7 +104,16 @@ public class ObjectiveCCPPSourceCodeParse extends SourceCodeParse {
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenType.QUOT_LITERAL;
-                        currentToken.extendedInformation = new ObjectiveCCPPExtendedInformation(currentToken);
+                        currentToken.extendedInformation = new ObjectiveCCPPExtendedInformation(currentToken, 2);
+                        currentToken.sourceCode.append(ch);
+                        currentToken.sourceCode.append(chars[++i]);
+                        currentToken.depth = depth;
+                        currentToken.startLineNumber = lineNumber;
+                    } else if (i < l - 1 && ch == '\"') {
+                        parse.tokenList.add(currentToken.finish(lineNumber));
+                        currentToken = new Token(n++, currentToken);
+                        currentToken.type = TokenType.QUOT_LITERAL;
+                        currentToken.extendedInformation = new ObjectiveCCPPExtendedInformation(currentToken, 1);
                         currentToken.sourceCode.append(ch);
                         currentToken.sourceCode.append(chars[++i]);
                         currentToken.depth = depth;
@@ -225,12 +234,12 @@ public class ObjectiveCCPPSourceCodeParse extends SourceCodeParse {
                             if (globalState.store(errorOrdinal, stateItem, token)) {
                                 token.keepErrorCode = true;
                                 token.errorOrdinal = errorOrdinal;
-                                token.sourceNoErrorCode = token.source.substring(0, 2) + token.source.substring(matcherErrorNumber.end());
+                                token.sourceNoErrorCode = token.source.substring(0, token.getStringQuoteWidth()) + token.source.substring(matcherErrorNumber.end());
                             } else {
-                                token.sourceNoErrorCode = token.source = token.source.substring(0,2) + token.source.substring(matcherErrorNumber.end());
+                                token.sourceNoErrorCode = token.source = token.source.substring(0, token.getStringQuoteWidth()) + token.source.substring(matcherErrorNumber.end());
                             }
                         } else {
-                            token.sourceNoErrorCode = token.source = token.source.substring(0,2) + token.source.substring(matcherErrorNumber.end());
+                            token.sourceNoErrorCode = token.source = token.source.substring(0, token.getStringQuoteWidth()) + token.source.substring(matcherErrorNumber.end());
                         }
                     } else if (policy.getCodePolicy().getEnablePlaceholder()) {
                         Matcher matcherPlaceholder = policy.getReErrorNumber_objc_placeholder().matcher(token.source);
@@ -313,6 +322,15 @@ public class ObjectiveCCPPSourceCodeParse extends SourceCodeParse {
                         if (matcherException.find()) {
                             token.classification = Token.Classification.EXCEPTION_THROW;
                             token.exceptionClass = matcherException.group(reException_group_class);
+                        }
+                    }
+
+                    if ((token.classification == Token.Classification.NOT_FULLY_CLASSIFIED || token.classification == Token.Classification.NOT_LOG_OUTPUT || token.classification == Token.Classification.MAYBE_LOG_OR_EXCEPTION) && (!this.codePolicy.getDisableExceptions()))
+                    {
+                        Matcher matcherException = CCPPSourceCodeParse.reException.matcher(token.source);
+                        if (matcherException.find()) {
+                            token.classification = Token.Classification.EXCEPTION_THROW;
+                            token.exceptionClass = matcherException.group(CCPPSourceCodeParse.reException_group_class);
                         }
                     }
 
@@ -411,7 +429,7 @@ public class ObjectiveCCPPSourceCodeParse extends SourceCodeParse {
                 char ch = currentToken.source.charAt(j);
                 if (currentToken.type == TokenType.SOURCE_CODE) {
                     if (stack.empty()) {
-                        if (/*ch == ',' ||*/ ch == ';' || ch == '{' || ch == '(' || ch == '}' || ch == '[') {
+                        if (/*ch == ',' ||*/ ch == ';' || ch == '{' || ch == '(' || ch == '}' || ch == '[' || ch == '\n') {
                             abort = true;
                             break;
                         } else if (ch == ')' || ch == ']') {
