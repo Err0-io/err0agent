@@ -446,7 +446,7 @@ public class CCPPSourceCodeParse extends SourceCodeParse {
                 boolean foundMethod = false;
                 Matcher matcherMethodPerhaps = reMethodPerhaps.matcher(token.source);
                 if (matcherMethodPerhaps.find()) {
-                    String codeBlock = codeWithAnnotations(token.n, matcherMethodPerhaps.end() - 1, "");
+                    String codeBlock = codeWithAnnotations(token.n, matcherMethodPerhaps.start(), "");
                     Matcher matcherMethod = reMethod.matcher(codeBlock);
                     if (matcherMethod.find()) {
                         String code = matcherMethod.group(1);
