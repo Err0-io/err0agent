@@ -102,6 +102,18 @@ public class Test0055ObjC {
                 assertEquals(1, methods.size());
                 assertEquals("void c_method()", methods.get(0).getAsJsonObject().get("c").getAsString());
             }
+            {
+                UnitTestApiProvider.MetaData metaData = previousState.metaDataStorage.get(2L);
+                JsonArray methods = metaData.metaData.getAsJsonArray("methods");
+                assertEquals(1, methods.size());
+                assertEquals("- (void)method", methods.get(0).getAsJsonObject().get("c").getAsString());
+            }
+            {
+                UnitTestApiProvider.MetaData metaData = previousState.metaDataStorage.get(5L);
+                JsonArray methods = metaData.metaData.getAsJsonArray("methods");
+                assertEquals(1, methods.size());
+                assertEquals("+ (void)classMethod", methods.get(0).getAsJsonObject().get("c").getAsString());
+            }
         }
 
         // pass #3 - insert

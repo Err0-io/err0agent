@@ -45,6 +45,7 @@ public class ObjectiveCCPPSourceCodeParse extends SourceCodeParse {
     }
 
     private static Pattern reMethodPerhaps = Pattern.compile("\\)\\s*$");
+    private static Pattern reObjectiveCMessage = Pattern.compile("^[\\-+]\\s+.*?$", Pattern.MULTILINE);
     private static Pattern reMethod = Pattern.compile("\\s*(([^(){};]+?)\\(.*?\\)(\\s+throws\\s+[^;{()]+?)?)\\s*$", Pattern.DOTALL);
     private static Pattern reControl = Pattern.compile("(^|\\s+)(for|if|else(\\s+if)?|do|while|switch|try|catch|finally)(\\(|\\{|\\s|$)", Pattern.MULTILINE);
     private static Pattern reClass = Pattern.compile("\\s*(([^){\\[\\]};]+?)\\s+class\\s+(\\S+)[^;{(]+?)\\s*$");
@@ -462,6 +463,14 @@ public class ObjectiveCCPPSourceCodeParse extends SourceCodeParse {
                         if (reControl.matcher(token.extractedCode).find()) {
                             token.classification = Token.Classification.CONTROL_SIGNATURE;
                         }
+                    }
+                } else {
+                    Matcher matcherMessage = reObjectiveCMessage.matcher(token.source);
+                    if (matcherMessage.find()) {
+                        String code = matcherMessage.group();
+                        token.classification = Token.Classification.METHOD_SIGNATURE;
+                        token.extractedCode = code;
+                        foundMethod = true;
                     }
                 }
                 if (!foundMethod) {
