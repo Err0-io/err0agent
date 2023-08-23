@@ -101,24 +101,32 @@ public class Test0055ObjC {
                 JsonArray methods = metaData.metaData.getAsJsonArray("methods");
                 assertEquals(1, methods.size());
                 assertEquals("void c_method()", methods.get(0).getAsJsonObject().get("c").getAsString());
+                assertEquals("method", methods.get(0).getAsJsonObject().get("t").getAsString());
             }
             {
                 UnitTestApiProvider.MetaData metaData = previousState.metaDataStorage.get(2L);
                 JsonArray methods = metaData.metaData.getAsJsonArray("methods");
-                assertEquals(1, methods.size());
-                assertEquals("- (void)method", methods.get(0).getAsJsonObject().get("c").getAsString());
+                assertEquals(2, methods.size());
+                assertEquals("class", methods.get(0).getAsJsonObject().get("t").getAsString());
+                assertEquals("@implementation A", methods.get(0).getAsJsonObject().get("c").getAsString());
+                assertEquals("- (void)method", methods.get(1).getAsJsonObject().get("c").getAsString());
+                assertEquals("method", methods.get(1).getAsJsonObject().get("t").getAsString());
             }
             {
                 UnitTestApiProvider.MetaData metaData = previousState.metaDataStorage.get(5L);
                 JsonArray methods = metaData.metaData.getAsJsonArray("methods");
-                assertEquals(1, methods.size());
-                assertEquals("+ (void)classMethod", methods.get(0).getAsJsonObject().get("c").getAsString());
+                assertEquals(2, methods.size());
+                assertEquals("class", methods.get(0).getAsJsonObject().get("t").getAsString());
+                assertEquals("@implementation A", methods.get(0).getAsJsonObject().get("c").getAsString());
+                assertEquals("+ (void)classMethod", methods.get(1).getAsJsonObject().get("c").getAsString());
+                assertEquals("method", methods.get(1).getAsJsonObject().get("t").getAsString());
             }
             {
                 UnitTestApiProvider.MetaData metaData = previousState.metaDataStorage.get(6L);
                 JsonArray methods = metaData.metaData.getAsJsonArray("methods");
                 assertEquals(1, methods.size());
                 assertEquals("void cpp_method()", methods.get(0).getAsJsonObject().get("c").getAsString());
+                assertEquals("method", methods.get(0).getAsJsonObject().get("t").getAsString());assertEquals("method", methods.get(0).getAsJsonObject().get("t").getAsString());
             }
         }
 

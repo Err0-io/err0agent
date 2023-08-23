@@ -64,6 +64,7 @@ public class ObjectiveCCPPSourceCodeParse extends SourceCodeParse {
         int lineNumber = 1;
         currentToken.startLineNumber = lineNumber;
         final char chars[] = sourceCode.toCharArray();
+        boolean objCAtCommand = false;
         for (int i = 0, l = chars.length; i < l; ++i) {
             int depth = currentToken.depth;
             final char ch = chars[i];
@@ -72,7 +73,17 @@ public class ObjectiveCCPPSourceCodeParse extends SourceCodeParse {
             }
             switch (currentToken.type) {
                 case SOURCE_CODE:
-                    if (ch == '{') {
+                    if (objCAtCommand) {
+                        currentToken.sourceCode.append(ch);
+                        if (ch == '\n') {
+                            objCAtCommand = false;
+                            parse.tokenList.add(currentToken.finish(lineNumber));
+                            currentToken = new Token(n++, currentToken);
+                            currentToken.type = TokenType.SOURCE_CODE;
+                            currentToken.depth = depth;
+                            currentToken.startLineNumber = lineNumber;
+                        }
+                    } else if (ch == '{') {
                         parse.tokenList.add(currentToken.finish(lineNumber));
                         currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenType.SOURCE_CODE;
@@ -98,6 +109,14 @@ public class ObjectiveCCPPSourceCodeParse extends SourceCodeParse {
                         currentToken = new Token(n++, currentToken);
                         currentToken.type = TokenType.APOS_LITERAL;
                         currentToken.sourceCode.append(ch);
+                        currentToken.depth = depth;
+                        currentToken.startLineNumber = lineNumber;
+                    } else if (i < l - 1 && ch == '@' && Character.isAlphabetic(chars[i+1])) {
+                        parse.tokenList.add(currentToken.finish(lineNumber));
+                        objCAtCommand = true;
+                        currentToken = new Token(n++, currentToken);
+                        currentToken.sourceCode.append(ch);
+                        currentToken.type = TokenType.SOURCE_CODE;
                         currentToken.depth = depth;
                         currentToken.startLineNumber = lineNumber;
                     } else if (i < l - 1 && ch == '@' && chars[i+1] == '\"') {

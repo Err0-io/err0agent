@@ -57,6 +57,8 @@ public abstract class SourceCodeParse {
             case PYTHON:
             case LUA:
                 return new IndentCallStackLogic();
+            case OBJ_C:
+                return new ObjectiveCCallStackLogic();
             default:
                 return new CurlyCallStackLogic();
         }
