@@ -45,7 +45,7 @@ public class ObjectiveCCPPSourceCodeParse extends SourceCodeParse {
     }
 
     private static Pattern reMethodPerhaps = Pattern.compile("\\)\\s*$");
-    private static Pattern reMethod = Pattern.compile("(\\s+[-+]?\\s+)?(\\(.*?\\))?\\s*(([^(){};]+?)\\(.*?\\)(\\s+throws\\s+[^;{()]+?)?)\\s*$", Pattern.DOTALL);
+    private static Pattern reMethod = Pattern.compile("\\s*(([^(){};]+?)\\(.*?\\)(\\s+throws\\s+[^;{()]+?)?)\\s*$", Pattern.DOTALL);
     private static Pattern reControl = Pattern.compile("(^|\\s+)(for|if|else(\\s+if)?|do|while|switch|try|catch|finally)(\\(|\\{|\\s|$)", Pattern.MULTILINE);
     private static Pattern reClass = Pattern.compile("\\s*(([^){\\[\\]};]+?)\\s+class\\s+(\\S+)[^;{(]+?)\\s*$");
     private Pattern reBuiltInLog = Pattern.compile("\\b(NSLog|os_log)\\s*\\(\\s*$");
@@ -397,7 +397,12 @@ public class ObjectiveCCPPSourceCodeParse extends SourceCodeParse {
                 stack.pop();
             }
         }
-        for (int i = n, j = startIndex; !abort && i > 0; j = tokenList.get(--i).source.length() - 1) {
+        if (n > 0 && startIndex < 0) {
+            startIndex = tokenList.get(--n).source.length() - 1;
+        } else if (startIndex < 0) {
+            abort = true;
+        }
+        for (int i = n, j = startIndex; !abort && i >= 0 && j >= 0; j = i <= 0 ? -1 : tokenList.get(--i).source.length() - 1) {
             Token currentToken = tokenList.get(i);
             if (currentToken.type == TokenType.COMMENT_BLOCK || currentToken.type == TokenType.COMMENT_LINE || currentToken.type == TokenType.CONTENT)
                 continue;
@@ -442,7 +447,7 @@ public class ObjectiveCCPPSourceCodeParse extends SourceCodeParse {
                     String codeBlock = codeWithAnnotations(token.n, matcherMethodPerhaps.end() - 1, "");
                     Matcher matcherMethod = reMethod.matcher(codeBlock);
                     if (matcherMethod.find()) {
-                        String code = matcherMethod.group(3);
+                        String code = matcherMethod.group(1);
 
                         Matcher mPreprocessor = rePreprocessor.matcher(code);
                         while (mPreprocessor.find()) { // maybe it's #endregion \r\n #region foo \r\n your code...

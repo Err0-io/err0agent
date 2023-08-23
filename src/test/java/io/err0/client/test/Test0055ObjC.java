@@ -94,7 +94,14 @@ public class Test0055ObjC {
 
             previousState = apiProvider.getState();
 
-            assertEquals(3, previousState.metaDataStorage.size());
+            assertEquals(5, previousState.metaDataStorage.size());
+
+            {
+                UnitTestApiProvider.MetaData metaData = previousState.metaDataStorage.get(1L);
+                JsonArray methods = metaData.metaData.getAsJsonArray("methods");
+                assertEquals(1, methods.size());
+                assertEquals("void c_method()", methods.get(0).getAsJsonObject().get("c").getAsString());
+            }
         }
 
         // pass #3 - insert
@@ -134,7 +141,7 @@ public class Test0055ObjC {
 
             previousState = apiProvider.getState();
 
-            assertEquals(3, previousState.metaDataStorage.size());
+            assertEquals(5, previousState.metaDataStorage.size());
         }
     }
 }

@@ -413,7 +413,12 @@ public class TypescriptSourceCodeParse extends SourceCodeParse {
                 stack.pop();
             }
         }
-        for (int i = n, j = startIndex; !abort && i > 0; j = tokenList.get(--i).source.length() - 1) {
+        if (n > 0 && startIndex < 0) {
+            startIndex = tokenList.get(--n).source.length() - 1;
+        } else if (startIndex < 0) {
+            abort = true;
+        }
+        for (int i = n, j = startIndex; !abort && i >= 0 && j >= 0; j = i <= 0 ? -1 : tokenList.get(--i).source.length() - 1) {
             Token currentToken = tokenList.get(i);
             if (currentToken.type == TokenType.COMMENT_BLOCK || currentToken.type == TokenType.COMMENT_LINE || currentToken.type == TokenType.CONTENT)
                 continue;
