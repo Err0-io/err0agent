@@ -19,8 +19,11 @@ public class GitHelper {
             while (walk.next()) {
                 WorkingTreeIterator workingTreeIterator = walk.getTree(0,
                         WorkingTreeIterator.class);
+                if (workingTreeIterator.isEntryIgnored()) {
+                    return true;
+                }
                 if (walk.getPathString().equals(relativePath)) {
-                    return workingTreeIterator.isEntryIgnored();
+                    return false; // workingTreeIterator.isEntryIgnored();
                 }
                 if (workingTreeIterator.getEntryFileMode()
                         .equals(FileMode.TREE)) {
