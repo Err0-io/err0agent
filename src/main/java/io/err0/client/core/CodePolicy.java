@@ -78,6 +78,12 @@ public class CodePolicy {
                 this.adv_lua = null == e ? new LanguageCodePolicy(new JsonObject(), this) : new LanguageCodePolicy(e.getAsJsonObject(), this);
                 e = codePolicyJson.get("adv_ruby");
                 this.adv_ruby = null == e ? new LanguageCodePolicy(new JsonObject(), this) : new LanguageCodePolicy(e.getAsJsonObject(), this);
+                e = codePolicyJson.get("adv_swift");
+                this.adv_swift = null == e ? new LanguageCodePolicy(new JsonObject(), this) : new LanguageCodePolicy(e.getAsJsonObject(), this);
+                e = codePolicyJson.get("adv_kotlin");
+                this.adv_kotlin = null == e ? new LanguageCodePolicy(new JsonObject(), this) : new LanguageCodePolicy(e.getAsJsonObject(), this);
+                e = codePolicyJson.get("adv_objc");
+                this.adv_objc = null == e ? new LanguageCodePolicy(new JsonObject(), this) : new LanguageCodePolicy(e.getAsJsonObject(), this);
                 break;
             default:
                 throw new RuntimeException("[AGENT-000009] Unknown mode");
@@ -112,6 +118,9 @@ public class CodePolicy {
     public LanguageCodePolicy adv_rust;
     public LanguageCodePolicy adv_lua;
     public LanguageCodePolicy adv_ruby;
+    public LanguageCodePolicy adv_swift;
+    public LanguageCodePolicy adv_kotlin;
+    public LanguageCodePolicy adv_objc;
 
     public String easyModeObjectPattern() {
         JsonElement el = codePolicyJson.get("easy_mode_logger_object_naming_pattern");
@@ -127,7 +136,7 @@ public class CodePolicy {
         JsonElement el = codePolicyJson.get("easy_mode_logger_method_naming_pattern");
         if (null == el) {
             // defaults:
-            return "(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)";
+            return "(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info|fault|notice)";
         } else {
             return el.getAsString();
         }

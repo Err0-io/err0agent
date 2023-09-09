@@ -291,6 +291,28 @@ public class ProjectPolicy {
     public final int reErrorNumber_ccpp_placeholder_open_close_group = 1;
     public final int reErrorNumber_ccpp_placeholder_number_group = 3;
 
+    // Objective C/C++ pattern for finding our error number.
+    private Pattern reErrorNumber_objc = null;
+    public Pattern getReErrorNumber_objc() {
+        if (null == reErrorNumber_objc) {
+            reErrorNumber_objc = Pattern.compile("^@?\"\\[" + getErrorPrefix() + "-(\\d+)\\]\\s*");
+        }
+        return reErrorNumber_objc;
+    }
+
+    private Pattern reErrorNumber_objc_placeholder = null;
+    public Pattern getReErrorNumber_objc_placeholder() {
+        if (null == reErrorNumber_objc_placeholder) {
+            CodePolicy codePolicy = getCodePolicy();
+            if (!codePolicy.enablePlaceholder) {
+                throw new RuntimeException("[AGENT-000122] Unable to search for placeholder");
+            }
+            reErrorNumber_objc_placeholder = Pattern.compile("^@?\"(" + codePolicy.placeholderValue + "|" + getErrorPrefix() + "-(\\d+))\"$");
+        }
+        return reErrorNumber_objc_placeholder;
+    }
+    public final int reErrorNumber_objc_placeholder_number_group = 1;
+
     // GO pattern for finding our error number.
     private Pattern reErrorNumber_go = null;
     public Pattern getReErrorNumber_go() {
@@ -496,6 +518,69 @@ public class ProjectPolicy {
     }
     public final int reErrorNumber_rb_placeholder_open_close_group = 1;
     public final int reErrorNumber_rb_placeholder_number_group = 3;
+
+    // Swift pattern for finding our error number.
+    private Pattern reErrorNumber_swift = null;
+    public Pattern getReErrorNumber_swift() {
+        if (null == reErrorNumber_swift) {
+            reErrorNumber_swift = Pattern.compile("^#?\"\\[" + getErrorPrefix() + "-(\\d+)\\]\\s*");
+        }
+        return reErrorNumber_swift;
+    }
+
+    // Swift pattern for finding our error number, multi-line strings.
+    private Pattern reErrorNumber_swift_textblocks = null;
+    public Pattern getReErrorNumber_swift_textblocks() {
+        if (null == reErrorNumber_swift_textblocks) {
+            reErrorNumber_swift_textblocks = Pattern.compile("^#?\"\"\"(\\s*)\\[" + getErrorPrefix() + "-(\\d+)\\]\\s*");
+        }
+        return reErrorNumber_swift_textblocks;
+    }
+
+    private Pattern reErrorNumber_swift_placeholder = null;
+    public Pattern getReErrorNumber_swift_placeholder() {
+        if (null == reErrorNumber_swift_placeholder) {
+            CodePolicy codePolicy = getCodePolicy();
+            if (!codePolicy.enablePlaceholder) {
+                throw new RuntimeException("[AGENT-000118] Unable to search for placeholder");
+            }
+            reErrorNumber_swift_placeholder = Pattern.compile("^(\")(" + codePolicy.placeholderValue + "|" + getErrorPrefix() + "-(\\d+))\\1$");
+        }
+        return reErrorNumber_swift_placeholder;
+    }
+    public final int reErrorNumber_swift_placeholder_open_close_group = 1;
+    public final int reErrorNumber_swift_placeholder_number_group = 3;
+
+    private Pattern reErrorNumber_kotlin = null;
+    public Pattern getReErrorNumber_kotlin() {
+        if (null == reErrorNumber_kotlin) {
+            reErrorNumber_kotlin = Pattern.compile("^\"\\[" + getErrorPrefix() + "-(\\d+)\\]\\s*");
+        }
+        return reErrorNumber_kotlin;
+    }
+
+    // Java pattern for finding our error number, multi-line strings.
+    private Pattern reErrorNumber_kotlin_textblocks = null;
+    public Pattern getReErrorNumber_kotlin_textblocks() {
+        if (null == reErrorNumber_kotlin_textblocks) {
+            reErrorNumber_kotlin_textblocks = Pattern.compile("^\"\"\"(\\s*)\\[" + getErrorPrefix() + "-(\\d+)\\]\\s*");
+        }
+        return reErrorNumber_kotlin_textblocks;
+    }
+
+    private Pattern reErrorNumber_kotlin_placeholder = null;
+    public Pattern getReErrorNumber_kotlin_placeholder() {
+        if (null == reErrorNumber_kotlin_placeholder) {
+            CodePolicy codePolicy = getCodePolicy();
+            if (!codePolicy.enablePlaceholder) {
+                throw new RuntimeException("[AGENT-000120] Unable to search for placeholder");
+            }
+            reErrorNumber_kotlin_placeholder = Pattern.compile("^(\")(" + codePolicy.placeholderValue + "|" + getErrorPrefix() + "-(\\d+))\\1$");
+        }
+        return reErrorNumber_kotlin_placeholder;
+    }
+    public final int reErrorNumber_kotlin_placeholder_open_close_group = 1;
+    public final int reErrorNumber_kotlin_placeholder_number_group = 3;
 
     public CodePolicy getCodePolicy() {
         if (null == this.prj_code_policy) {

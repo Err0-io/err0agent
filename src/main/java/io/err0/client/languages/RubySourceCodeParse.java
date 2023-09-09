@@ -32,7 +32,7 @@ public class RubySourceCodeParse extends SourceCodeParse {
         super(Language.RUBY, policy, policy.adv_ruby);
         switch (policy.mode) {
             case DEFAULTS:
-                reLogger = Pattern.compile("(^|\\s+)(m?_?)*log(ger)?\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)\\s+$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+                reLogger = Pattern.compile("(^|\\s+)(m?_?)*log(ger)?\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info|fault|notice)\\s+$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
                 break;
 
             case EASY_CONFIGURATION:
@@ -41,7 +41,7 @@ public class RubySourceCodeParse extends SourceCodeParse {
                 break;
         }
 
-        final String pattern = policy.mode == CodePolicy.CodePolicyMode.DEFAULTS ? "(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)" : policy.easyModeMethodPattern();
+        final String pattern = policy.mode == CodePolicy.CodePolicyMode.DEFAULTS ? "(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info|fault|notice)" : policy.easyModeMethodPattern();
         reLoggerLevel = Pattern.compile("\\.(" + pattern + ")\\s+$", Pattern.CASE_INSENSITIVE); // group #1 is the level
     }
 

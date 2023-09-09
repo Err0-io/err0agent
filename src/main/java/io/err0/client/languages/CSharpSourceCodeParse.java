@@ -30,7 +30,7 @@ public class CSharpSourceCodeParse extends SourceCodeParse {
         super(Language.C_SHARP, policy, policy.adv_csharp);
         switch (policy.mode) {
             case DEFAULTS:
-                reLogger = Pattern.compile("(^|\\s+)(m?_?)*log(ger)?\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)(<[^>]+>)?\\s*\\([^\")]*\\s*(\\$?@)?$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+                reLogger = Pattern.compile("(^|\\s+)(m?_?)*log(ger)?\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info|fault|notice)(<[^>]+>)?\\s*\\([^\")]*\\s*(\\$?@)?$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
                 break;
 
             case EASY_CONFIGURATION:
@@ -39,7 +39,7 @@ public class CSharpSourceCodeParse extends SourceCodeParse {
                 break;
         }
 
-        final String pattern = policy.mode == CodePolicy.CodePolicyMode.DEFAULTS ? "(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)" : policy.easyModeMethodPattern();
+        final String pattern = policy.mode == CodePolicy.CodePolicyMode.DEFAULTS ? "(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info|fault|notice)" : policy.easyModeMethodPattern();
         reLoggerLevel = Pattern.compile("\\.(" + pattern + ")(<[^>]+>)?\\s*\\([^\")]*\\s*(\\$?@)?$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
 
         reDotNetCoreILogger = Pattern.compile("(^|\\s+)(m?_?)*log(ger)?\\.Log(Critical|Error|Warning|Information)\\s*\\([^\")]*\\s*(\\$?@)?$", Pattern.MULTILINE);
@@ -405,7 +405,12 @@ public class CSharpSourceCodeParse extends SourceCodeParse {
                 stack.pop();
             }
         }
-        for (int i = n, j = startIndex; !abort && i > 0; j = tokenList.get(--i).source.length() - 1) {
+        if (n > 0 && startIndex < 0) {
+            startIndex = tokenList.get(--n).source.length() - 1;
+        } else if (startIndex < 0) {
+            abort = true;
+        }
+        for (int i = n, j = startIndex; !abort && i >= 0 && j >= 0; j = i <= 0 ? -1 : tokenList.get(--i).source.length() - 1) {
             Token currentToken = tokenList.get(i);
             if (currentToken.type == TokenType.COMMENT_BLOCK || currentToken.type == TokenType.COMMENT_LINE || currentToken.type == TokenType.CONTENT)
                 continue;
@@ -447,7 +452,7 @@ public class CSharpSourceCodeParse extends SourceCodeParse {
                 boolean foundMethod = false;
                 Matcher matcherMethodPerhaps = reMethodPerhaps.matcher(token.source);
                 if (matcherMethodPerhaps.find()) {
-                    String codeBlock = codeWithAnnotations(token.n, matcherMethodPerhaps.end() - 1, "");
+                    String codeBlock = codeWithAnnotations(token.n, matcherMethodPerhaps.start(), "");
                     Matcher matcherMethod = reMethod.matcher(codeBlock);
                     if (matcherMethod.find()) {
                         String code = matcherMethod.group(1);

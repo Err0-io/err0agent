@@ -1,5 +1,6 @@
 /.gradle
 /.idea
 /build
+/bin
 /.docker-build
 /tokens/err0agent.json

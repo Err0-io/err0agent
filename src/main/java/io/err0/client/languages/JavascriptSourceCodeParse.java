@@ -30,7 +30,7 @@ public class JavascriptSourceCodeParse extends SourceCodeParse {
         super(Language.JAVASCRIPT, policy, policy.adv_js);
         switch (policy.mode) {
             case DEFAULTS:
-                reLogger = Pattern.compile("(^|\\s+)((m?_?)*log(ger)?|console|window\\.console)\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+                reLogger = Pattern.compile("(^|\\s+)((m?_?)*log(ger)?|console|window\\.console)\\.(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info|fault|notice)\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
                 break;
 
             case EASY_CONFIGURATION:
@@ -39,7 +39,7 @@ public class JavascriptSourceCodeParse extends SourceCodeParse {
                 break;
         }
 
-        final String pattern = policy.mode == CodePolicy.CodePolicyMode.DEFAULTS ? "(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info)" : policy.easyModeMethodPattern();
+        final String pattern = policy.mode == CodePolicy.CodePolicyMode.DEFAULTS ? "(crit(ical)?|log|fatal|err(or)?|warn(ing)?|info|fault|notice)" : policy.easyModeMethodPattern();
         reLoggerLevel = Pattern.compile("\\.(" + pattern + ")\\s*\\(\\s*$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
     }
 
@@ -411,7 +411,12 @@ public class JavascriptSourceCodeParse extends SourceCodeParse {
                 stack.pop();
             }
         }
-        for (int i = n, j = startIndex; !abort && i > 0; j = tokenList.get(--i).source.length() - 1) {
+        if (n > 0 && startIndex < 0) {
+            startIndex = tokenList.get(--n).source.length() - 1;
+        } else if (startIndex < 0) {
+            abort = true;
+        }
+        for (int i = n, j = startIndex; !abort && i >= 0 && j >= 0; j = i <= 0 ? -1 : tokenList.get(--i).source.length() - 1) {
             Token currentToken = tokenList.get(i);
             if (currentToken.type == TokenType.COMMENT_BLOCK || currentToken.type == TokenType.COMMENT_LINE || currentToken.type == TokenType.CONTENT)
                 continue;

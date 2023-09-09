@@ -46,6 +46,9 @@ public abstract class SourceCodeParse {
         RUST,
         LUA,
         RUBY,
+        SWIFT,
+        KOTLIN,
+        OBJ_C,
     }
 
     public final CallStackLogic callStackLogic() {
@@ -54,6 +57,8 @@ public abstract class SourceCodeParse {
             case PYTHON:
             case LUA:
                 return new IndentCallStackLogic();
+            case OBJ_C:
+                return new ObjectiveCCallStackLogic();
             default:
                 return new CurlyCallStackLogic();
         }
