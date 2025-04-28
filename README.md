@@ -87,6 +87,8 @@ Yes. We are using both GitLab and GitHub on our side, and the err0agent is provi
 <img src="https://raw.githubusercontent.com/docker-library/docs/e2782b8942c1af41419536078c8d0176665a005d/maven/logo.png" width="120" height="50">
 </div>
 
+See also our <a href="https://github.com/marketplace/actions/official-err0-check-action">GitHub Action</a> and <a href="https://bitbucket.org/err0-io/bitbucket-err0-check/src/main/">BitBucket pipe snippet</a>
+
 ## Knowledge Base
 
 err0 platform enables to publish and maintain Knowledge Data Bases (KDB) of error codes, thus bringing a key solution to major pain point.
