@@ -1,10 +1,10 @@
 
 
 <div id="header" align="center">
-<img src="https://www.err0.io/assets/img/err0/icons/err0Logo.svg" width="603" height="164">
+<img src="https://assets.err0.io/assets/img/err0/icons/err0Logo.svg" width="603" height="164">
 </div>
 
-# err0: the power of Error Code
+# err0: the power of Error Code (and Error Message Management)
 
 <div align="center">
     <a href="https://github.com/Err0-io/err0agent/LICENSE"><img src="https://img.shields.io/github/license/Err0-io/err0agent" alt="license"></a>
@@ -31,7 +31,7 @@ See <a href="https://bit.ly/3Sv4dLV">err0.io/</a> for more information, demo req
 
 Please note that err0 is totally free for all Open-Source projects, just contact us.
 
-<img src="https://www.err0.io/assets/img/screenshots/full_error_code_page.png" width="700"/>
+<img src="https://assets.err0.io/assets/img/screenshots/full_error_code_page.png" width="700"/>
 
 ## What is required to test or use err0?
 
@@ -55,9 +55,9 @@ The err0agent automatically detects the following programming language.
 <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" width="50" height="50"/>
 <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/php/php-original.svg" width="50" height="50"/>
 <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original-wordmark.svg" width="50" height="50"/>
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/rust/rust-plain.svg" width="50" height="50"/>
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/rust/rust-original.svg" width="50" height="50"/>
 <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/go/go-original-wordmark.svg" width="50" height="50"/>
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/lua/lua-plain-wordmark.svg" width="50" height="50" />
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/lua/lua-original.svg" width="50" height="50" />
 <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/swift/swift-original.svg" width="50" height="50" />
 <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/ruby/ruby-original.svg" width="50" height="50" />
 <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/kotlin/kotlin-original.svg" width="50" height="50" />
@@ -68,15 +68,15 @@ The err0agent automatically detects the following programming language.
 Yes. The policy is fully editable! 
 
 <div align="left">
-<img src="https://www.err0.io/assets/img/screenshots/advanced_code_policy.png" width="400" />
-<img src="https://www.err0.io/assets/img/screenshots/error_detection_settings.png" width="400" />
+<img src="https://assets.err0.io/assets/img/screenshots/advanced_code_policy.png" width="400" />
+<img src="https://assets.err0.io/assets/img/screenshots/error_detection_settings.png" width="400" />
 </div>
 
 ## Can it use a custom placeholder to insert error code?
 
 Yes. On can define a custom Placeholder in the  "Code Policy settings" of a project. The agent will pick-it-up and automatically insert error codes.
 
-<img src="https://www.err0.io/assets/img/screenshots/edit_code_policy_placeholder.png" width="500" />
+<img src="https://assets.err0.io/assets/img/screenshots/edit_code_policy_placeholder.png" width="500" />
 
 ## Can it be integrated in CI/CD?
 
@@ -87,14 +87,16 @@ Yes. We are using both GitLab and GitHub on our side, and the err0agent is provi
 <img src="https://raw.githubusercontent.com/docker-library/docs/e2782b8942c1af41419536078c8d0176665a005d/maven/logo.png" width="120" height="50">
 </div>
 
+See also our <a href="https://github.com/marketplace/actions/official-err0-check-action">GitHub Action</a> and <a href="https://bitbucket.org/err0-io/bitbucket-err0-check/src/main/">BitBucket pipe snippet</a>
+
 ## Knowledge Base
 
 err0 platform enables to publish and maintain Knowledge Data Bases (KDB) of error codes, thus bringing a key solution to major pain point.
 
 Visit the err0agent knowledge base: <a href="http://bit.ly/3YYxmS5">err0 agent KDB</a> for more information on err0agent's codes.
 
-<img src="https://www.err0.io/assets/img/screenshots/knowledge_base_add.png" width="300" />
-<img src="https://www.err0.io/assets/img/screenshots/kdb_sample.png" width="500" />
+<img src="https://assets.err0.io/assets/img/screenshots/knowledge_base_add.png" width="300" />
+<img src="https://assets.err0.io/assets/img/screenshots/kdb_sample.png" width="500" />
 
 ## Quality Metrics
 
@@ -120,7 +122,7 @@ When you're ready to use this in production why not <a href="https://bit.ly/3Sv4
 
 ### Full mode
 
-A step by step guide is available on the <a href="https://www.err0.io/how-to">err0</a> platform, which details each step:
+A step by step guide is available on the <a href="https://assets.err0.io/how-to">err0</a> platform, which details each step:
  1. Create a numbering policy
  2. Add a project to the numbering policy
  3. Run the agent, in sandbox mode, on your code to insert error codes
