@@ -190,3 +190,47 @@ tasks.withType<JavaExec> {
 
   //args = listOf("--version", "--help")
 }
+
+tasks.register("validateConventionalCommits") {
+  group = "verification"
+  description = "Validate commit messages follow Conventional Commits format"
+
+  doLast {
+    val baseBranch = "develop"
+    val validTypes = listOf("feat", "fix", "docs", "style", "refactor", "test", "chore", "ci", "build", "perf")
+
+    val output = org.apache.commons.io.output.ByteArrayOutputStream()
+    val result = project.exec {
+      commandLine = listOf("git", "log", "--format=%s", "$baseBranch..HEAD")
+      isIgnoreExitValue = true
+      standardOutput = output
+    }
+
+    if (result.exitValue == 0) {
+      val commits = String(output.toByteArray()).trim().split("\n").filter { it.isNotEmpty() }
+      val regex = Regex("^(" + validTypes.joinToString("|") + ")(\\(.+\\))?!?: .+")
+      val mergeRegex = Regex("^Merge ")
+
+      val invalidCommits = commits.filterNot { commit ->
+        commit.matches(mergeRegex) || commit.matches(regex)
+      }
+
+      if (invalidCommits.isNotEmpty()) {
+        val errorMsg = StringBuilder()
+        errorMsg.append("\n")
+        errorMsg.append("❌ Invalid commit messages found:\n")
+        invalidCommits.forEach { errorMsg.append("  - $it\n") }
+        errorMsg.append("\n")
+        errorMsg.append("Commits must follow Conventional Commits format:\n")
+        errorMsg.append("  <type>(<scope>): <subject>\n")
+        errorMsg.append("\n")
+        errorMsg.append("Valid types: ${validTypes.joinToString(", ")}\n")
+        errorMsg.append("\n")
+        errorMsg.append("See CONTRIBUTING.md for details.\n")
+        throw GradleException(errorMsg.toString())
+      } else {
+        println("✅ All commits follow Conventional Commits format")
+      }
+    }
+  }
+}

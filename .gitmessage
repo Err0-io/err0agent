@@ -1,0 +1,23 @@
+# <type>(<scope>): <subject>
+#
+# <body>
+#
+# <footer>
+#
+# Types: feat, fix, docs, style, refactor, test, chore, ci, build, perf
+# Scope (optional): component/module affected (e.g., parser, core, docker)
+# Subject: imperative mood, lowercase, no period, max 72 chars
+#
+# Body: Explain what and why (not how). Wrap at 72 characters.
+#
+# Footer: Reference issues, note breaking changes
+#   - BREAKING CHANGE: describe incompatible changes
+#   - Refs: #123, #456
+#   - Co-Authored-By: Name <email@example.com>
+#
+# Examples:
+#   feat(parser): add support for Swift lambdas
+#   fix(java): resolve call stack depth calculation
+#   docs: update README with Kotlin examples
+#   ci: add conventional commit validation
+#   feat(core)!: change error code format (BREAKING CHANGE)

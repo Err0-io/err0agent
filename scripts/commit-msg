@@ -1,0 +1,48 @@
+#!/bin/bash
+# Validates commit messages against Conventional Commits format
+# Install: cp scripts/commit-msg .git/hooks/commit-msg && chmod +x .git/hooks/commit-msg
+
+commit_msg_file=$1
+commit_msg=$(cat "$commit_msg_file")
+
+# Skip merge commits
+if echo "$commit_msg" | grep -qE "^Merge "; then
+  exit 0
+fi
+
+# Conventional Commits regex: type(scope)?: description
+regex='^(feat|fix|docs|style|refactor|test|chore|ci|build|perf)(\(.+\))?!?: .{1,72}'
+
+if ! echo "$commit_msg" | head -n1 | grep -qE "$regex"; then
+  cat << EOF
+❌ ERROR: Commit message does not follow Conventional Commits format.
+
+Expected format:
+  <type>(<scope>): <subject>
+
+Valid types: feat, fix, docs, style, refactor, test, chore, ci, build, perf
+Scope is optional: feat(parser): add new feature
+Breaking changes: feat!: breaking change
+
+Examples:
+  ✓ feat(parser): add Swift lambda support
+  ✓ fix(java): resolve call stack calculation bug
+  ✓ docs: update README with examples
+  ✓ ci: add conventional commit validation
+
+Your commit message:
+$(echo "$commit_msg" | head -n1)
+
+See CONTRIBUTING.md for more information.
+To bypass (not recommended): git commit --no-verify
+EOF
+  exit 1
+fi
+
+# Warn if subject ends with period
+first_line=$(echo "$commit_msg" | head -n1)
+if echo "$first_line" | grep -qE '\.$'; then
+  echo "⚠️  WARNING: Subject line should not end with a period"
+fi
+
+exit 0
