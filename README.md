@@ -1,14 +1,14 @@
 
 
 <div id="header" align="center">
-<img src="https://assets.err0.io/assets/img/err0/icons/err0Logo.svg" width="603" height="164">
+<img src="https://www.err0.io/assets/img/err0/icons/err0Logo.svg" width="603" height="164">
 </div>
 
 # err0: the power of Error Code (and Error Message Management)
 
 <div align="center">
-    <a href="https://github.com/Err0-io/err0agent/LICENSE"><img src="https://img.shields.io/github/license/Err0-io/err0agent" alt="license"></a>
-    <a href="https://github.com/release/Err0-io/err0agent"><img src="https://img.shields.io/github/release/Err0-io/err0agent" alt="license"></a>
+    <a href="https://github.com/Err0-io/err0agent/blob/develop/LICENSE.adoc"><img src="https://img.shields.io/github/license/Err0-io/err0agent" alt="license"></a>
+    <a href="https://github.com/Err0-io/err0agent/releases"><img src="https://img.shields.io/github/release/Err0-io/err0agent" alt="license"></a>
         <img alt="GitHub all releases" src="https://img.shields.io/github/downloads/Err0-io/err0agent/total">
     <a href="https://twitter.com/err0_io"><img src="https://img.shields.io/twitter/follow/err0_io?style=social" alt="Twitter"></a>
 </div>
@@ -31,7 +31,7 @@ See <a href="https://bit.ly/3Sv4dLV">err0.io/</a> for more information, demo req
 
 Please note that err0 is totally free for all Open-Source projects, just contact us.
 
-<img src="https://assets.err0.io/assets/img/screenshots/full_error_code_page.png" width="700"/>
+<img src="https://www.err0.io/assets/img/screenshots/full_error_code_page.png" width="700"/>
 
 ## What is required to test or use err0?
 
@@ -68,15 +68,15 @@ The err0agent automatically detects the following programming language.
 Yes. The policy is fully editable! 
 
 <div align="left">
-<img src="https://assets.err0.io/assets/img/screenshots/advanced_code_policy.png" width="400" />
-<img src="https://assets.err0.io/assets/img/screenshots/error_detection_settings.png" width="400" />
+<img src="https://www.err0.io/assets/img/screenshots/advanced_code_policy.png" width="400" />
+<img src="https://www.err0.io/assets/img/screenshots/error_detection_settings.png" width="400" />
 </div>
 
 ## Can it use a custom placeholder to insert error code?
 
 Yes. On can define a custom Placeholder in the  "Code Policy settings" of a project. The agent will pick-it-up and automatically insert error codes.
 
-<img src="https://assets.err0.io/assets/img/screenshots/edit_code_policy_placeholder.png" width="500" />
+<img src="https://www.err0.io/assets/img/screenshots/edit_code_policy_placeholder.png" width="500" />
 
 ## Can it be integrated in CI/CD?
 
@@ -95,8 +95,8 @@ err0 platform enables to publish and maintain Knowledge Data Bases (KDB) of erro
 
 Visit the err0agent knowledge base: <a href="http://bit.ly/3YYxmS5">err0 agent KDB</a> for more information on err0agent's codes.
 
-<img src="https://assets.err0.io/assets/img/screenshots/knowledge_base_add.png" width="300" />
-<img src="https://assets.err0.io/assets/img/screenshots/kdb_sample.png" width="500" />
+<img src="https://www.err0.io/assets/img/screenshots/knowledge_base_add.png" width="300" />
+<img src="https://www.err0.io/assets/img/screenshots/kdb_sample.png" width="500" />
 
 ## Quality Metrics
 
@@ -122,7 +122,7 @@ When you're ready to use this in production why not <a href="https://bit.ly/3Sv4
 
 ### Full mode
 
-A step by step guide is available on the <a href="https://assets.err0.io/how-to">err0</a> platform, which details each step:
+A step by step guide is available on the <a href="https://www.err0.io/how-to">err0</a> platform, which details each step:
  1. Create a numbering policy
  2. Add a project to the numbering policy
  3. Run the agent, in sandbox mode, on your code to insert error codes
@@ -162,4 +162,4 @@ You must specify:
 
 ## License
 
-[Apache 2.0 License](https://github.com/Err0-io/err0agent/LICENSE)
+[Apache 2.0 License](https://github.com/Err0-io/err0agent/blob/develop/LICENSE.adoc)
