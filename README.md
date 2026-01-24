@@ -98,6 +98,16 @@ Visit the err0agent knowledge base: <a href="http://bit.ly/3YYxmS5">err0 agent K
 <img src="https://www.err0.io/assets/img/screenshots/knowledge_base_add.png" width="300" />
 <img src="https://www.err0.io/assets/img/screenshots/kdb_sample.png" width="500" />
 
+## Contributing
+
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for:
+- Commit message conventions (Conventional Commits)
+- Development setup and workflow
+- Testing guidelines
+- Pull request process
+
+err0 is free for all Open-Source projects - please contact us!
+
 ## Quality Metrics
 
 When running the err0agent it will collect metrics on errors and logs quality:
